@@ -74,21 +74,27 @@ repeat the root verification on Windows and Ubuntu before acceptance.
 
 ## Delivery evidence
 
-The foundation exists on `codex/coach-foundation`; the
-[workflow record](../../evidence/workflows/WF-2026-001-foundation.md) captures implementation/review
-evidence. Commit, PR, CI, and merge evidence are appended only after those events occur.
+The foundation implementation is commit
+[`1e0ca4a4d19c04820a51e103c0492883de8bc6ef`](https://github.com/memorex386/verified-sudoku-coach/commit/1e0ca4a4d19c04820a51e103c0492883de8bc6ef)
+on `codex/coach-foundation`. [PR #1](https://github.com/memorex386/verified-sudoku-coach/pull/1)
+is open and clean; its [checks](https://github.com/memorex386/verified-sudoku-coach/pull/1/checks)
+passed on Windows, Ubuntu, CodeQL, and dependency review. The
+[workflow record](../../evidence/workflows/WF-2026-001-foundation.md) captures implementation,
+review, and fresh-clone continuity evidence. Merge and maintainer acceptance remain pending and are
+not claimed.
 
 ## Known limitations and blockers
 
 Feature work is intentionally gated on maintainer acceptance of this foundation. The replay command
 reports zero cases and `claimsMeasured: false`; it is not evidence of model or coaching quality.
-As checked on 2026-09-03, GitHub private vulnerability reporting and Dependabot security updates are
-not enabled. The maintainer must enable and recheck both repository settings before accepting the
-foundation; until then, `SECURITY.md` directs reporters to the profile contact fallback.
+GitHub dependency alerts and the read-only dependency graph were enabled on 2026-09-03, after which
+dependency review passed. Private vulnerability reporting and Dependabot security updates remain
+disabled. The maintainer must enable and recheck both settings before accepting the foundation;
+until then, `SECURITY.md` directs reporters to the profile contact fallback.
 
 ## Next action
 
-- Open the foundation PR for explicit maintainer acceptance; do not begin WP-2026-002.
+- Enable and recheck private vulnerability reporting and Dependabot security updates before foundation acceptance; do not merge or begin WP-2026-002.
 
 ## Checkpoints
 
@@ -103,3 +109,9 @@ foundation; until then, `SECURITY.md` directs reporters to the profile contact f
 - 2026-09-03 — Independent final review passed after CI policy, npm lifecycle isolation,
   public-boundary path/history handling, and architecture false-pass regressions were locked; only
   documented maintainer settings and pull-request review remain before foundation acceptance.
+- 2026-09-03 — Public PR #1 opened; all five remote checks passed after enabling GitHub dependency
+  alerts and the read-only dependency graph. No merge, release, deployment, spend, or feature work
+  occurred.
+- 2026-09-03 — A fresh agent given only the public repository URL and WP-2026-001 passed the
+  repository-defined authority, trust-boundary, credential-free validation, and next-action
+  checklist at PR head `1e0ca4a4d19c04820a51e103c0492883de8bc6ef`.

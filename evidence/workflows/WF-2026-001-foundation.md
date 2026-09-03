@@ -2,7 +2,7 @@
 
 - Work package: [WP-2026-001](../../docs/work-packages/WP-2026-001-public-repository-foundation.md)
 - Date: 2026-09-03
-- State: Local validation and fresh-agent continuity complete; maintainer review and pull request remain
+- State: Public pull request open with green CI and fresh-clone continuity; maintainer settings and acceptance remain
 - Data classification: Public engineering summary; no conversation transcript or private source
 
 ## Human-owned intent and decisions
@@ -20,8 +20,9 @@ are encoded in the charter, six ADRs, acceptance catalog, and work packages.
   aggregate baseline, technique, compatibility, and provenance constraints that became public
   policy.
 - Independent reviewers challenged architecture, work-package, privacy, and verifier assumptions.
-- A fresh read-only agent received only the repository locator, `WP-2026-001`, and the instruction
-  to execute the repository-defined continuity check; it independently validated the five skills.
+- A fresh read-only agent received only the public repository URL, `WP-2026-001`, and the instruction
+  to execute the repository-defined continuity check; it independently found the authorities,
+  validated the trust boundary, and ran the credential-free checks from a fresh clone.
 - The root integrator retained, revised, or rejected suggestions; corrected the tree; ran the
   reported checks; and owns the resulting pull request.
 
@@ -60,6 +61,10 @@ are encoded in the charter, six ADRs, acceptance catalog, and work packages.
   lifecycle hooks around installation and checks, separated runtime from development dependencies,
   and added regression coverage for indirect dynamic-code, time/random, symlink, Git-object,
   suppression-comment, sensitive-path, and source-closure bypasses.
+- The first dependency-review run exposed a disabled GitHub dependency graph on the newly created
+  repository. Dependency alerts and the read-only graph were enabled, the failed job alone was
+  rerun, and dependency review passed. Automatic Dependabot security-update pull requests remain
+  disabled pending maintainer acceptance.
 
 ## Validation performed
 
@@ -69,15 +74,21 @@ are encoded in the charter, six ADRs, acceptance catalog, and work packages.
   skill, the complete validation suite, and strict project-reference TypeScript checks.
 - The skill-creator `quick_validate.py` passed all five canonical skills.
 - `git diff --check` passed.
+- Public CI passed strict verification on Windows and Ubuntu, CodeQL, and dependency review at the
+  foundation PR head.
 
 ## Fresh-agent continuity result
 
+- Public fresh clone pinned to PR head
+  `1e0ca4a4d19c04820a51e103c0492883de8bc6ef`: **Pass**.
 - Governing authority found: **Pass**.
 - Deterministic/provider/host/public trust boundary explained: **Pass**.
-- Credential-free checks run: **Pass** — `npm run doctor`, `npm run verify`,
-  `npm run eval:replay`, `npm run docs:check`, `npm run skills:check`, and `git diff --check`.
-- Correct single next action identified: **Pass** — open the WP-2026-001 foundation PR for explicit
-  maintainer acceptance; do not begin WP-2026-002.
+- Credential-free checks run: **Pass** — Node 22, `npm ci`, `npm run doctor`,
+  `npm run docs:check`, `npm run eval:replay`, `npm run verify`, and `git diff --check`; the complete
+  suite passed 69/69 tests and left the tracked tree clean.
+- Correct single next action identified: **Pass** — enable and recheck private vulnerability
+  reporting and Dependabot security updates before foundation acceptance; do not merge or begin
+  WP-2026-002.
 - Independent skill-creator validation: **Pass** for all five canonical skills.
 
 The check records outcomes only. It contains no reasoning transcript, provider call, credential,
@@ -89,6 +100,9 @@ Architecture evidence: [system](../../docs/architecture/system.md),
 [principles](../../docs/architecture/principles.md), and [ADRs](../../docs/decisions/).
 Safety/evaluation evidence: [acceptance catalog](../../docs/acceptance/catalog.md),
 [privacy policy](../../docs/privacy.md), and [evaluation policy](../../docs/evaluation/policy.md).
+Delivery evidence: [foundation commit](https://github.com/memorex386/verified-sudoku-coach/commit/1e0ca4a4d19c04820a51e103c0492883de8bc6ef),
+[PR #1](https://github.com/memorex386/verified-sudoku-coach/pull/1), and
+[remote checks](https://github.com/memorex386/verified-sudoku-coach/pull/1/checks).
 
 This workflow proves only that the repository foundation is internally checked and reviewable. It
 does not prove Sudoku correctness, model quality, latency, cost, accessibility, player benefit, or
