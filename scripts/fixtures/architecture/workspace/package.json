@@ -1,0 +1,8 @@
+{
+  "name": "architecture-fixture",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "rogue/*"
+  ]
+}

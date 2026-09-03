@@ -1,0 +1,11 @@
+* @memorex386
+
+# These paths define public trust, release, or agent behavior and always require owner review.
+/ai/ @memorex386
+/config/ @memorex386
+/docs/acceptance/ @memorex386
+/docs/architecture/ @memorex386
+/docs/decisions/ @memorex386
+/docs/provenance/ @memorex386
+/.agents/ @memorex386
+/.github/workflows/ @memorex386

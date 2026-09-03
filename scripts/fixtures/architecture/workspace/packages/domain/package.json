@@ -1,0 +1,17 @@
+{
+  "name": "@fixture/domain",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./runtime/index.ts"
+  },
+  "dependencies": {
+    "provider-alias": "npm:openai@4.0.0",
+    "react": "19.1.1"
+  },
+  "devDependencies": {
+    "@fixture/replay-web": "*",
+    "dev-only-runtime": "1.0.0"
+  }
+}

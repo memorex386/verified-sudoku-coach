@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "workspaces": {
+    "@fixture/domain": {
+      "path": "packages/domain",
+      "mayDependOn": []
+    },
+    "@fixture/replay-web": {
+      "path": "apps/replay-web",
+      "mayDependOn": ["@fixture/domain"]
+    }
+  },
+  "browserPackages": ["@fixture/replay-web"],
+  "providerPackages": [],
+  "browserForbiddenDependencies": ["openai", "@openai/"],
+  "nodeOnlyPackages": ["@fixture/domain"],
+  "corePackages": ["@fixture/domain"],
+  "boundaryPackages": [],
+  "pureRuntimeExternalDependencies": {
+    "@fixture/domain": []
+  }
+}

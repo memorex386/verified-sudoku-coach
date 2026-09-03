@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {
+      "@verified-sudoku/adapter-openai": ["../../adapter-openai/src/index.ts"]
+    },
+    "rootDir": "../..",
+    "outDir": "../../dist",
+    "tsBuildInfoFile": "../../domain.tsbuildinfo",
+    "lib": ["ES2022", "DOM"],
+    "strict": false,
+    "strictNullChecks": false,
+    "noUncheckedIndexedAccess": false,
+    "exactOptionalPropertyTypes": false,
+    "noCheck": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
+  },
+  "include": ["../../rogue/**/*.ts"],
+  "exclude": ["src/index.ts"],
+  "references": []
+}

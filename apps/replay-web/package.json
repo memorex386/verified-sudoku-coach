@@ -1,0 +1,14 @@
+{
+  "name": "@verified-sudoku/replay-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@verified-sudoku/contracts": "*",
+    "@verified-sudoku/domain": "*",
+    "@verified-sudoku/proof-engine": "*",
+    "@verified-sudoku/coach-core": "*",
+    "@verified-sudoku/boundary-codecs": "*"
+  }
+}
