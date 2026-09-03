@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.hidden.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2022", "DOM"],
+    "noUncheckedSideEffectImports": false,
+    "noCheck": true
+  }
+}

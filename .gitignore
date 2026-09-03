@@ -1,6 +1,10 @@
 node_modules/
 dist/
+*.tsbuildinfo
 coverage/
+.cache/
+.tmp/
+.tsbuildinfo
 .env
 .env.*
 !.env.example
@@ -8,3 +12,6 @@ coverage/
 .DS_Store
 Thumbs.db
 
+# Live provider evaluation output is private and short-lived. Only reviewed aggregate
+# reports under docs/evaluation/reports/ may be committed.
+artifacts/live-evals/

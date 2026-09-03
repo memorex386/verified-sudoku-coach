@@ -1,0 +1,19 @@
+{
+  "name": "@verified-sudoku/adapter-openai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@verified-sudoku/contracts": "*",
+    "@verified-sudoku/domain": "*",
+    "@verified-sudoku/coach-core": "*",
+    "@verified-sudoku/boundary-codecs": "*"
+  }
+}

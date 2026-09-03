@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "noCheck": true
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "packages/domain"
+    },
+    {
+      "path": "apps/replay-web"
+    }
+  ]
+}

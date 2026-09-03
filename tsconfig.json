@@ -1,0 +1,15 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/domain" },
+    { "path": "packages/contracts" },
+    { "path": "packages/proof-engine" },
+    { "path": "packages/coach-core" },
+    { "path": "packages/boundary-codecs" },
+    { "path": "packages/adapter-openai" },
+    { "path": "packages/testing" },
+    { "path": "apps/replay-web" },
+    { "path": "apps/local-gateway" },
+    { "path": "tools/eval-cli" }
+  ]
+}

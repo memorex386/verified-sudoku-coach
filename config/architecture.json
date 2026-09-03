@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "VSC-ARCH-1",
+  "workspaces": {
+    "@verified-sudoku/domain": {
+      "path": "packages/domain",
+      "mayDependOn": []
+    },
+    "@verified-sudoku/contracts": {
+      "path": "packages/contracts",
+      "mayDependOn": []
+    },
+    "@verified-sudoku/proof-engine": {
+      "path": "packages/proof-engine",
+      "mayDependOn": ["@verified-sudoku/domain"]
+    },
+    "@verified-sudoku/coach-core": {
+      "path": "packages/coach-core",
+      "mayDependOn": [
+        "@verified-sudoku/domain",
+        "@verified-sudoku/proof-engine"
+      ]
+    },
+    "@verified-sudoku/boundary-codecs": {
+      "path": "packages/boundary-codecs",
+      "mayDependOn": [
+        "@verified-sudoku/contracts",
+        "@verified-sudoku/domain",
+        "@verified-sudoku/proof-engine",
+        "@verified-sudoku/coach-core"
+      ]
+    },
+    "@verified-sudoku/adapter-openai": {
+      "path": "packages/adapter-openai",
+      "mayDependOn": [
+        "@verified-sudoku/contracts",
+        "@verified-sudoku/domain",
+        "@verified-sudoku/coach-core",
+        "@verified-sudoku/boundary-codecs"
+      ]
+    },
+    "@verified-sudoku/testing": {
+      "path": "packages/testing",
+      "mayDependOn": [
+        "@verified-sudoku/contracts",
+        "@verified-sudoku/domain",
+        "@verified-sudoku/proof-engine",
+        "@verified-sudoku/coach-core",
+        "@verified-sudoku/boundary-codecs",
+        "@verified-sudoku/adapter-openai"
+      ]
+    },
+    "@verified-sudoku/replay-web": {
+      "path": "apps/replay-web",
+      "mayDependOn": [
+        "@verified-sudoku/contracts",
+        "@verified-sudoku/domain",
+        "@verified-sudoku/proof-engine",
+        "@verified-sudoku/coach-core",
+        "@verified-sudoku/boundary-codecs"
+      ]
+    },
+    "@verified-sudoku/local-gateway": {
+      "path": "apps/local-gateway",
+      "mayDependOn": [
+        "@verified-sudoku/contracts",
+        "@verified-sudoku/domain",
+        "@verified-sudoku/coach-core",
+        "@verified-sudoku/boundary-codecs",
+        "@verified-sudoku/adapter-openai"
+      ]
+    },
+    "@verified-sudoku/eval-cli": {
+      "path": "tools/eval-cli",
+      "mayDependOn": [
+        "@verified-sudoku/contracts",
+        "@verified-sudoku/domain",
+        "@verified-sudoku/proof-engine",
+        "@verified-sudoku/coach-core",
+        "@verified-sudoku/boundary-codecs",
+        "@verified-sudoku/adapter-openai",
+        "@verified-sudoku/testing"
+      ]
+    }
+  },
+  "browserPackages": ["@verified-sudoku/replay-web"],
+  "providerPackages": ["@verified-sudoku/adapter-openai"],
+  "browserForbiddenDependencies": ["openai", "@openai/"],
+  "nodeOnlyPackages": [
+    "@verified-sudoku/adapter-openai",
+    "@verified-sudoku/local-gateway",
+    "@verified-sudoku/eval-cli"
+  ],
+  "corePackages": [
+    "@verified-sudoku/domain",
+    "@verified-sudoku/proof-engine",
+    "@verified-sudoku/coach-core"
+  ],
+  "boundaryPackages": [
+    "@verified-sudoku/contracts",
+    "@verified-sudoku/boundary-codecs"
+  ],
+  "pureRuntimeExternalDependencies": {
+    "@verified-sudoku/domain": [],
+    "@verified-sudoku/proof-engine": [],
+    "@verified-sudoku/coach-core": [],
+    "@verified-sudoku/contracts": ["zod"],
+    "@verified-sudoku/boundary-codecs": []
+  }
+}
