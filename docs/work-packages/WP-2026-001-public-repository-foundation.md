@@ -1,7 +1,7 @@
 ---
 id: WP-2026-001
 title: Public repository foundation
-status: In progress
+status: Done
 depends_on: none
 owner: Maintainer
 base_branch: main
@@ -69,32 +69,42 @@ npm run docs:check
 git diff --check
 ```
 
-The skill-creator validator also passed each of the five canonical skill directories. CI must
-repeat the root verification on Windows and Ubuntu before acceptance.
+- `npm ci`: PASS — clean lockfile install with lifecycle scripts disabled by repository policy.
+- `npm run doctor`: PASS — Node/npm pins, branch isolation, and credential-free operation verified.
+- `npm run lint`: PASS — zero warnings.
+- `npm run verify`: PASS — every foundation gate and all 69 validation tests passed.
+- `npm run eval:replay`: PASS — exact truthful bootstrap result: `not_implemented`, zero cases, and
+  `claimsMeasured: false`.
+- `npm run docs:check`: PASS — documentation, links, ADRs, and generated registry verified.
+- `git diff --check`: PASS — no whitespace errors.
+
+The skill-creator validator passed each of the five canonical skill directories. CI repeated the
+root verification on Windows and Ubuntu and passed CodeQL and dependency review before acceptance.
 
 ## Delivery evidence
 
-The foundation implementation is commit
-[`1e0ca4a4d19c04820a51e103c0492883de8bc6ef`](https://github.com/memorex386/verified-sudoku-coach/commit/1e0ca4a4d19c04820a51e103c0492883de8bc6ef)
-on `codex/coach-foundation`. [PR #1](https://github.com/memorex386/verified-sudoku-coach/pull/1)
-is open and clean; its [checks](https://github.com/memorex386/verified-sudoku-coach/pull/1/checks)
-passed on Windows, Ubuntu, CodeQL, and dependency review. The
+Delivery head
+[`f781b9ae25a1ab45865c3862d230f218862a09f8`](https://github.com/memorex386/verified-sudoku-coach/commit/f781b9ae25a1ab45865c3862d230f218862a09f8)
+was accepted and integrated into `main` through merged
+[PR #1](https://github.com/memorex386/verified-sudoku-coach/pull/1) on 2026-09-03. Merge commit
+[`619277d4d714be49135918abd977192f2abc1d59`](https://github.com/memorex386/verified-sudoku-coach/commit/619277d4d714be49135918abd977192f2abc1d59)
+preserves that audited delivery head in public history. Its
+[checks](https://github.com/memorex386/verified-sudoku-coach/pull/1/checks) passed on Windows,
+Ubuntu, CodeQL, and dependency review. The
 [workflow record](../../evidence/workflows/WF-2026-001-foundation.md) captures implementation,
-review, and fresh-clone continuity evidence. Merge and maintainer acceptance remain pending and are
-not claimed.
+review, fresh-clone continuity, and human acceptance evidence.
 
 ## Known limitations and blockers
 
-Feature work is intentionally gated on maintainer acceptance of this foundation. The replay command
-reports zero cases and `claimsMeasured: false`; it is not evidence of model or coaching quality.
-GitHub dependency alerts and the read-only dependency graph were enabled on 2026-09-03, after which
-dependency review passed. Private vulnerability reporting and Dependabot security updates remain
-disabled. The maintainer must enable and recheck both settings before accepting the foundation;
-until then, `SECURITY.md` directs reporters to the profile contact fallback.
+No WP-2026-001 blocker remains. GitHub dependency alerts, the read-only dependency graph, private
+vulnerability reporting, and Dependabot security updates are enabled and rechecked. This remains a
+foundation-only delivery: the replay command reports zero cases and `claimsMeasured: false`, so it
+is not evidence of Sudoku correctness, model quality, coaching quality, latency, cost,
+accessibility, or player benefit. WP-2026-002 remains `Draft` and requires its own readiness review.
 
 ## Next action
 
-- Enable and recheck private vulnerability reporting and Dependabot security updates before foundation acceptance; do not merge or begin WP-2026-002.
+- Prepare WP-2026-002 for explicit readiness review; do not implement it while its status remains Draft.
 
 ## Checkpoints
 
@@ -115,3 +125,9 @@ until then, `SECURITY.md` directs reporters to the profile contact fallback.
 - 2026-09-03 — A fresh agent given only the public repository URL and WP-2026-001 passed the
   repository-defined authority, trust-boundary, credential-free validation, and next-action
   checklist at PR head `1e0ca4a4d19c04820a51e103c0492883de8bc6ef`.
+- 2026-09-03 — The maintainer authorized proceeding with the foundation; private vulnerability
+  reporting and Dependabot security updates were enabled and rechecked successfully before the
+  delivery PRs merged.
+- 2026-09-03 — PR #1 merged through merge commit
+  `619277d4d714be49135918abd977192f2abc1d59`, preserving audited delivery head
+  `f781b9ae25a1ab45865c3862d230f218862a09f8` as an ancestor of `main`; WP-2026-001 was accepted.

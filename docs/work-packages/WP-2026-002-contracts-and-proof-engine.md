@@ -94,12 +94,13 @@ No implementation evidence exists because this package has not started.
 
 ## Known limitations and blockers
 
-WP-2026-001 requires explicit acceptance first. Human timing of the generated showcase remains an
-experience measurement; generation labels it curated rather than claiming difficulty or duration.
+No dependency blocker remains because WP-2026-001 is accepted and `Done`. Human timing of the
+generated showcase remains an experience measurement; generation labels it curated rather than
+claiming difficulty or duration.
 
 ## Next action
 
-- Finalize the field-level V1 contract tables and generated-fixture seed protocol while WP-2026-001 awaits acceptance.
+- Finalize the field-level V1 contract tables and generated-fixture seed protocol for explicit readiness review; do not implement while status remains Draft.
 
 ## Checkpoints
 

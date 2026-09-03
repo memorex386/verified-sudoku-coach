@@ -2,7 +2,7 @@
 
 - Work package: [WP-2026-001](../../docs/work-packages/WP-2026-001-public-repository-foundation.md)
 - Date: 2026-09-03
-- State: Public pull request open with green CI and fresh-clone continuity; maintainer settings and acceptance remain
+- State: Foundation accepted and merged; follow-up closure evidence recorded
 - Data classification: Public engineering summary; no conversation transcript or private source
 
 ## Human-owned intent and decisions
@@ -11,6 +11,11 @@ The maintainer selected a clean public repository, Apache-2.0 licensing, determi
 authority, bounded AI teaching, a private host boundary, evidence-based portfolio claims, and
 separate authorization for merge, spend, deployment, invitations, and publication. Those decisions
 are encoded in the charter, six ADRs, acceptance catalog, and work packages.
+
+On 2026-09-03, the maintainer authorized proceeding after reviewing repository merge access. The
+remaining repository security gates were enabled and the private authority PR followed by public
+PR #1 in dependency order. The successful merge records acceptance without reproducing a
+conversation transcript.
 
 ## AI-assisted roles and durable outputs
 
@@ -63,8 +68,9 @@ are encoded in the charter, six ADRs, acceptance catalog, and work packages.
   suppression-comment, sensitive-path, and source-closure bypasses.
 - The first dependency-review run exposed a disabled GitHub dependency graph on the newly created
   repository. Dependency alerts and the read-only graph were enabled, the failed job alone was
-  rerun, and dependency review passed. Automatic Dependabot security-update pull requests remain
-  disabled pending maintainer acceptance.
+  rerun, and dependency review passed.
+- Before acceptance, private vulnerability reporting and Dependabot security updates were enabled
+  and rechecked through GitHub's repository APIs. Security updates reported enabled and unpaused.
 
 ## Validation performed
 
@@ -101,9 +107,11 @@ Architecture evidence: [system](../../docs/architecture/system.md),
 Safety/evaluation evidence: [acceptance catalog](../../docs/acceptance/catalog.md),
 [privacy policy](../../docs/privacy.md), and [evaluation policy](../../docs/evaluation/policy.md).
 Delivery evidence: [foundation commit](https://github.com/memorex386/verified-sudoku-coach/commit/1e0ca4a4d19c04820a51e103c0492883de8bc6ef),
-[PR #1](https://github.com/memorex386/verified-sudoku-coach/pull/1), and
+[accepted delivery head](https://github.com/memorex386/verified-sudoku-coach/commit/f781b9ae25a1ab45865c3862d230f218862a09f8),
+[merged PR #1](https://github.com/memorex386/verified-sudoku-coach/pull/1),
+[merge commit](https://github.com/memorex386/verified-sudoku-coach/commit/619277d4d714be49135918abd977192f2abc1d59), and
 [remote checks](https://github.com/memorex386/verified-sudoku-coach/pull/1/checks).
 
-This workflow proves only that the repository foundation is internally checked and reviewable. It
-does not prove Sudoku correctness, model quality, latency, cost, accessibility, player benefit, or
-release readiness; those remain explicitly unmeasured work.
+This workflow proves only that the repository foundation is internally checked, reviewable,
+accepted, and integrated. It does not prove Sudoku correctness, model quality, latency, cost,
+accessibility, player benefit, or release readiness; those remain explicitly unmeasured work.

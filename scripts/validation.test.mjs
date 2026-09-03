@@ -1434,8 +1434,8 @@ test("Done requires a PASS result for every listed validation command", async ()
   foundation.status = "Done";
   foundation.body = foundation.body
     .replace(
-      /(## Validation\n[\s\S]*?)(?=\n## Delivery evidence)/,
-      "$1\n- `npm run verify`: PASS — fixture.\n",
+      /## Validation\n[\s\S]*?(?=\n## Delivery evidence)/,
+      "## Validation\n\n```powershell\nnpm ci\nnpm run verify\n```\n\n- `npm run verify`: PASS — fixture.\n",
     )
     .replace(
       /## Delivery evidence\n[\s\S]*?(?=\n## Known limitations and blockers)/,
