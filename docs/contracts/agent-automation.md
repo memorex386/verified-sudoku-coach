@@ -77,8 +77,10 @@ broker's credential. A changed head produces `stale`, and a new run must receive
 
 Dependency facts and failure identity are derived, not trusted booleans. The controller compares a
 candidate with `TrustedPullRequestEventV1`, parses exact before/after manifests and bounded
-diff/check evidence, calculates sorted risk/outcome codes, then hashes that canonical value. Dedupe
-lookup returns the durable result for the same repository/PR/base/head/fingerprint/policy tuple.
+diff/check evidence, calculates sorted risk/outcome codes, then hashes that canonical value. The
+controller uses a result-store port to return the prior terminal result for the same
+repository/PR/base/head/fingerprint/policy tuple. Tests use a fake store; a live trigger adapter must
+provide durable compare-and-swap persistence before activation.
 
 Extension installation is a human-reviewed supply-chain change. Manifests and entrypoints are
 version/digest pinned, license reviewed, and tested with no credentials before registration.

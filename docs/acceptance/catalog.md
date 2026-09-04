@@ -68,8 +68,10 @@ Owner: `WP-2026-002`
 
 A machine-readable policy and pure finite-state controller separate analysis, patch publication,
 merge, release, and production credentials. Dependency handling compares an authenticated event
-envelope with current base/head SHAs, derives manifest/diff/check risks, computes and durably
-deduplicates a canonical failure identity, classifies deterministically first, and permits at most
+envelope with current base/head SHAs, derives manifest/diff/check risks, computes a canonical
+failure identity, and returns any prior terminal result through a result-store port before it
+classifies deterministically. Fake-store conformance proves replay behavior; a host must provide
+durable compare-and-swap persistence before live use. The controller permits at most
 one inexpensive diagnosis, one stronger escalation, one repair, and one recognized-infrastructure
 rerun before a terminal result. Every error, timeout, and attempt-exhaustion path terminates. Shadow
 mode cannot merge. Future release execution permits at most one deployment and one rollback, then
