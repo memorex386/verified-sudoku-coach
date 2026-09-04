@@ -561,7 +561,9 @@ function validateHistoryGrant(policy, workOrder, proof, record, seenGrantRefs, a
   }
   if (proof.schemaVersion !== 1 || proof.issuerClass !== "human-authorization" ||
       typeof proof.authorizationRef !== "string" || proof.authorizationRef.length === 0 ||
-      typeof proof.grantRef !== "string" || proof.grantRef.length === 0) {
+      proof.authorizationRef.length > 512 ||
+      typeof proof.grantRef !== "string" || proof.grantRef.length === 0 ||
+      proof.grantRef.length > 512) {
     errors.push("automation history grant proof must carry human authorization evidence");
   }
   if (seenGrantRefs.has(proof.grantRef)) {
@@ -799,13 +801,16 @@ function validateState(policy, workOrder, state, options = {}) {
   errors.push(...attempts.errors);
   errors.push(...validateAutomationHistory(policy, workOrder, state));
   if (!Array.isArray(state.consumedGrantRefs) ||
-      state.consumedGrantRefs.some((value) => typeof value !== "string") ||
+      state.consumedGrantRefs.some((value) =>
+        typeof value !== "string" || value.length === 0 || value.length > 512) ||
       new Set(state.consumedGrantRefs).size !== state.consumedGrantRefs.length) {
-    errors.push("automation state consumedGrantRefs must be unique strings");
+    errors.push("automation state consumedGrantRefs must be bounded unique strings");
   }
-  if (!Array.isArray(state.reasonCodes) ||
-      state.reasonCodes.some((value) => typeof value !== "string")) {
-    errors.push("automation state reasonCodes must be strings");
+  if (!Array.isArray(state.reasonCodes) || state.reasonCodes.length > 32 ||
+      state.reasonCodes.some((value) =>
+        typeof value !== "string" || !/^[a-z][a-z0-9-]{0,127}$/.test(value)) ||
+      new Set(state.reasonCodes).size !== state.reasonCodes.length) {
+    errors.push("automation state reasonCodes must be bounded unique canonical strings");
   }
   if (!Number.isSafeInteger(state.revision) || state.revision < 0) {
     errors.push("automation state revision must be non-negative");
@@ -1898,6 +1903,105 @@ function replayResultFromState(state) {
   };
 }
 
+function authorizationAttemptForHistory(history, terminalIndex) {
+  let phase = history[terminalIndex]?.fromPhase;
+  if (phase === "awaiting-approval") {
+    for (let index = terminalIndex - 1; index >= 0; index -= 1) {
+      if (history[index]?.toPhase === "awaiting-approval") {
+        phase = history[index].fromPhase;
+        break;
+      }
+    }
+  }
+  return ({
+    "patch-authorization": "patchPublications",
+    "merge-authorization": "mergeAttempts",
+  })[phase] ?? null;
+}
+
+function dependencyTerminalReasonOptions(policy, classification, state) {
+  const history = Array.isArray(state?.history) ? state.history : [];
+  const terminalIndex = history.length - 1;
+  const record = history[terminalIndex];
+  if (!isExactObject(record)) return [];
+  if (record.fromPhase === "deterministic-classification") {
+    if (classification.terminalOutcome !== null) {
+      return [`classification-${classification.terminalOutcome}`];
+    }
+    if (record.toPhase === "escalated") return ["cheapAssessments-exhausted"];
+    if (record.toPhase === "failed-terminal") {
+      return ["model-capability-set-incomplete"];
+    }
+    return [];
+  }
+  if (["stage-error", "stage-timeout"].includes(record.eventType)) {
+    return [record.eventType];
+  }
+  if (record.toPhase === "verified" && record.eventType === "assessment-no-repair") {
+    return ["no-repair-required"];
+  }
+  if (record.eventType === "model-escalation-requested") {
+    return ["model-self-escalation-forbidden"];
+  }
+  if (record.eventType === "assessment-needs-escalation") {
+    return record.toPhase === "escalated"
+      ? ["strongEscalations-exhausted"]
+      : ["model-capability-set-incomplete", "invalid-event"];
+  }
+  if (record.eventType === "assessment-repair-proposed") {
+    return ["repairAttempts-exhausted", "repair-capability-set-incomplete", "invalid-event"];
+  }
+  if (record.eventType === "authorization-granted") {
+    if (record.toPhase === "deferred") return ["shadow-mode-mutation-forbidden"];
+    if (record.toPhase === "stale") return ["authorization-cas-stale"];
+    if (record.toPhase === "failed-terminal") {
+      const attemptName = authorizationAttemptForHistory(history, terminalIndex);
+      return record.grantProof !== null && attemptName !== null &&
+        state.attempts?.[attemptName] >= policy.attemptCaps?.[attemptName]
+        ? [`${attemptName}-exhausted`]
+        : ["invalid-authorization"];
+    }
+  }
+  if (record.eventType === "patch-publication-succeeded") {
+    if (record.toPhase === "stale") return ["publication-cas-stale"];
+    if (record.toPhase === "failed-terminal") return ["invalid-publication-receipt"];
+  }
+  if (record.eventType === "work-order-renewed") {
+    if (record.toPhase === "deferred") return ["work-order-renewal-deferred"];
+    if (record.toPhase === "stale") {
+      return ["work-order-renewal-stale", "work-order-renewal-identity-stale"];
+    }
+    if (record.toPhase === "failed-terminal") {
+      return ["invalid-work-order-renewal", "work-order-renewal-failed-terminal"];
+    }
+  }
+  if (record.eventType === "ci-infra-flake" && record.toPhase === "failed-terminal") {
+    return ["ciFlakeReruns-exhausted"];
+  }
+  if (record.eventType === "ci-failed") return ["ci-failed"];
+  if (record.eventType === "merge-succeeded") {
+    if (record.toPhase === "stale") return ["merge-cas-stale"];
+    if (record.toPhase === "failed-terminal") return ["invalid-merge-receipt"];
+  }
+  if (record.eventType === "post-merge-passed" && record.toPhase === "completed") {
+    return ["post-merge-verified"];
+  }
+  if (record.eventType === "post-merge-failed") return ["post-merge-failed"];
+  if (record.toPhase === "failed-terminal") return ["invalid-event"];
+  return [];
+}
+
+function dependencyReplayReasonsMatch(policy, classification, state) {
+  const history = Array.isArray(state?.history) ? state.history : [];
+  const retained = history.some((record) => record?.toPhase === "awaiting-approval")
+    ? ["authorization-required"]
+    : [];
+  const options = dependencyTerminalReasonOptions(policy, classification, state);
+  return options.some((terminalReason) => JSON.stringify(
+    [...retained, terminalReason].sort(),
+  ) === JSON.stringify(state.reasonCodes));
+}
+
 function failedStartResult(policy, workOrder, lineageStore, resultStore, reason) {
   const state = failedCreation(policy, workOrder, [reason]);
   return {
@@ -1974,6 +2078,17 @@ export function startDependencyAutomationWithStores(
           "stored automation replay evidence does not match the derived identity",
         );
       }
+      const replayLedger = inspectLineageSnapshot(lineageStore, workOrder.lineageKey);
+      if (!replayLedger.valid || JSON.stringify(replayLedger.snapshot.attempts) !==
+          JSON.stringify(existing.terminalState.attempts)) {
+        return failedStartResult(
+          policy,
+          workOrder,
+          lineageStore,
+          safeResultStore,
+          "stored automation replay attempts do not match the authoritative lineage ledger",
+        );
+      }
       const semanticErrors = validateState(policy, workOrder, existing.terminalState, {
         policyRegistry,
       });
@@ -1983,21 +2098,21 @@ export function startDependencyAutomationWithStores(
           "stored automation replay outcome contradicts deterministic classification",
         );
       }
-      if (classification.terminalOutcome !== null && JSON.stringify(
-        existing.terminalState.reasonCodes,
-      ) !== JSON.stringify([`classification-${classification.terminalOutcome}`])) {
+      if (!dependencyReplayReasonsMatch(policy, classification, existing.terminalState)) {
         semanticErrors.push(
-          "stored automation replay reasons contradict deterministic classification",
+          "stored automation replay reasons contradict its validated transition history",
         );
       }
       if (classification.terminalOutcome === null &&
           existing.terminalState.outcome === "reverted") {
         semanticErrors.push("dependency automation replay cannot contain a release rollback");
       }
-      const expectedInitialPhase = classification.terminalOutcome ?? classification.nextStage;
+      const expectedInitialPhases = classification.terminalOutcome !== null
+        ? [classification.terminalOutcome]
+        : [classification.nextStage, "escalated", "failed-terminal"];
       const initialHistory = existing.terminalState.history?.[0];
       if (initialHistory?.fromPhase !== "deterministic-classification" ||
-          initialHistory?.toPhase !== expectedInitialPhase) {
+          !expectedInitialPhases.includes(initialHistory?.toPhase)) {
         semanticErrors.push(
           "stored automation replay history contradicts deterministic classification",
         );

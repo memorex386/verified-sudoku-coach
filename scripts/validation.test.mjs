@@ -1308,18 +1308,49 @@ test("composed dependency start replays after identity derivation and before eff
     terminalState: verifiedState,
   }).store;
   const event = classificationAutomationEvent(fixture);
+  const replayLineageStore = recordLineageAttempts(
+    new Map(),
+    fixture.workOrder.lineageKey,
+    verifiedState.attempts,
+  );
 
   const replay = startDependencyAutomationWithStores(
     policy,
     fixture.workOrder,
     event,
-    new Map(),
+    replayLineageStore,
     priorStore,
   );
   assert.equal(replay.replayed, true);
   assert.equal(replay.state, null);
   assert.deepEqual(replay.effects, []);
   assert.deepEqual(replay.result, priorResult);
+
+  const eligibleReasonForgedStore = new Map(priorStore);
+  const eligibleReasonForged = eligibleReasonForgedStore.get(candidate.idempotencyKey);
+  eligibleReasonForged.result.reasonCodes = ["ci-failed"];
+  eligibleReasonForged.terminalState.reasonCodes = ["ci-failed"];
+  const eligibleReasonRejected = startDependencyAutomationWithStores(
+    policy,
+    fixture.workOrder,
+    event,
+    replayLineageStore,
+    eligibleReasonForgedStore,
+  );
+  assert.equal(eligibleReasonRejected.replayed, false);
+  assert.equal(eligibleReasonRejected.conflict, true);
+  assert.deepEqual(eligibleReasonRejected.effects, []);
+
+  const ledgerRejected = startDependencyAutomationWithStores(
+    policy,
+    fixture.workOrder,
+    event,
+    new Map(),
+    priorStore,
+  );
+  assert.equal(ledgerRejected.replayed, false);
+  assert.equal(ledgerRejected.conflict, true);
+  assert.deepEqual(ledgerRejected.effects, []);
 
   const attempts = replayResultFor(policy, "verified").attempts;
   const lineageStore = recordLineageAttempts(
@@ -1374,7 +1405,7 @@ test("composed dependency start replays after identity derivation and before eff
     policy,
     majorFixture.workOrder,
     classificationAutomationEvent(majorFixture),
-    new Map(),
+    majorFirst.lineageStore,
     forgedStore,
   );
   assert.equal(contradicted.replayed, false);
@@ -1390,13 +1421,55 @@ test("composed dependency start replays after identity derivation and before eff
     policy,
     majorFixture.workOrder,
     classificationAutomationEvent(majorFixture),
-    new Map(),
+    majorFirst.lineageStore,
     reasonForgedStore,
   );
   assert.equal(reasonContradicted.replayed, false);
   assert.equal(reasonContradicted.conflict, true);
   assert.equal(reasonContradicted.result.terminalOutcome, "failed-terminal");
   assert.deepEqual(reasonContradicted.effects, []);
+});
+
+test("persisted grants and reason codes retain their live boundary limits", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  fixture.workOrder.authorizedGrantIds = ["dependency-patch-publish"];
+  const authorized = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    reachPatchAuthorization(policy, fixture),
+    authorizationEvent(policy, fixture.workOrder, "patchPublication", "bounded-grant"),
+  ).state;
+  assert.equal(authorized.phase, "patch-publication");
+
+  for (const field of ["grantRef", "authorizationRef"]) {
+    const poisoned = structuredClone(authorized);
+    poisoned.history.at(-1).grantProof[field] = "x".repeat(513);
+    if (field === "grantRef") {
+      poisoned.consumedGrantRefs = ["x".repeat(513)];
+    }
+    poisoned.historySha256 = canonicalSha256(poisoned.history);
+    const rejected = transitionAutomation(
+      policy,
+      fixture.workOrder,
+      poisoned,
+      simpleAutomationEvent("stage-timeout", "source-control-broker"),
+    );
+    assert.equal(rejected.state.outcome, "failed-terminal");
+    assert.equal(rejected.effects.length, 0);
+    assert.ok(rejected.state.reasonCodes.includes("invalid-controller-state"));
+  }
+
+  const reasonPoisoned = structuredClone(authorized);
+  reasonPoisoned.reasonCodes = Array.from({ length: 33 }, (_, index) => `reason-${index}`);
+  const reasonRejected = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    reasonPoisoned,
+    simpleAutomationEvent("stage-timeout", "source-control-broker"),
+  );
+  assert.equal(reasonRejected.state.outcome, "failed-terminal");
+  assert.equal(reasonRejected.effects.length, 0);
+  assert.ok(reasonRejected.state.reasonCodes.includes("invalid-controller-state"));
 });
 
 test("work orders separate workflow authority and controller forbids model self-escalation", () => {
