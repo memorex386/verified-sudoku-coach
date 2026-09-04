@@ -1,41 +1,23 @@
 import crypto from "node:crypto";
 
-const policyKeys = [
-  "schemaVersion",
-  "policyVersion",
-  "policySha256",
-  "mode",
-  "source",
-  "eligibility",
-  "identity",
-  "modelRoute",
-  "decisionOrder",
-  "attemptCaps",
-  "authority",
-  "terminalOutcomes",
-];
-const sourceKeys = ["kind", "ecosystem", "actor", "event", "classification"];
-const eligibilityKeys = [
-  "dependencySection",
-  "directDependency",
-  "existingDependency",
-  "updateType",
-  "allowedFiles",
-  "forbiddenRiskCodes",
-  "statefulChanges",
-  "irreversibleChanges",
-  "ineligibleOutcome",
-];
-const identityKeys = ["headSha", "failureFingerprint", "idempotencyKeyTemplate"];
-const modelRouteKeys = [
-  "selectionAuthority",
-  "cheapProfileClass",
-  "strongProfileClass",
-  "selfSelection",
-  "inputData",
-  "outputMode",
-];
-const attemptCapKeys = [
+export const fullLowercaseSha1 = /^[0-9a-f]{40}$/;
+export const fullLowercaseSha256 = /^[0-9a-f]{64}$/;
+export const stableSemver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
+export const npmPackageName = /^(?:@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*|[a-z0-9][a-z0-9._-]*)$/;
+export const githubRepository = /^[a-z0-9][a-z0-9_.-]{0,99}\/[a-z0-9][a-z0-9_.-]{0,99}$/;
+
+export const automationTerminalOutcomes = Object.freeze([
+  "verified",
+  "completed",
+  "deferred",
+  "stale",
+  "awaiting-approval",
+  "escalated",
+  "failed-terminal",
+  "reverted",
+]);
+
+export const automationAttemptNames = Object.freeze([
   "cheapAssessments",
   "strongEscalations",
   "repairAttempts",
@@ -45,6 +27,53 @@ const attemptCapKeys = [
   "releasePromotions",
   "deployAttempts",
   "rollbackAttempts",
+]);
+
+const policyKeys = [
+  "schemaVersion",
+  "policyVersion",
+  "policySha256",
+  "mode",
+  "source",
+  "eligibility",
+  "identity",
+  "evidenceLimits",
+  "modelRoute",
+  "decisionOrder",
+  "attemptCaps",
+  "authority",
+  "terminalOutcomes",
+];
+const sourceKeys = ["kind", "ecosystem", "actor", "app", "event", "classification"];
+const eligibilityKeys = [
+  "dependencySection",
+  "directDependency",
+  "existingDependency",
+  "updateType",
+  "allowedFiles",
+  "compilerBuildTools",
+  "requiredChecks",
+  "forbiddenRiskCodes",
+  "statefulChanges",
+  "irreversibleChanges",
+  "ineligibleOutcome",
+];
+const identityKeys = ["baseSha", "headSha", "failureFingerprint", "idempotencyKeyTemplate"];
+const evidenceLimitKeys = [
+  "maxFileChanges",
+  "maxManifestBytes",
+  "maxManifestEntriesPerSection",
+  "maxRequiredChecks",
+  "maxScripts",
+  "maxStringLength",
+];
+const modelRouteKeys = [
+  "selectionAuthority",
+  "cheapProfileClass",
+  "strongProfileClass",
+  "selfSelection",
+  "inputData",
+  "outputMode",
 ];
 const authorityKeys = [
   "patchPublication",
@@ -60,31 +89,49 @@ const authorityGrantKeys = [
   "automatic",
   "humanGatedPhase",
 ];
-const dependencyPullRequestKeys = [
-  "source",
-  "sourceActor",
-  "sourceEvent",
-  "ecosystem",
+const workOrderKeys = [
+  "schemaVersion",
+  "workOrderId",
+  "workflow",
   "repository",
   "pullRequestNumber",
-  "dependencyName",
-  "dependencySection",
-  "directDependency",
-  "existingDependency",
-  "currentVersion",
-  "proposedVersion",
-  "changedFiles",
-  "riskCodes",
+  "baseSha",
   "headSha",
   "failureFingerprint",
+  "inputEvidenceSha256",
+  "dependencyIntentSha256",
   "policyVersion",
+  "policySha256",
   "idempotencyKey",
-  "statefulChange",
-  "irreversibleChange",
+  "lineageKey",
+  "capabilities",
+  "authorizedGrantIds",
+  "modelEscalationAuthority",
 ];
 
-const expectedAllowedFiles = ["package.json", "package-lock.json"];
-const expectedForbiddenRiskCodes = [
+const expectedAllowedFiles = Object.freeze(["package.json", "package-lock.json"]);
+const expectedCompilerBuildTools = Object.freeze([
+  "@typescript-eslint/eslint-plugin",
+  "@typescript-eslint/parser",
+  "@typescript-eslint/utils",
+  "esbuild",
+  "eslint",
+  "rollup",
+  "typescript",
+  "typescript-eslint",
+  "vite",
+  "vitest",
+  "webpack",
+]);
+const expectedRequiredChecks = Object.freeze([
+  "install",
+  "verify",
+  "ubuntu-ci",
+  "windows-ci",
+  "dependency-review",
+  "codeql",
+]);
+export const dependencyRiskCodes = Object.freeze([
   "compiler-or-build-tool",
   "license-change",
   "lifecycle-script",
@@ -96,8 +143,8 @@ const expectedForbiddenRiskCodes = [
   "source-change",
   "vulnerability-increase",
   "workflow-change",
-];
-const expectedDecisionOrder = [
+]);
+const expectedDecisionOrder = Object.freeze([
   "deterministic-classification",
   "cheap-model-assessment",
   "strong-model-escalation",
@@ -109,51 +156,28 @@ const expectedDecisionOrder = [
   "deploy-grant",
   "rollback-grant",
   "terminal-outcome",
+]);
+const expectedLimits = Object.freeze({
+  maxFileChanges: 16,
+  maxManifestBytes: 262_144,
+  maxManifestEntriesPerSection: 512,
+  maxRequiredChecks: 32,
+  maxScripts: 128,
+  maxStringLength: 512,
+});
+const acceptedPolicySha256 = "c71116495cef31a2d75323eb66fe95cb8e3e92a582563c43aa9e0b34caaa5024";
+const policyAdmissionKeys = [
+  "policyVersion",
+  "policySha256",
+  "mode",
+  "authorizationRef",
 ];
-const expectedTerminalOutcomes = [
-  "verified",
-  "completed",
-  "deferred",
-  "stale",
-  "awaiting-approval",
-  "escalated",
-  "failed-terminal",
-  "reverted",
-];
-const fullLowercaseSha1 = /^[0-9a-f]{40}$/;
-const fullLowercaseSha256 = /^[0-9a-f]{64}$/;
-const stableSemver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
-const npmPackageName = /^(?:@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*|[a-z0-9][a-z0-9._-]*)$/;
-const githubRepository = /^[a-z0-9][a-z0-9_.-]{0,99}\/[a-z0-9][a-z0-9_.-]{0,99}$/;
-const sha256 = /^[0-9a-f]{64}$/;
-const acceptedPolicySha256 = "ffb998786bd30f2a5eb0faa8e8a648dd4fe4be111939bb03ebec72acf6aca644";
 
-function canonicalValue(value) {
-  if (Array.isArray(value)) {
-    return value.map((item) => canonicalValue(item));
-  }
-  if (isExactObject(value)) {
-    return Object.fromEntries(
-      Object.keys(value).sort().map((key) => [key, canonicalValue(value[key])]),
-    );
-  }
-  return value;
-}
-
-export function automationPolicyDigest(policy) {
-  const withoutDigest = isExactObject(policy)
-    ? Object.fromEntries(Object.entries(policy).filter(([key]) => key !== "policySha256"))
-    : policy;
-  return crypto.createHash("sha256")
-    .update(JSON.stringify(canonicalValue(withoutDigest)))
-    .digest("hex");
-}
-
-function isExactObject(value) {
+export function isExactObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
-function exactObjectErrors(value, label, expectedKeys) {
+export function exactObjectErrors(value, label, expectedKeys) {
   if (!isExactObject(value)) {
     return [`${label} must be an exact object`];
   }
@@ -169,6 +193,31 @@ function exactObjectErrors(value, label, expectedKeys) {
     }
   }
   return errors;
+}
+
+export function canonicalValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => canonicalValue(item));
+  }
+  if (isExactObject(value)) {
+    return Object.fromEntries(
+      Object.keys(value).sort().map((key) => [key, canonicalValue(value[key])]),
+    );
+  }
+  return value;
+}
+
+export function canonicalSha256(value) {
+  return crypto.createHash("sha256")
+    .update(JSON.stringify(canonicalValue(value)))
+    .digest("hex");
+}
+
+export function automationPolicyDigest(policy) {
+  const withoutDigest = isExactObject(policy)
+    ? Object.fromEntries(Object.entries(policy).filter(([key]) => key !== "policySha256"))
+    : policy;
+  return canonicalSha256(withoutDigest);
 }
 
 function exactArray(value, expected) {
@@ -227,7 +276,7 @@ function validateAuthority(authority, mode) {
   return errors;
 }
 
-export function validateAutomationPolicy(policy) {
+export function validateAutomationPolicyShape(policy) {
   const errors = exactObjectErrors(policy, "automation policy", policyKeys);
   if (!isExactObject(policy)) {
     return errors;
@@ -236,39 +285,35 @@ export function validateAutomationPolicy(policy) {
   if (policy.schemaVersion !== 1) {
     errors.push("schemaVersion must be 1");
   }
-  if (policy.policyVersion !== "VSC-AUTOMATION-1") {
-    errors.push("policyVersion must be VSC-AUTOMATION-1");
+  if (typeof policy.policyVersion !== "string" ||
+      !/^VSC-AUTOMATION-(?:[1-9]\d*)$/.test(policy.policyVersion)) {
+    errors.push("policyVersion must be a monotonic VSC-AUTOMATION integer version");
   }
-  if (!sha256.test(policy.policySha256 ?? "")) {
+  if (!fullLowercaseSha256.test(policy.policySha256 ?? "")) {
     errors.push("policySha256 must be a lowercase SHA-256 digest");
   } else {
     if (automationPolicyDigest(policy) !== policy.policySha256) {
       errors.push("policySha256 must match the canonical automation policy");
     }
-    if (policy.policySha256 !== acceptedPolicySha256) {
-      errors.push("policySha256 must match the accepted VSC-AUTOMATION-1 policy");
-    }
   }
-  if (policy.mode !== "shadow") {
-    errors.push("mode must remain shadow for VSC-AUTOMATION-1");
+  if (!["shadow", "assisted", "active"].includes(policy.mode)) {
+    errors.push("mode must be shadow, assisted, or active");
   }
 
   errors.push(...exactObjectErrors(policy.source, "source", sourceKeys));
   if (isExactObject(policy.source)) {
-    if (policy.source.kind !== "dependabot") {
-      errors.push("source.kind must be dependabot");
-    }
-    if (policy.source.ecosystem !== "npm") {
-      errors.push("source.ecosystem must be npm");
-    }
-    if (policy.source.actor !== "dependabot[bot]") {
-      errors.push("source.actor must be dependabot[bot]");
-    }
-    if (policy.source.event !== "pull_request") {
-      errors.push("source.event must be pull_request");
-    }
-    if (policy.source.classification !== "deterministic-diff") {
-      errors.push("source.classification must be deterministic-diff");
+    const expectedSource = {
+      kind: "dependabot",
+      ecosystem: "npm",
+      actor: "dependabot[bot]",
+      app: "dependabot",
+      event: "pull_request",
+      classification: "deterministic-diff",
+    };
+    for (const [key, expected] of Object.entries(expectedSource)) {
+      if (policy.source[key] !== expected) {
+        errors.push(`source.${key} must be ${expected}`);
+      }
     }
   }
 
@@ -289,7 +334,13 @@ export function validateAutomationPolicy(policy) {
     if (!exactArray(policy.eligibility.allowedFiles, expectedAllowedFiles)) {
       errors.push("eligibility.allowedFiles must be exactly package.json and package-lock.json");
     }
-    if (!exactArray(policy.eligibility.forbiddenRiskCodes, expectedForbiddenRiskCodes)) {
+    if (!exactArray(policy.eligibility.compilerBuildTools, expectedCompilerBuildTools)) {
+      errors.push("eligibility.compilerBuildTools must contain the exact reviewed tool set");
+    }
+    if (!exactArray(policy.eligibility.requiredChecks, expectedRequiredChecks)) {
+      errors.push("eligibility.requiredChecks must contain the exact reviewed check set");
+    }
+    if (!exactArray(policy.eligibility.forbiddenRiskCodes, dependencyRiskCodes)) {
       errors.push("eligibility.forbiddenRiskCodes must contain the exact reviewed risk set");
     }
     if (policy.eligibility.statefulChanges !== "ineligible") {
@@ -305,15 +356,27 @@ export function validateAutomationPolicy(policy) {
 
   errors.push(...exactObjectErrors(policy.identity, "identity", identityKeys));
   if (isExactObject(policy.identity)) {
+    if (policy.identity.baseSha !== "required-full-lowercase-sha1") {
+      errors.push("identity.baseSha must require a full lowercase SHA-1");
+    }
     if (policy.identity.headSha !== "required-full-lowercase-sha1") {
       errors.push("identity.headSha must require a full lowercase SHA-1");
     }
     if (policy.identity.failureFingerprint !== "required-lowercase-sha256") {
       errors.push("identity.failureFingerprint must require a lowercase SHA-256");
     }
-    const expectedTemplate = "dependabot:{repository}:pr-{pullRequestNumber}:{headSha}:{failureFingerprint}:{policyVersion}";
+    const expectedTemplate = "dependabot:{repository}:pr-{pullRequestNumber}:{baseSha}:{headSha}:{failureFingerprint}:{policyVersion}";
     if (policy.identity.idempotencyKeyTemplate !== expectedTemplate) {
       errors.push(`identity.idempotencyKeyTemplate must be ${expectedTemplate}`);
+    }
+  }
+
+  errors.push(...exactObjectErrors(policy.evidenceLimits, "evidenceLimits", evidenceLimitKeys));
+  if (isExactObject(policy.evidenceLimits)) {
+    for (const [key, expected] of Object.entries(expectedLimits)) {
+      if (policy.evidenceLimits[key] !== expected) {
+        errors.push(`evidenceLimits.${key} must be ${expected}`);
+      }
     }
   }
 
@@ -338,9 +401,9 @@ export function validateAutomationPolicy(policy) {
     errors.push("decisionOrder must classify deterministically before model stages and terminate");
   }
 
-  errors.push(...exactObjectErrors(policy.attemptCaps, "attemptCaps", attemptCapKeys));
+  errors.push(...exactObjectErrors(policy.attemptCaps, "attemptCaps", automationAttemptNames));
   if (isExactObject(policy.attemptCaps)) {
-    for (const key of attemptCapKeys) {
+    for (const key of automationAttemptNames) {
       const value = policy.attemptCaps[key];
       if (!Number.isSafeInteger(value) || value < 0 || value > 1) {
         errors.push(`attemptCaps.${key} must be an integer from 0 through 1`);
@@ -349,21 +412,50 @@ export function validateAutomationPolicy(policy) {
   }
 
   errors.push(...validateAuthority(policy.authority, policy.mode));
-  if (!exactArray(policy.terminalOutcomes, expectedTerminalOutcomes)) {
-    errors.push(`terminalOutcomes must be exactly ${expectedTerminalOutcomes.join(", ")}`);
+  if (!exactArray(policy.terminalOutcomes, automationTerminalOutcomes)) {
+    errors.push(`terminalOutcomes must be exactly ${automationTerminalOutcomes.join(", ")}`);
   }
   return errors;
 }
 
-export function dependencyPullRequestIdempotencyKey(candidate) {
-  return [
-    "dependabot",
-    candidate.repository,
-    `pr-${candidate.pullRequestNumber}`,
-    candidate.headSha,
-    candidate.failureFingerprint,
-    candidate.policyVersion,
-  ].join(":");
+export function checkedInAutomationPolicyRegistry() {
+  return new Map([[
+    "VSC-AUTOMATION-1",
+    {
+      policyVersion: "VSC-AUTOMATION-1",
+      policySha256: acceptedPolicySha256,
+      mode: "shadow",
+      authorizationRef: "checked-in:ADR-0008:VSC-AUTOMATION-1",
+    },
+  ]]);
+}
+
+export function validateAutomationPolicyAdmission(
+  policy,
+  registry = checkedInAutomationPolicyRegistry(),
+) {
+  const errors = validateAutomationPolicyShape(policy);
+  if (!(registry instanceof Map)) {
+    errors.push("automation policy admission registry must be a trusted Map");
+    return errors;
+  }
+  const admission = registry.get(policy?.policyVersion);
+  errors.push(...exactObjectErrors(admission, "automation policy admission", policyAdmissionKeys));
+  if (!isExactObject(admission)) return errors;
+  for (const key of ["policyVersion", "policySha256", "mode"]) {
+    if (admission[key] !== policy?.[key]) {
+      errors.push(`automation policy admission ${key} must match the candidate policy`);
+    }
+  }
+  if (typeof admission.authorizationRef !== "string" ||
+      admission.authorizationRef.length === 0 || admission.authorizationRef.length > 512) {
+    errors.push("automation policy admission authorizationRef must be bounded approval evidence");
+  }
+  return errors;
+}
+
+export function validateAutomationPolicy(policy) {
+  return validateAutomationPolicyAdmission(policy, checkedInAutomationPolicyRegistry());
 }
 
 export function isSemverPatchUpdate(currentVersion, proposedVersion) {
@@ -376,93 +468,118 @@ export function isSemverPatchUpdate(currentVersion, proposedVersion) {
     BigInt(proposed[3]) > BigInt(current[3]);
 }
 
-export function classifyDependencyPullRequest(policy, candidate) {
-  const reasons = validateAutomationPolicy(policy).map((error) => `policy: ${error}`);
-  reasons.push(...exactObjectErrors(
-    candidate,
-    "dependency pull request",
-    dependencyPullRequestKeys,
-  ));
-  if (!isExactObject(candidate)) {
-    return {
-      eligible: false,
-      nextStage: null,
-      terminalOutcome: "deferred",
-      reasons,
-    };
-  }
+export function dependencyPullRequestIdempotencyKey(candidate) {
+  return [
+    "dependabot",
+    candidate?.repository,
+    `pr-${candidate?.pullRequestNumber}`,
+    candidate?.baseSha,
+    candidate?.headSha,
+    candidate?.failureFingerprint,
+    candidate?.policyVersion,
+  ].join(":");
+}
 
-  if (candidate.source !== policy.source?.kind) {
-    reasons.push("source is not the allowlisted dependency updater");
-  }
-  if (candidate.sourceActor !== policy.source?.actor) {
-    reasons.push("source actor is not the verified Dependabot actor");
-  }
-  if (candidate.sourceEvent !== policy.source?.event) {
-    reasons.push("source event is not an allowlisted pull request event");
-  }
-  if (candidate.ecosystem !== policy.source?.ecosystem) {
-    reasons.push("ecosystem is not npm");
-  }
-  if (typeof candidate.repository !== "string" || !githubRepository.test(candidate.repository)) {
-    reasons.push("repository must be a canonical lowercase owner/name");
-  }
-  if (!Number.isSafeInteger(candidate.pullRequestNumber) || candidate.pullRequestNumber < 1) {
-    reasons.push("pullRequestNumber must be a positive safe integer");
-  }
-  if (typeof candidate.dependencyName !== "string" ||
-      !npmPackageName.test(candidate.dependencyName)) {
-    reasons.push("dependencyName must be a canonical lowercase npm package name");
-  }
-  if (candidate.dependencySection !== policy.eligibility?.dependencySection) {
-    reasons.push("dependency is not a devDependency");
-  }
-  if (candidate.directDependency !== true) {
-    reasons.push("dependency is not a direct dependency");
-  }
-  if (candidate.existingDependency !== true) {
-    reasons.push("dependency is not already declared");
-  }
-  if (!isSemverPatchUpdate(candidate.currentVersion, candidate.proposedVersion)) {
-    reasons.push("dependency update is not a stable semver patch");
-  }
+export function dependencyPullRequestLineageKey(candidate) {
+  return [
+    "dependabot-lineage",
+    candidate?.repository,
+    `pr-${candidate?.pullRequestNumber}`,
+    candidate?.policyVersion,
+  ].join(":");
+}
 
-  if (!exactArray(candidate.changedFiles, expectedAllowedFiles)) {
-    reasons.push("changedFiles must be exactly package.json and package-lock.json");
+export function validateAutomationWorkOrder(policy, workOrder, policyRegistry) {
+  const policyErrors = policyRegistry === undefined
+    ? validateAutomationPolicy(policy)
+    : validateAutomationPolicyAdmission(policy, policyRegistry);
+  const errors = policyErrors.map((error) => `policy: ${error}`);
+  errors.push(...exactObjectErrors(workOrder, "automation work order", workOrderKeys));
+  if (!isExactObject(workOrder) || !isExactObject(policy)) {
+    return errors;
   }
-  if (!Array.isArray(candidate.riskCodes) ||
-      new Set(candidate.riskCodes).size !== candidate.riskCodes.length ||
-      candidate.riskCodes.some((code) => !expectedForbiddenRiskCodes.includes(code))) {
-    reasons.push("riskCodes must be a unique array of known deterministic risk codes");
-  } else if (candidate.riskCodes.length > 0) {
-    reasons.push(`forbidden dependency risk: ${candidate.riskCodes.join(",")}`);
+  if (workOrder.schemaVersion !== 1) {
+    errors.push("automation work order schemaVersion must be 1");
   }
-  if (!fullLowercaseSha1.test(candidate.headSha ?? "")) {
-    reasons.push("headSha must be an exact full lowercase SHA-1");
+  if (typeof workOrder.workOrderId !== "string" ||
+      !/^[a-z0-9][a-z0-9._:-]{0,127}$/.test(workOrder.workOrderId)) {
+    errors.push("automation work order workOrderId must be a bounded canonical ID");
   }
-  if (!fullLowercaseSha256.test(candidate.failureFingerprint ?? "")) {
-    reasons.push("failureFingerprint must be an exact lowercase SHA-256");
+  if (!["dependency-pr", "release"].includes(workOrder.workflow)) {
+    errors.push("automation work order workflow must be dependency-pr or release");
   }
-  if (candidate.policyVersion !== policy.policyVersion) {
-    reasons.push("policyVersion must match the active automation policy");
+  if (typeof workOrder.repository !== "string" || !githubRepository.test(workOrder.repository)) {
+    errors.push("automation work order repository must be a canonical lowercase owner/name");
   }
-  const expectedIdempotencyKey = dependencyPullRequestIdempotencyKey(candidate);
-  if (candidate.idempotencyKey !== expectedIdempotencyKey) {
-    reasons.push(`idempotencyKey must be exactly ${expectedIdempotencyKey}`);
+  if (!Number.isSafeInteger(workOrder.pullRequestNumber) || workOrder.pullRequestNumber < 1) {
+    errors.push("automation work order pullRequestNumber must be a positive safe integer");
   }
-  if (candidate.statefulChange !== false) {
-    reasons.push("stateful changes are ineligible");
+  for (const key of ["baseSha", "headSha"]) {
+    if (!fullLowercaseSha1.test(workOrder[key] ?? "")) {
+      errors.push(`automation work order ${key} must be an exact full lowercase SHA-1`);
+    }
   }
-  if (candidate.irreversibleChange !== false) {
-    reasons.push("irreversible changes are ineligible");
+  if (!fullLowercaseSha256.test(workOrder.failureFingerprint ?? "")) {
+    errors.push("automation work order failureFingerprint must be an exact lowercase SHA-256");
   }
-  const eligible = reasons.length === 0;
-  return {
-    eligible,
-    nextStage: eligible ? "cheap-model-assessment" : null,
-    terminalOutcome: eligible ? null : policy.eligibility?.ineligibleOutcome ?? "deferred",
-    reasons,
-  };
+  if (!fullLowercaseSha256.test(workOrder.inputEvidenceSha256 ?? "")) {
+    errors.push("automation work order inputEvidenceSha256 must be an exact lowercase SHA-256");
+  }
+  if (!fullLowercaseSha256.test(workOrder.dependencyIntentSha256 ?? "")) {
+    errors.push("automation work order dependencyIntentSha256 must be an exact lowercase SHA-256");
+  }
+  if (workOrder.policyVersion !== policy.policyVersion ||
+      workOrder.policySha256 !== policy.policySha256) {
+    errors.push("automation work order policy identity must match the active policy");
+  }
+  if (typeof workOrder.idempotencyKey !== "string" || workOrder.idempotencyKey.length > 512) {
+    errors.push("automation work order idempotencyKey must be a bounded string");
+  } else if (workOrder.workflow === "dependency-pr" &&
+      workOrder.idempotencyKey !== dependencyPullRequestIdempotencyKey(workOrder)) {
+    errors.push("automation work order idempotencyKey must bind repository, PR, base, head, fingerprint, and policy");
+  }
+  const expectedLineage = dependencyPullRequestLineageKey(workOrder);
+  if (workOrder.workflow === "dependency-pr" && workOrder.lineageKey !== expectedLineage) {
+    errors.push(`automation work order lineageKey must be exactly ${expectedLineage}`);
+  }
+  if (typeof workOrder.lineageKey !== "string" || workOrder.lineageKey.length > 512) {
+    errors.push("automation work order lineageKey must be a bounded string");
+  }
+  const allowedCapabilities = [
+    "model-assessment",
+    "repair-proposal",
+    "repo-read",
+    "sanitized-evidence-read",
+  ];
+  if (!Array.isArray(workOrder.capabilities) ||
+      workOrder.capabilities.some((item) => !allowedCapabilities.includes(item)) ||
+      new Set(workOrder.capabilities).size !== workOrder.capabilities.length ||
+      JSON.stringify(workOrder.capabilities) !== JSON.stringify([...workOrder.capabilities].sort())) {
+    errors.push("automation work order capabilities must be a sorted unique subset of read/proposal capabilities");
+  }
+  const dependencyGrantIds = [
+    policy.authority?.patchPublication?.grantId,
+    policy.authority?.pullRequestMerge?.grantId,
+  ];
+  const releaseGrantIds = [
+    policy.authority?.releasePromotion?.grantId,
+    policy.authority?.productionDeploy?.grantId,
+    policy.authority?.productionRollback?.grantId,
+  ];
+  const allowedGrantIds = workOrder.workflow === "dependency-pr"
+    ? dependencyGrantIds
+    : releaseGrantIds;
+  if (!Array.isArray(workOrder.authorizedGrantIds) ||
+      workOrder.authorizedGrantIds.some((item) => !allowedGrantIds.includes(item)) ||
+      new Set(workOrder.authorizedGrantIds).size !== workOrder.authorizedGrantIds.length ||
+      JSON.stringify(workOrder.authorizedGrantIds) !==
+        JSON.stringify([...workOrder.authorizedGrantIds].sort())) {
+    errors.push("automation work order authorizedGrantIds must be a sorted unique workflow-specific subset");
+  }
+  if (workOrder.modelEscalationAuthority !== "deterministic-controller") {
+    errors.push("automation work order modelEscalationAuthority must be deterministic-controller");
+  }
+  return errors;
 }
 
 export function isTerminalAutomationOutcome(policy, outcome) {

@@ -129,12 +129,33 @@ function runtimeRegistrationFixture(profile, role = "observer") {
   };
 }
 import {
-  classifyDependencyPullRequest,
+  automationPolicyDigest,
+  canonicalSha256,
+  checkedInAutomationPolicyRegistry,
   dependencyPullRequestIdempotencyKey,
+  dependencyPullRequestLineageKey,
   isSemverPatchUpdate,
   isTerminalAutomationOutcome,
   validateAutomationPolicy,
+  validateAutomationPolicyAdmission,
+  validateAutomationWorkOrder,
 } from "./lib/automation-policy.mjs";
+import {
+  classifyDependencyPullRequest,
+  comparePullRequestCas,
+  createManifestObservation,
+  dependencyFailureFingerprint,
+} from "./lib/dependency-pr-normalizer.mjs";
+import {
+  createAutomationState as createControllerAutomationState,
+  createAutomationStateFromLedger as createControllerAutomationStateFromLedger,
+  readLineageAttempts,
+  readLineageSnapshot,
+  recordAutomationResult,
+  recordLineageAttempts,
+  transitionAutomationWithLedger as transitionControllerAutomationWithLedger,
+} from "./lib/automation-controller.mjs";
+import { runAutomationFixture } from "./run-automation-fixture.mjs";
 import { verifyAutomationPolicyAtRoot } from "./verify-automation-policy.mjs";
 
 const verifyReviewShapeOffline = (review, revisions) =>
@@ -323,32 +344,424 @@ test("doctor locks the complete foundation verification aggregator", () => {
   ));
 });
 
-function validDependencyPullRequest() {
-  const headSha = "a".repeat(40);
-  const candidate = {
-    source: "dependabot",
-    sourceActor: "dependabot[bot]",
-    sourceEvent: "pull_request",
-    ecosystem: "npm",
+function loadAutomationFixture() {
+  return JSON.parse(readText(
+    "scripts/fixtures/automation/dependabot-typescript-7-pr-2.json",
+  ));
+}
+
+function policyRegistryFor(policy) {
+  if (policy?.policyVersion === "VSC-AUTOMATION-1") {
+    return checkedInAutomationPolicyRegistry();
+  }
+  return new Map([[
+    policy?.policyVersion,
+    {
+      policyVersion: policy?.policyVersion,
+      policySha256: policy?.policySha256,
+      mode: policy?.mode,
+      authorizationRef: `test-only:human-approved:${policy?.policyVersion}`,
+    },
+  ]]);
+}
+
+function createAutomationState(policy, workOrder) {
+  return createControllerAutomationState(policy, workOrder, policyRegistryFor(policy));
+}
+
+function createAutomationStateFromLedger(policy, workOrder, lineageStore) {
+  return createControllerAutomationStateFromLedger(
+    policy,
+    workOrder,
+    lineageStore,
+    policyRegistryFor(policy),
+  );
+}
+
+function transitionAutomationWithLedger(policy, workOrder, state, event, lineageStore) {
+  return transitionControllerAutomationWithLedger(
+    policy,
+    workOrder,
+    state,
+    event,
+    lineageStore,
+    policyRegistryFor(policy),
+  );
+}
+
+function cleanAutomationFixture() {
+  const policy = JSON.parse(readText("config/automation-policy.json"));
+  const fixture = loadAutomationFixture();
+  const baseSha = "a".repeat(40);
+  const headSha = "b".repeat(40);
+  const beforeManifest = {
+    name: "verified-sudoku-coach",
+    version: "0.0.0",
+    private: true,
+    license: "Apache-2.0",
+    scripts: { verify: "npm run doctor && npm test" },
+    devDependencies: { globals: "17.12.0" },
+  };
+  const afterManifest = structuredClone(beforeManifest);
+  afterManifest.devDependencies.globals = "17.12.1";
+  const manifestBefore = createManifestObservation(JSON.stringify(beforeManifest));
+  const manifestAfter = createManifestObservation(JSON.stringify(afterManifest));
+  const checks = policy.eligibility.requiredChecks.map((name) => ({
+    name,
+    outcome: "success",
+    findingCodes: [],
+  }));
+  const failureFingerprint = dependencyFailureFingerprint([], checks);
+  fixture.trustedEvent = {
+    ...fixture.trustedEvent,
+    eventId: "fixture-clean-pr-42",
     repository: "memorex386/verified-sudoku-coach",
     pullRequestNumber: 42,
-    dependencyName: "globals",
-    dependencySection: "devDependencies",
-    directDependency: true,
-    existingDependency: true,
-    currentVersion: "17.12.0",
-    proposedVersion: "17.12.1",
-    changedFiles: ["package.json", "package-lock.json"],
-    riskCodes: [],
+    eventBaseSha: baseSha,
+    eventHeadSha: headSha,
+    currentBaseSha: baseSha,
+    currentHeadSha: headSha,
+  };
+  fixture.evidence = {
+    ...fixture.evidence,
+    repository: fixture.trustedEvent.repository,
+    pullRequestNumber: fixture.trustedEvent.pullRequestNumber,
+    baseSha,
     headSha,
-    failureFingerprint: "b".repeat(64),
-    policyVersion: "VSC-AUTOMATION-1",
-    idempotencyKey: "",
+    dependencyName: "globals",
+    manifestBefore,
+    manifestAfter,
+    diff: {
+      baseSha,
+      headSha,
+      complete: true,
+      files: [
+        {
+          path: "package.json",
+          status: "modified",
+          beforeSha256: manifestBefore.sha256,
+          afterSha256: manifestAfter.sha256,
+        },
+        {
+          path: "package-lock.json",
+          status: "modified",
+          beforeSha256: "c".repeat(64),
+          afterSha256: "d".repeat(64),
+        },
+      ],
+    },
+    checks: { headSha, complete: true, items: checks },
+    failureFingerprint,
     statefulChange: false,
     irreversibleChange: false,
   };
-  candidate.idempotencyKey = dependencyPullRequestIdempotencyKey(candidate);
-  return candidate;
+  const identity = {
+    repository: fixture.trustedEvent.repository,
+    pullRequestNumber: fixture.trustedEvent.pullRequestNumber,
+    baseSha,
+    headSha,
+    failureFingerprint,
+    policyVersion: policy.policyVersion,
+  };
+  fixture.workOrder = {
+    schemaVersion: 1,
+    workOrderId: "fixture-clean-pr-42-v1",
+    workflow: "dependency-pr",
+    repository: identity.repository,
+    pullRequestNumber: identity.pullRequestNumber,
+    baseSha,
+    headSha,
+    failureFingerprint,
+    inputEvidenceSha256: "0".repeat(64),
+    dependencyIntentSha256: "0".repeat(64),
+    policyVersion: policy.policyVersion,
+    policySha256: policy.policySha256,
+    idempotencyKey: dependencyPullRequestIdempotencyKey(identity),
+    lineageKey: dependencyPullRequestLineageKey(identity),
+    capabilities: ["model-assessment", "repair-proposal", "repo-read", "sanitized-evidence-read"],
+    authorizedGrantIds: [],
+    modelEscalationAuthority: "deterministic-controller",
+  };
+  const normalized = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+  );
+  fixture.workOrder.inputEvidenceSha256 = normalized.candidate.inputEvidenceSha256;
+  fixture.workOrder.dependencyIntentSha256 = normalized.candidate.dependencyIntentSha256;
+  return { policy, fixture };
+}
+
+function assistedAutomationFixture() {
+  const { policy: shadowPolicy, fixture } = cleanAutomationFixture();
+  const policy = structuredClone(shadowPolicy);
+  policy.policyVersion = "VSC-AUTOMATION-2";
+  policy.mode = "assisted";
+  policy.policySha256 = automationPolicyDigest(policy);
+  fixture.trustedEvent.policyVersion = policy.policyVersion;
+  fixture.trustedEvent.policySha256 = policy.policySha256;
+  fixture.evidence.policyVersion = policy.policyVersion;
+  fixture.evidence.policySha256 = policy.policySha256;
+  const normalized = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+    policyRegistryFor(policy),
+  );
+  assert.equal(normalized.eligible, true);
+  fixture.workOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-assisted-pr-42-v2",
+    policyVersion: policy.policyVersion,
+    policySha256: policy.policySha256,
+    failureFingerprint: normalized.candidate.failureFingerprint,
+    inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+    dependencyIntentSha256: normalized.candidate.dependencyIntentSha256,
+    idempotencyKey: normalized.candidate.idempotencyKey,
+    lineageKey: normalized.candidate.lineageKey,
+  };
+  return { policy, fixture };
+}
+
+function simpleAutomationEvent(type, source) {
+  return { schemaVersion: 1, type, source };
+}
+
+function classificationAutomationEvent(fixture) {
+  return {
+    schemaVersion: 1,
+    type: "classification-evaluated",
+    source: "deterministic-controller",
+    trustedEvent: fixture.trustedEvent,
+    evidence: fixture.evidence,
+  };
+}
+
+function renewalAutomationEvent(fixture) {
+  return {
+    schemaVersion: 1,
+    type: "work-order-renewed",
+    source: "deterministic-controller",
+    trustedEvent: fixture.trustedEvent,
+    evidence: fixture.evidence,
+  };
+}
+
+function rebindAutomationFixtureHead(policy, sourceFixture, headSha, suffix = "repaired") {
+  const fixture = structuredClone(sourceFixture);
+  fixture.trustedEvent = {
+    ...fixture.trustedEvent,
+    eventId: `${fixture.trustedEvent.eventId}-${suffix}`,
+    authenticationReceiptSha256: "5".repeat(64),
+    payloadSha256: "6".repeat(64),
+    eventHeadSha: headSha,
+    currentHeadSha: headSha,
+  };
+  fixture.evidence = {
+    ...fixture.evidence,
+    headSha,
+    diff: { ...fixture.evidence.diff, headSha },
+    checks: { ...fixture.evidence.checks, headSha },
+  };
+  const normalized = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+    policyRegistryFor(policy),
+  );
+  assert.equal(normalized.eligible, true);
+  fixture.workOrder = {
+    ...fixture.workOrder,
+    workOrderId: `${fixture.workOrder.workOrderId}-${suffix}`,
+    headSha,
+    failureFingerprint: normalized.candidate.failureFingerprint,
+    inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+    dependencyIntentSha256: normalized.candidate.dependencyIntentSha256,
+    idempotencyKey: normalized.candidate.idempotencyKey,
+    lineageKey: normalized.candidate.lineageKey,
+  };
+  return fixture;
+}
+
+function substituteAutomationDependency(
+  policy,
+  sourceFixture,
+  dependencyName,
+  currentVersion,
+  proposedVersion,
+) {
+  const fixture = structuredClone(sourceFixture);
+  const before = JSON.parse(fixture.evidence.manifestBefore.content);
+  before.devDependencies = { [dependencyName]: currentVersion };
+  const after = structuredClone(before);
+  after.devDependencies[dependencyName] = proposedVersion;
+  fixture.evidence.manifestBefore = createManifestObservation(JSON.stringify(before));
+  fixture.evidence.manifestAfter = createManifestObservation(JSON.stringify(after));
+  fixture.evidence.dependencyName = dependencyName;
+  fixture.evidence.diff.files = fixture.evidence.diff.files.map((file) =>
+    file.path === "package.json"
+      ? {
+        ...file,
+        beforeSha256: fixture.evidence.manifestBefore.sha256,
+        afterSha256: fixture.evidence.manifestAfter.sha256,
+      }
+      : file);
+  const normalized = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+    policyRegistryFor(policy),
+  );
+  assert.equal(normalized.eligible, true);
+  fixture.workOrder = {
+    ...fixture.workOrder,
+    workOrderId: `${fixture.workOrder.workOrderId}-substitution`,
+    failureFingerprint: normalized.candidate.failureFingerprint,
+    inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+    dependencyIntentSha256: normalized.candidate.dependencyIntentSha256,
+    idempotencyKey: normalized.candidate.idempotencyKey,
+  };
+  return fixture;
+}
+
+function startCleanDependencyAutomation(
+  policy,
+  fixture,
+  workOrder = fixture.workOrder,
+  initialState = createAutomationState(policy, workOrder),
+) {
+  const started = transitionAutomation(
+    policy,
+    workOrder,
+    initialState,
+    classificationAutomationEvent(fixture),
+  );
+  assert.equal(started.state.phase, "cheap-model-assessment");
+  return started.state;
+}
+
+function reachPatchAuthorization(
+  policy,
+  fixture,
+  workOrder = fixture.workOrder,
+  initialState = createAutomationState(policy, workOrder),
+) {
+  let state = startCleanDependencyAutomation(policy, fixture, workOrder, initialState);
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    simpleAutomationEvent("repair-produced", "repair-worker"),
+  ).state;
+  assert.equal(state.phase, "patch-authorization");
+  return state;
+}
+
+function grantFor(policy, workOrder, authorityName, grantRef) {
+  const authority = policy.authority[authorityName];
+  return {
+    schemaVersion: 1,
+    grantRef,
+    grantId: authority.grantId,
+    credentialClass: authority.credentialClass,
+    authorizationRef: `human:${grantRef}`,
+    issuerClass: "human-authorization",
+    repository: workOrder.repository,
+    pullRequestNumber: workOrder.pullRequestNumber,
+    baseSha: workOrder.baseSha,
+    headSha: workOrder.headSha,
+    policyVersion: workOrder.policyVersion,
+    policySha256: workOrder.policySha256,
+    idempotencyKey: workOrder.idempotencyKey,
+    inputEvidenceSha256: workOrder.inputEvidenceSha256,
+    dependencyIntentSha256: workOrder.dependencyIntentSha256,
+  };
+}
+
+function authorizationEvent(policy, workOrder, authorityName, grantRef) {
+  return {
+    schemaVersion: 1,
+    type: "authorization-granted",
+    source: "authorization-broker",
+    authorityName,
+    currentBaseSha: workOrder.baseSha,
+    currentHeadSha: workOrder.headSha,
+    grant: grantFor(policy, workOrder, authorityName, grantRef),
+  };
+}
+
+function transitionAutomation(policy, workOrder, state, event) {
+  const lineageStore = recordLineageAttempts(
+    new Map(),
+    state?.lineageKey,
+    state?.attempts,
+  );
+  return transitionAutomationWithLedger(
+    policy,
+    workOrder,
+    state,
+    event,
+    lineageStore,
+  );
+}
+
+function lineageStateAtCap(policy, workOrder, attemptName) {
+  const attempts = Object.fromEntries(
+    Object.keys(policy.attemptCaps).map((name) => [
+      name,
+      name === attemptName ? policy.attemptCaps[name] : 0,
+    ]),
+  );
+  const lineageStore = recordLineageAttempts(new Map(), workOrder.lineageKey, attempts);
+  return {
+    lineageStore,
+    state: createAutomationStateFromLedger(policy, workOrder, lineageStore),
+  };
+}
+
+function reachCiValidationAtHead(policy, fixture, initialState, publishedHeadSha) {
+  const originalWorkOrder = fixture.workOrder;
+  let state = reachPatchAuthorization(policy, fixture, originalWorkOrder, initialState);
+  state = transitionAutomation(
+    policy,
+    originalWorkOrder,
+    state,
+    authorizationEvent(policy, originalWorkOrder, "patchPublication", "grant-patch-cap-path"),
+  ).state;
+  const published = transitionAutomation(policy, originalWorkOrder, state, {
+    schemaVersion: 1,
+    type: "patch-publication-succeeded",
+    source: "source-control-broker",
+    expectedBaseSha: originalWorkOrder.baseSha,
+    expectedHeadSha: originalWorkOrder.headSha,
+    currentBaseSha: originalWorkOrder.baseSha,
+    currentHeadSha: originalWorkOrder.headSha,
+    publishedHeadSha,
+  });
+  const renewedFixture = rebindAutomationFixtureHead(
+    policy,
+    fixture,
+    publishedHeadSha,
+    "cap-path",
+  );
+  const renewed = transitionAutomation(
+    policy,
+    renewedFixture.workOrder,
+    published.state,
+    renewalAutomationEvent(renewedFixture),
+  );
+  assert.equal(renewed.state.phase, "ci-validation");
+  return {
+    state: renewed.state,
+    fixture: renewedFixture,
+    workOrder: renewedFixture.workOrder,
+  };
 }
 
 test("automation policy is exact, shadow-only, and independently authorized", () => {
@@ -404,6 +817,24 @@ test("automation policy is exact, shadow-only, and independently authorized", ()
   assert.ok(conflatedErrors.includes(
     "authority.productionDeploy.credentialClass must be unique",
   ));
+  assert.ok(validateAutomationPolicy(null).includes(
+    "automation policy must be an exact object",
+  ));
+  const assisted = assistedAutomationFixture();
+  assert.ok(validateAutomationPolicy(assisted.policy).some(
+    (error) => error.includes("automation policy admission"),
+  ));
+  assert.deepEqual(
+    validateAutomationPolicyAdmission(
+      assisted.policy,
+      policyRegistryFor(assisted.policy),
+    ),
+    [],
+  );
+  assert.ok(validateAutomationPolicyAdmission(assisted.policy, assisted.policy).includes(
+    "automation policy admission registry must be a trusted Map",
+  ));
+  assert.equal(assisted.policy.mode, "assisted");
 });
 
 test("automation policy has bounded terminal outcomes and deterministic ordering", () => {
@@ -435,82 +866,1141 @@ test("automation policy has bounded terminal outcomes and deterministic ordering
   ));
 });
 
-test("dependency pull-request eligibility is a deterministic narrow allowlist", () => {
-  const policy = JSON.parse(readText("config/automation-policy.json"));
-  const candidate = validDependencyPullRequest();
-  assert.deepEqual(classifyDependencyPullRequest(policy, candidate), {
-    eligible: true,
-    nextStage: "cheap-model-assessment",
-    terminalOutcome: null,
-    reasons: [],
-  });
+test("dependency evidence normalizer derives a clean patch without caller-authored trust", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const result = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+  );
+  assert.equal(result.eligible, true);
+  assert.equal(result.nextStage, "cheap-model-assessment");
+  assert.equal(result.terminalOutcome, null);
+  assert.deepEqual(result.reasons, []);
+  assert.equal(result.candidate.dependencyName, "globals");
+  assert.equal(result.candidate.dependencySection, "devDependencies");
+  assert.equal(result.candidate.currentVersion, "17.12.0");
+  assert.equal(result.candidate.proposedVersion, "17.12.1");
+  assert.deepEqual(result.candidate.riskCodes, []);
+  assert.equal(
+    result.candidate.idempotencyKey,
+    dependencyPullRequestIdempotencyKey(result.candidate),
+  );
   assert.equal(isSemverPatchUpdate("1.2.3", "1.2.4"), true);
   assert.equal(isSemverPatchUpdate("1.2.3", "1.3.0"), false);
   assert.equal(isSemverPatchUpdate("1.2.3", "2.0.0"), false);
   assert.equal(isSemverPatchUpdate("1.2.3", "1.2.4-beta.1"), false);
+});
 
-  for (const [field, value, reason] of [
-    ["source", "renovate", "source is not the allowlisted dependency updater"],
-    ["sourceActor", "renovate[bot]", "source actor is not the verified Dependabot actor"],
-    ["sourceEvent", "issue_comment", "source event is not an allowlisted pull request event"],
-    ["ecosystem", "github-actions", "ecosystem is not npm"],
-    ["repository", "Not Canonical", "repository must be a canonical lowercase owner/name"],
-    ["pullRequestNumber", 0, "pullRequestNumber must be a positive safe integer"],
-    ["dependencySection", "dependencies", "dependency is not a devDependency"],
-    ["directDependency", false, "dependency is not a direct dependency"],
-    ["existingDependency", false, "dependency is not already declared"],
-    ["proposedVersion", "5.10.0", "dependency update is not a stable semver patch"],
-    ["changedFiles", ["package.json", "scripts/install.mjs"],
-      "changedFiles must be exactly package.json and package-lock.json"],
-    ["headSha", "main", "headSha must be an exact full lowercase SHA-1"],
-    ["failureFingerprint", "unknown", "failureFingerprint must be an exact lowercase SHA-256"],
-    ["policyVersion", "VSC-AUTOMATION-0", "policyVersion must match the active automation policy"],
-    ["statefulChange", true, "stateful changes are ineligible"],
-    ["irreversibleChange", true, "irreversible changes are ineligible"],
+test("authenticated event identity fails closed for hostile actors and all SHA drift", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const hostile = structuredClone(fixture.trustedEvent);
+  hostile.authenticatedActor = "attacker[bot]";
+  const hostileResult = classifyDependencyPullRequest(policy, hostile, fixture.evidence);
+  assert.equal(hostileResult.terminalOutcome, "deferred");
+  assert.equal(hostileResult.nextStage, null);
+  assert.ok(hostileResult.reasons.includes("authenticated source actor is not allowlisted"));
+
+  for (const field of ["eventBaseSha", "eventHeadSha"]) {
+    const staleEvent = structuredClone(fixture.trustedEvent);
+    staleEvent[field] = "e".repeat(40);
+    const stale = classifyDependencyPullRequest(policy, staleEvent, fixture.evidence);
+    assert.equal(stale.terminalOutcome, "stale");
+    assert.equal(stale.nextStage, null);
+  }
+  for (const field of ["baseSha", "headSha"]) {
+    const wrongEvidence = structuredClone(fixture.evidence);
+    wrongEvidence[field] = "f".repeat(40);
+    const stale = classifyDependencyPullRequest(
+      policy,
+      fixture.trustedEvent,
+      wrongEvidence,
+    );
+    assert.equal(stale.terminalOutcome, "stale");
+  }
+  const wrongCheckSha = structuredClone(fixture.evidence);
+  wrongCheckSha.checks.headSha = "e".repeat(40);
+  assert.equal(
+    classifyDependencyPullRequest(policy, fixture.trustedEvent, wrongCheckSha)
+      .terminalOutcome,
+    "stale",
+  );
+  const cas = comparePullRequestCas(
+    {
+      repository: fixture.trustedEvent.repository,
+      pullRequestNumber: 42,
+      baseSha: "a".repeat(40),
+      headSha: "b".repeat(40),
+    },
+    {
+      repository: fixture.trustedEvent.repository,
+      pullRequestNumber: 42,
+      baseSha: "a".repeat(40),
+      headSha: "c".repeat(40),
+    },
+  );
+  assert.equal(cas.matches, false);
+  assert.equal(cas.terminalOutcome, "stale");
+  const malformedEqual = comparePullRequestCas(
+    { repository: "bad", pullRequestNumber: 0, baseSha: "main", headSha: "head" },
+    { repository: "bad", pullRequestNumber: 0, baseSha: "main", headSha: "head" },
+  );
+  assert.equal(malformedEqual.matches, false);
+  assert.equal(malformedEqual.terminalOutcome, "stale");
+});
+
+test("malformed policy, event, evidence, and self-asserted trust never throw", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  for (const [changedPolicy, event, evidence] of [
+    [null, fixture.trustedEvent, fixture.evidence],
+    [policy, null, fixture.evidence],
+    [policy, fixture.trustedEvent, null],
   ]) {
-    const changed = structuredClone(candidate);
-    changed[field] = value;
-    assert.ok(classifyDependencyPullRequest(policy, changed).reasons.includes(reason));
+    assert.doesNotThrow(() => classifyDependencyPullRequest(changedPolicy, event, evidence));
+    assert.equal(
+      classifyDependencyPullRequest(changedPolicy, event, evidence).terminalOutcome,
+      "failed-terminal",
+    );
+  }
+  const selfAsserted = structuredClone(fixture.evidence);
+  selfAsserted.authenticatedActor = "dependabot[bot]";
+  const result = classifyDependencyPullRequest(policy, fixture.trustedEvent, selfAsserted);
+  assert.equal(result.terminalOutcome, "failed-terminal");
+  assert.equal(result.candidate, null);
+
+  const malformedState = {
+    ...createAutomationState(policy, fixture.workOrder),
+    reasonCodes: null,
+  };
+  assert.doesNotThrow(() => transitionAutomation(
+    policy,
+    fixture.workOrder,
+    malformedState,
+    classificationAutomationEvent(fixture),
+  ));
+  assert.equal(
+    transitionAutomation(
+      policy,
+      fixture.workOrder,
+      malformedState,
+      classificationAutomationEvent(fixture),
+    ).state.outcome,
+    "failed-terminal",
+  );
+  const unclonableState = createAutomationState(policy, fixture.workOrder);
+  unclonableState.identity.repository = () => "hostile";
+  assert.doesNotThrow(() => transitionAutomation(
+    policy,
+    fixture.workOrder,
+    unclonableState,
+    classificationAutomationEvent(fixture),
+  ));
+  const unclonableRejected = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    unclonableState,
+    classificationAutomationEvent(fixture),
+  );
+  assert.equal(unclonableRejected.state.outcome, "failed-terminal");
+  assert.equal(unclonableRejected.effects.length, 0);
+
+  const cyclicState = createAutomationState(policy, fixture.workOrder);
+  cyclicState.history = [cyclicState];
+  assert.doesNotThrow(() => transitionAutomation(
+    policy,
+    fixture.workOrder,
+    cyclicState,
+    classificationAutomationEvent(fixture),
+  ));
+  assert.equal(
+    transitionAutomation(
+      policy,
+      fixture.workOrder,
+      cyclicState,
+      classificationAutomationEvent(fixture),
+    ).state.outcome,
+    "failed-terminal",
+  );
+
+  const unclonableDedupe = recordAutomationResult(new Map(), {
+    idempotencyKey: fixture.workOrder.idempotencyKey,
+    inputEvidenceSha256: fixture.workOrder.inputEvidenceSha256,
+    result: { value: () => "hostile" },
+  });
+  assert.equal(unclonableDedupe.conflict, true);
+  assert.equal(unclonableDedupe.result.terminalOutcome, "failed-terminal");
+});
+
+test("TypeScript major update risk is derived even when the caller cannot supply risk codes", () => {
+  const policy = JSON.parse(readText("config/automation-policy.json"));
+  const fixture = loadAutomationFixture();
+  const result = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+  );
+  assert.equal(result.eligible, false);
+  assert.equal(result.nextStage, null);
+  assert.equal(result.terminalOutcome, "deferred");
+  assert.deepEqual(result.candidate.riskCodes, [
+    "compiler-or-build-tool",
+    "peer-conflict",
+  ]);
+  assert.equal(result.candidate.currentVersion, "5.9.2");
+  assert.equal(result.candidate.proposedVersion, "7.0.2");
+
+  const forged = structuredClone(fixture.evidence);
+  forged.riskCodes = [];
+  assert.equal(
+    classifyDependencyPullRequest(policy, fixture.trustedEvent, forged).terminalOutcome,
+    "failed-terminal",
+  );
+  const forgedDependency = structuredClone(fixture.evidence);
+  forgedDependency.dependencyName = "globals";
+  const forgedDependencyResult = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    forgedDependency,
+  );
+  assert.equal(forgedDependencyResult.terminalOutcome, "deferred");
+  assert.equal(forgedDependencyResult.candidate.dependencyName, "typescript");
+  assert.ok(forgedDependencyResult.candidate.riskCodes.includes(
+    "compiler-or-build-tool",
+  ));
+});
+
+test("manifest, path, check, and telemetry risks are deterministically derived", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const changed = structuredClone(fixture.evidence);
+  const after = JSON.parse(changed.manifestAfter.content);
+  after.license = "MIT";
+  after.scripts.postinstall = "node install.js";
+  changed.manifestAfter = createManifestObservation(JSON.stringify(after));
+  changed.diff.files.find((file) => file.path === "package.json").afterSha256 =
+    changed.manifestAfter.sha256;
+  changed.diff.files.push(
+    {
+      path: ".github/workflows/release.yml",
+      status: "modified",
+      beforeSha256: "1".repeat(64),
+      afterSha256: "2".repeat(64),
+    },
+    {
+      path: "native/binding.node",
+      status: "added",
+      beforeSha256: "3".repeat(64),
+      afterSha256: "4".repeat(64),
+    },
+    {
+      path: "security/auth.ts",
+      status: "modified",
+      beforeSha256: "5".repeat(64),
+      afterSha256: "6".repeat(64),
+    },
+  );
+  changed.checks.items = changed.checks.items.filter((check) => check.name !== "codeql");
+  const dependencyReview = changed.checks.items.find(
+    (check) => check.name === "dependency-review",
+  );
+  dependencyReview.outcome = "failure";
+  dependencyReview.findingCodes = ["vulnerability-increase"];
+  const first = classifyDependencyPullRequest(policy, fixture.trustedEvent, changed);
+  changed.failureFingerprint = first.candidate.failureFingerprint;
+  const result = classifyDependencyPullRequest(policy, fixture.trustedEvent, changed);
+  for (const risk of [
+    "license-change",
+    "lifecycle-script",
+    "missing-telemetry",
+    "native-dependency",
+    "security-sensitive-surface",
+    "source-change",
+    "vulnerability-increase",
+    "workflow-change",
+  ]) {
+    assert.ok(result.candidate.riskCodes.includes(risk), `missing derived ${risk}`);
+  }
+  assert.equal(result.terminalOutcome, "deferred");
+});
+
+test("fingerprints are canonical, order-invariant, caller-verified, and replay-safe", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const checks = fixture.evidence.checks.items;
+  const forward = dependencyFailureFingerprint(
+    ["peer-conflict", "compiler-or-build-tool"],
+    checks,
+  );
+  const reversed = dependencyFailureFingerprint(
+    ["compiler-or-build-tool", "peer-conflict"],
+    [...checks].reverse(),
+  );
+  assert.equal(forward, reversed);
+
+  const reordered = structuredClone(fixture.evidence);
+  reordered.checks.items.reverse();
+  reordered.diff.files.reverse();
+  const normalized = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    reordered,
+  );
+  assert.equal(normalized.eligible, true);
+  assert.equal(normalized.candidate.failureFingerprint, fixture.evidence.failureFingerprint);
+  const original = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+  );
+  assert.equal(
+    normalized.candidate.inputEvidenceSha256,
+    original.candidate.inputEvidenceSha256,
+  );
+
+  const tampered = structuredClone(fixture.evidence);
+  tampered.failureFingerprint = "f".repeat(64);
+  const rejected = classifyDependencyPullRequest(policy, fixture.trustedEvent, tampered);
+  assert.equal(rejected.terminalOutcome, "deferred");
+  assert.ok(rejected.reasons.includes(
+    "failureFingerprint does not match deterministic evidence",
+  ));
+
+  const first = recordAutomationResult(new Map(), {
+    idempotencyKey: normalized.candidate.idempotencyKey,
+    inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+    result: { terminalOutcome: "verified" },
+  });
+  const replay = recordAutomationResult(first.store, {
+    idempotencyKey: normalized.candidate.idempotencyKey,
+    inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+    result: { terminalOutcome: "must-not-overwrite" },
+  });
+  assert.equal(replay.replayed, true);
+  assert.deepEqual(replay.result, { terminalOutcome: "verified" });
+  const conflict = recordAutomationResult(first.store, {
+    idempotencyKey: normalized.candidate.idempotencyKey,
+    inputEvidenceSha256: "0".repeat(64),
+    result: { terminalOutcome: "verified" },
+  });
+  assert.equal(conflict.conflict, true);
+  assert.equal(conflict.result.terminalOutcome, "failed-terminal");
+});
+
+test("work orders separate workflow authority and controller forbids model self-escalation", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  assert.deepEqual(validateAutomationWorkOrder(policy, fixture.workOrder), []);
+  const overprivileged = structuredClone(fixture.workOrder);
+  overprivileged.authorizedGrantIds = ["production-deploy"];
+  assert.ok(validateAutomationWorkOrder(policy, overprivileged).includes(
+    "automation work order authorizedGrantIds must be a sorted unique workflow-specific subset",
+  ));
+  assert.equal(createAutomationState(policy, overprivileged).outcome, "failed-terminal");
+
+  const state = startCleanDependencyAutomation(policy, fixture);
+  const selfEscalation = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    state,
+    simpleAutomationEvent("model-escalation-requested", "model-adapter"),
+  );
+  assert.equal(selfEscalation.state.outcome, "failed-terminal");
+  assert.equal(selfEscalation.effects.length, 0);
+  assert.ok(selfEscalation.state.reasonCodes.includes("model-self-escalation-forbidden"));
+  const spoofedController = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    state,
+    simpleAutomationEvent("controller-escalation-approved", "deterministic-controller"),
+  );
+  assert.equal(spoofedController.state.outcome, "failed-terminal");
+  assert.equal(spoofedController.effects.length, 0);
+});
+
+test("controller cannot bypass normalization or work-order capabilities", () => {
+  const policy = JSON.parse(readText("config/automation-policy.json"));
+  const typescriptFixture = loadAutomationFixture();
+  const initial = createAutomationState(policy, typescriptFixture.workOrder);
+  const bypass = transitionAutomation(
+    policy,
+    typescriptFixture.workOrder,
+    initial,
+    simpleAutomationEvent("classification-eligible", "deterministic-controller"),
+  );
+  assert.equal(bypass.state.outcome, "failed-terminal");
+  assert.equal(bypass.effects.length, 0);
+  const evaluated = transitionAutomation(
+    policy,
+    typescriptFixture.workOrder,
+    initial,
+    classificationAutomationEvent(typescriptFixture),
+  );
+  assert.equal(evaluated.state.outcome, "deferred");
+  assert.equal(evaluated.effects.length, 0);
+  assert.equal(evaluated.state.attempts.cheapAssessments, 0);
+
+  for (const missing of ["model-assessment", "repo-read", "sanitized-evidence-read"]) {
+    const clean = cleanAutomationFixture().fixture;
+    clean.workOrder.capabilities = clean.workOrder.capabilities.filter(
+      (capability) => capability !== missing,
+    );
+    const missingModelCapability = transitionAutomation(
+      policy,
+      clean.workOrder,
+      createAutomationState(policy, clean.workOrder),
+      classificationAutomationEvent(clean),
+    );
+    assert.equal(missingModelCapability.state.outcome, "failed-terminal", missing);
+    assert.equal(missingModelCapability.effects.length, 0, missing);
   }
 
-  const staleIdentity = structuredClone(candidate);
-  staleIdentity.headSha = "c".repeat(40);
-  const expectedStaleKey = dependencyPullRequestIdempotencyKey(staleIdentity);
-  assert.ok(classifyDependencyPullRequest(policy, staleIdentity).reasons.includes(
-    `idempotencyKey must be exactly ${expectedStaleKey}`,
-  ));
+  const repairFixture = cleanAutomationFixture().fixture;
+  const cheap = startCleanDependencyAutomation(policy, repairFixture);
+  for (const missing of ["repair-proposal", "repo-read", "sanitized-evidence-read"]) {
+    const repairRestricted = structuredClone(repairFixture.workOrder);
+    repairRestricted.capabilities = repairRestricted.capabilities.filter(
+      (capability) => capability !== missing,
+    );
+    const missingRepairCapability = transitionAutomation(
+      policy,
+      repairRestricted,
+      cheap,
+      simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
+    );
+    assert.equal(missingRepairCapability.state.outcome, "failed-terminal", missing);
+    assert.equal(missingRepairCapability.effects.length, 0, missing);
+  }
+});
 
-  const unknown = structuredClone(candidate);
-  unknown.freeform = true;
-  const unknownResult = classifyDependencyPullRequest(policy, unknown);
-  assert.equal(unknownResult.nextStage, null);
-  assert.equal(unknownResult.terminalOutcome, "deferred");
-  assert.ok(unknownResult.reasons.includes(
-    "dependency pull request unknown field freeform",
-  ));
-
-  const currentTypeScriptMajorFixture = validDependencyPullRequest();
-  currentTypeScriptMajorFixture.pullRequestNumber = 2;
-  currentTypeScriptMajorFixture.dependencyName = "typescript";
-  currentTypeScriptMajorFixture.currentVersion = "5.9.2";
-  currentTypeScriptMajorFixture.proposedVersion = "7.0.2";
-  currentTypeScriptMajorFixture.riskCodes = ["compiler-or-build-tool", "peer-conflict"];
-  currentTypeScriptMajorFixture.idempotencyKey = dependencyPullRequestIdempotencyKey(
-    currentTypeScriptMajorFixture,
-  );
-  const currentFixtureResult = classifyDependencyPullRequest(
+test("checked-in shadow policy cannot emit any external mutation effect", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  fixture.workOrder.authorizedGrantIds = ["dependency-patch-publish"];
+  const state = reachPatchAuthorization(policy, fixture);
+  const blocked = transitionAutomation(
     policy,
-    currentTypeScriptMajorFixture,
+    fixture.workOrder,
+    state,
+    authorizationEvent(policy, fixture.workOrder, "patchPublication", "shadow-patch-grant"),
   );
-  assert.equal(currentFixtureResult.eligible, false);
-  assert.equal(currentFixtureResult.nextStage, null);
-  assert.equal(currentFixtureResult.terminalOutcome, "deferred");
-  assert.ok(currentFixtureResult.reasons.includes(
-    "dependency update is not a stable semver patch",
-  ));
-  assert.ok(currentFixtureResult.reasons.includes(
-    "forbidden dependency risk: compiler-or-build-tool,peer-conflict",
-  ));
+  assert.equal(blocked.state.outcome, "deferred");
+  assert.ok(blocked.state.reasonCodes.includes("shadow-mode-mutation-forbidden"));
+  assert.equal(blocked.state.attempts.patchPublications, 0);
+  assert.deepEqual(blocked.effects, []);
+});
+
+test("controller rejects cross-workflow and prerequisite-free persisted phases", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const releaseWorkOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-release-forgery-v1",
+    workflow: "release",
+    idempotencyKey: "release:fixture:forgery-v1",
+    lineageKey: "release-lineage:fixture:forgery-v1",
+    capabilities: ["repo-read"],
+    authorizedGrantIds: [],
+  };
+  const forgedRelease = {
+    ...createAutomationState(policy, releaseWorkOrder),
+    phase: "deterministic-classification",
+  };
+  const crossWorkflow = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    forgedRelease,
+    classificationAutomationEvent(fixture),
+  );
+  assert.equal(crossWorkflow.state.outcome, "failed-terminal");
+  assert.equal(crossWorkflow.effects.length, 0);
+
+  const jumpedDependency = {
+    ...createAutomationState(policy, fixture.workOrder),
+    phase: "post-merge-verification",
+  };
+  const jumped = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    jumpedDependency,
+    simpleAutomationEvent("post-merge-passed", "ci-adapter"),
+  );
+  assert.equal(jumped.state.outcome, "failed-terminal");
+  assert.equal(jumped.effects.length, 0);
+
+  const mergeWorkOrder = structuredClone(fixture.workOrder);
+  mergeWorkOrder.authorizedGrantIds = ["dependency-pr-merge"];
+  const forgedAwaiting = {
+    ...createAutomationState(policy, mergeWorkOrder),
+    phase: "awaiting-approval",
+    resumePhase: "merge-authorization",
+    outcome: "awaiting-approval",
+  };
+  const resumedWithoutHistory = transitionAutomation(
+    policy,
+    mergeWorkOrder,
+    forgedAwaiting,
+    authorizationEvent(policy, mergeWorkOrder, "pullRequestMerge", "forged-merge"),
+  );
+  assert.equal(resumedWithoutHistory.state.outcome, "failed-terminal");
+  assert.equal(resumedWithoutHistory.effects.length, 0);
+
+  const forgedTerminal = {
+    ...createAutomationState(policy, fixture.workOrder),
+    phase: "completed",
+    outcome: "completed",
+  };
+  const terminalRejectedBeforeAbsorption = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    forgedTerminal,
+    simpleAutomationEvent("post-merge-passed", "ci-adapter"),
+  );
+  assert.equal(terminalRejectedBeforeAbsorption.state.outcome, "failed-terminal");
+  assert.equal(terminalRejectedBeforeAbsorption.effects.length, 0);
+  assert.ok(terminalRejectedBeforeAbsorption.state.reasonCodes.includes("invalid-controller-state"));
+
+  const forgedDelta = startCleanDependencyAutomation(policy, fixture);
+  forgedDelta.history[0].attemptDeltas.strongEscalations = 1;
+  forgedDelta.attempts.strongEscalations = 1;
+  forgedDelta.historySha256 = canonicalSha256(forgedDelta.history);
+  const deltaRejected = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    forgedDelta,
+    simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
+  );
+  assert.equal(deltaRejected.state.outcome, "failed-terminal");
+  assert.equal(deltaRejected.effects.length, 0);
+
+  const assisted = assistedAutomationFixture();
+  const patchPolicy = assisted.policy;
+  const patchFixture = assisted.fixture;
+  const patchWorkOrder = structuredClone(patchFixture.workOrder);
+  patchWorkOrder.authorizedGrantIds = ["dependency-patch-publish"];
+  patchFixture.workOrder = patchWorkOrder;
+  let forgedAuthority = reachPatchAuthorization(patchPolicy, patchFixture, patchWorkOrder);
+  forgedAuthority = transitionAutomation(
+    patchPolicy,
+    patchWorkOrder,
+    forgedAuthority,
+    authorizationEvent(patchPolicy, patchWorkOrder, "patchPublication", "correct-patch-grant"),
+  ).state;
+  const lastRecord = forgedAuthority.history.at(-1);
+  lastRecord.grantProof.authorityName = "releasePromotion";
+  lastRecord.grantProof.grantId = patchPolicy.authority.releasePromotion.grantId;
+  lastRecord.grantProof.credentialClass = patchPolicy.authority.releasePromotion.credentialClass;
+  forgedAuthority.historySha256 = canonicalSha256(forgedAuthority.history);
+  const wrongAuthorityRejected = transitionAutomation(
+    patchPolicy,
+    patchWorkOrder,
+    forgedAuthority,
+    {
+      schemaVersion: 1,
+      type: "patch-publication-succeeded",
+      source: "source-control-broker",
+      expectedBaseSha: patchWorkOrder.baseSha,
+      expectedHeadSha: patchWorkOrder.headSha,
+      currentBaseSha: patchWorkOrder.baseSha,
+      currentHeadSha: patchWorkOrder.headSha,
+      publishedHeadSha: "c".repeat(40),
+    },
+  );
+  assert.equal(wrongAuthorityRejected.state.outcome, "failed-terminal");
+  assert.equal(wrongAuthorityRejected.effects.length, 0);
+});
+
+test("lineage ledger is authoritative and survives AI-authored head changes", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const consumed = lineageStateAtCap(policy, fixture.workOrder, "repairAttempts");
+  let lineageStore = consumed.lineageStore;
+  const changedFixture = rebindAutomationFixtureHead(policy, fixture, "9".repeat(40), "ai-head");
+  const changedWorkOrder = changedFixture.workOrder;
+  assert.equal(changedWorkOrder.lineageKey, fixture.workOrder.lineageKey);
+  assert.notEqual(changedWorkOrder.idempotencyKey, fixture.workOrder.idempotencyKey);
+  assert.notEqual(changedWorkOrder.inputEvidenceSha256, fixture.workOrder.inputEvidenceSha256);
+  assert.equal(
+    dependencyPullRequestLineageKey({
+      ...changedWorkOrder,
+      failureFingerprint: "8".repeat(64),
+    }),
+    changedWorkOrder.lineageKey,
+  );
+
+  let next = createAutomationStateFromLedger(policy, changedWorkOrder, lineageStore);
+  let advanced = transitionAutomationWithLedger(
+    policy,
+    changedWorkOrder,
+    next,
+    classificationAutomationEvent(changedFixture),
+    lineageStore,
+  );
+  assert.equal(advanced.state.phase, "cheap-model-assessment");
+  assert.equal(advanced.effects[0].type, "invoke-model");
+  lineageStore = advanced.lineageStore;
+  next = advanced.state;
+  const exhausted = transitionAutomationWithLedger(
+    policy,
+    changedWorkOrder,
+    next,
+    simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
+    lineageStore,
+  );
+  assert.equal(exhausted.state.outcome, "failed-terminal");
+  assert.equal(exhausted.effects.length, 0);
+  assert.ok(exhausted.state.reasonCodes.includes("repairAttempts-exhausted"));
+  lineageStore = exhausted.lineageStore;
+  assert.equal(
+    readLineageAttempts(lineageStore, changedWorkOrder.lineageKey).repairAttempts,
+    1,
+  );
+  assert.equal(readLineageSnapshot(lineageStore, changedWorkOrder.lineageKey).revision, 2);
+
+  const staleCounters = {
+    ...next,
+    attempts: { ...next.attempts, repairAttempts: 0 },
+  };
+  const rejectedBeforeEffect = transitionAutomationWithLedger(
+    policy,
+    changedWorkOrder,
+    staleCounters,
+    simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
+    lineageStore,
+  );
+  assert.equal(rejectedBeforeEffect.state.outcome, "failed-terminal");
+  assert.ok(rejectedBeforeEffect.state.reasonCodes.includes("lineage-ledger-stale"));
+  assert.equal(rejectedBeforeEffect.effects.length, 0);
+
+  const corruptLedger = new Map([[changedWorkOrder.lineageKey, null]]);
+  const corruptRejected = transitionAutomationWithLedger(
+    policy,
+    changedWorkOrder,
+    createAutomationState(policy, changedWorkOrder),
+    classificationAutomationEvent(changedFixture),
+    corruptLedger,
+  );
+  assert.equal(corruptRejected.state.outcome, "failed-terminal");
+  assert.ok(corruptRejected.state.reasonCodes.includes("lineage-ledger-invalid"));
+  assert.equal(corruptRejected.effects.length, 0);
+  for (const missingLedger of [null, undefined, {}, new Map()]) {
+    const missingRejected = transitionAutomationWithLedger(
+      policy,
+      changedWorkOrder,
+      createAutomationState(policy, changedWorkOrder),
+      classificationAutomationEvent(changedFixture),
+      missingLedger,
+    );
+    assert.equal(missingRejected.state.outcome, "failed-terminal");
+    assert.ok(missingRejected.state.reasonCodes.includes("lineage-ledger-invalid"));
+    assert.equal(missingRejected.effects.length, 0);
+  }
+  assert.equal(
+    createAutomationStateFromLedger(policy, changedWorkOrder, new Map()).outcome,
+    "failed-terminal",
+  );
+});
+
+test("every bounded controller attempt stops before a second side effect", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  const dependencyWorkOrder = structuredClone(fixture.workOrder);
+  dependencyWorkOrder.authorizedGrantIds = [
+    "dependency-patch-publish",
+    "dependency-pr-merge",
+  ];
+  fixture.workOrder = dependencyWorkOrder;
+
+  let capped = lineageStateAtCap(policy, dependencyWorkOrder, "cheapAssessments");
+  let result = transitionAutomation(
+    policy,
+    dependencyWorkOrder,
+    capped.state,
+    classificationAutomationEvent(fixture),
+  );
+  assert.equal(result.state.outcome, "escalated");
+  assert.equal(result.effects.length, 0);
+
+  capped = lineageStateAtCap(policy, dependencyWorkOrder, "strongEscalations");
+  let state = startCleanDependencyAutomation(
+    policy,
+    fixture,
+    dependencyWorkOrder,
+    capped.state,
+  );
+  result = transitionAutomation(
+    policy,
+    dependencyWorkOrder,
+    state,
+    simpleAutomationEvent("assessment-needs-escalation", "model-adapter"),
+  );
+  assert.equal(result.state.outcome, "escalated");
+  assert.equal(result.effects.length, 0);
+
+  capped = lineageStateAtCap(policy, dependencyWorkOrder, "repairAttempts");
+  state = startCleanDependencyAutomation(policy, fixture, dependencyWorkOrder, capped.state);
+  result = transitionAutomation(
+    policy,
+    dependencyWorkOrder,
+    state,
+    simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
+  );
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.equal(result.effects.length, 0);
+
+  capped = lineageStateAtCap(policy, dependencyWorkOrder, "patchPublications");
+  state = reachPatchAuthorization(policy, fixture, dependencyWorkOrder, capped.state);
+  result = transitionAutomation(
+    policy,
+    dependencyWorkOrder,
+    state,
+    authorizationEvent(policy, dependencyWorkOrder, "patchPublication", "patch-cap"),
+  );
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.equal(result.effects.length, 0);
+
+  capped = lineageStateAtCap(policy, dependencyWorkOrder, "ciFlakeReruns");
+  let ciPath = reachCiValidationAtHead(policy, fixture, capped.state, "c".repeat(40));
+  result = transitionAutomation(
+    policy,
+    ciPath.workOrder,
+    ciPath.state,
+    simpleAutomationEvent("ci-infra-flake", "ci-adapter"),
+  );
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.equal(result.effects.length, 0);
+
+  capped = lineageStateAtCap(policy, dependencyWorkOrder, "mergeAttempts");
+  ciPath = reachCiValidationAtHead(policy, fixture, capped.state, "d".repeat(40));
+  state = transitionAutomation(
+    policy,
+    ciPath.workOrder,
+    ciPath.state,
+    simpleAutomationEvent("ci-passed", "ci-adapter"),
+  ).state;
+  result = transitionAutomation(
+    policy,
+    ciPath.workOrder,
+    state,
+    authorizationEvent(policy, ciPath.workOrder, "pullRequestMerge", "merge-cap"),
+  );
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.equal(result.effects.length, 0);
+
+  const releaseWorkOrder = {
+    ...dependencyWorkOrder,
+    workOrderId: "fixture-release-cap-v1",
+    workflow: "release",
+    idempotencyKey: "release:fixture:cap-v1",
+    lineageKey: "release-lineage:fixture:cap-v1",
+    authorizedGrantIds: ["production-deploy", "production-rollback", "release-promotion"],
+  };
+
+  capped = lineageStateAtCap(policy, releaseWorkOrder, "releasePromotions");
+  result = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    capped.state,
+    authorizationEvent(policy, releaseWorkOrder, "releasePromotion", "release-cap"),
+  );
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.equal(result.effects.length, 0);
+
+  capped = lineageStateAtCap(policy, releaseWorkOrder, "deployAttempts");
+  state = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    capped.state,
+    authorizationEvent(policy, releaseWorkOrder, "releasePromotion", "release-before-deploy-cap"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    state,
+    simpleAutomationEvent("release-promotion-succeeded", "release-broker"),
+  ).state;
+  result = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    state,
+    authorizationEvent(policy, releaseWorkOrder, "productionDeploy", "deploy-cap"),
+  );
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.equal(result.effects.length, 0);
+
+  capped = lineageStateAtCap(policy, releaseWorkOrder, "rollbackAttempts");
+  state = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    capped.state,
+    authorizationEvent(policy, releaseWorkOrder, "releasePromotion", "release-before-rollback-cap"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    state,
+    simpleAutomationEvent("release-promotion-succeeded", "release-broker"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    state,
+    authorizationEvent(policy, releaseWorkOrder, "productionDeploy", "deploy-before-rollback-cap"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    state,
+    simpleAutomationEvent("deploy-failed", "deploy-broker"),
+  ).state;
+  result = transitionAutomation(
+    policy,
+    releaseWorkOrder,
+    state,
+    authorizationEvent(policy, releaseWorkOrder, "productionRollback", "rollback-cap"),
+  );
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.equal(result.effects.length, 0);
+});
+
+test("finite controller reaches every terminal branch without retry loops", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const observed = new Set();
+
+  const typescriptFixture = loadAutomationFixture();
+  const deferred = transitionAutomation(
+    policy,
+    typescriptFixture.workOrder,
+    createAutomationState(policy, typescriptFixture.workOrder),
+    classificationAutomationEvent(typescriptFixture),
+  );
+  observed.add(deferred.state.outcome);
+
+  const staleFixture = structuredClone(fixture);
+  staleFixture.trustedEvent.eventHeadSha = "e".repeat(40);
+  const stale = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    createAutomationState(policy, fixture.workOrder),
+    classificationAutomationEvent(staleFixture),
+  );
+  observed.add(stale.state.outcome);
+
+  const malformedEvent = classificationAutomationEvent(fixture);
+  malformedEvent.evidence = null;
+  const failed = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    createAutomationState(policy, fixture.workOrder),
+    malformedEvent,
+  );
+  observed.add(failed.state.outcome);
+
+  const awaiting = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    reachPatchAuthorization(policy, fixture),
+    simpleAutomationEvent("authorization-missing", "deterministic-controller"),
+  );
+  observed.add(awaiting.state.outcome);
+
+  const cheapState = startCleanDependencyAutomation(policy, fixture);
+  const escalated = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    cheapState,
+    simpleAutomationEvent("stage-timeout", "model-adapter"),
+  );
+  observed.add(escalated.state.outcome);
+  const verified = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    cheapState,
+    simpleAutomationEvent("assessment-no-repair", "model-adapter"),
+  );
+  observed.add(verified.state.outcome);
+
+  const assisted = assistedAutomationFixture();
+  const releasePolicy = assisted.policy;
+  const releaseWorkOrder = {
+    ...assisted.fixture.workOrder,
+    workOrderId: "fixture-release-complete-v1",
+    workflow: "release",
+    idempotencyKey: "release:fixture:complete-v1",
+    lineageKey: "release-lineage:fixture:complete-v1",
+    capabilities: ["repo-read"],
+    authorizedGrantIds: ["production-deploy", "release-promotion"],
+  };
+  let releaseState = createAutomationState(releasePolicy, releaseWorkOrder);
+  releaseState = transitionAutomation(
+    releasePolicy,
+    releaseWorkOrder,
+    releaseState,
+    authorizationEvent(releasePolicy, releaseWorkOrder, "releasePromotion", "complete-release"),
+  ).state;
+  releaseState = transitionAutomation(
+    releasePolicy,
+    releaseWorkOrder,
+    releaseState,
+    simpleAutomationEvent("release-promotion-succeeded", "release-broker"),
+  ).state;
+  releaseState = transitionAutomation(
+    releasePolicy,
+    releaseWorkOrder,
+    releaseState,
+    authorizationEvent(releasePolicy, releaseWorkOrder, "productionDeploy", "complete-deploy"),
+  ).state;
+  releaseState = transitionAutomation(
+    releasePolicy,
+    releaseWorkOrder,
+    releaseState,
+    simpleAutomationEvent("deploy-succeeded", "deploy-broker"),
+  ).state;
+  const completed = transitionAutomation(
+    releasePolicy,
+    releaseWorkOrder,
+    releaseState,
+    simpleAutomationEvent("deploy-verification-passed", "deploy-broker"),
+  ).state;
+  observed.add(completed.outcome);
+
+  const absorbed = transitionAutomation(
+    releasePolicy,
+    releaseWorkOrder,
+    completed,
+    simpleAutomationEvent("deploy-verification-passed", "deploy-broker"),
+  );
+  assert.equal(absorbed.accepted, false);
+  assert.equal(absorbed.state.revision, completed.revision);
+  assert.deepEqual([...observed].sort(), [
+    "awaiting-approval",
+    "completed",
+    "deferred",
+    "escalated",
+    "failed-terminal",
+    "stale",
+    "verified",
+  ]);
+});
+
+test("release controller requires distinct grants and has one verified rollback path", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  const workOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-release-v1",
+    workflow: "release",
+    idempotencyKey: "release:fixture:v1",
+    lineageKey: "release-lineage:fixture:v1",
+    capabilities: ["repo-read"],
+    authorizedGrantIds: ["production-deploy", "production-rollback", "release-promotion"],
+  };
+  let state = createAutomationState(policy, workOrder);
+  let result = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    authorizationEvent(policy, workOrder, "releasePromotion", "grant-release"),
+  );
+  assert.equal(result.effects[0].type, "promote-release");
+  state = result.state;
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    simpleAutomationEvent("release-promotion-succeeded", "release-broker"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    authorizationEvent(policy, workOrder, "productionDeploy", "grant-deploy"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    simpleAutomationEvent("deploy-succeeded", "deploy-broker"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    simpleAutomationEvent("deploy-verification-failed", "deploy-broker"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    authorizationEvent(policy, workOrder, "productionRollback", "grant-rollback"),
+  ).state;
+  state = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    simpleAutomationEvent("rollback-succeeded", "rollback-broker"),
+  ).state;
+  result = transitionAutomation(
+    policy,
+    workOrder,
+    state,
+    simpleAutomationEvent("rollback-verification-passed", "rollback-broker"),
+  );
+  assert.equal(result.state.outcome, "reverted");
+  assert.equal(result.state.attempts.releasePromotions, 1);
+  assert.equal(result.state.attempts.deployAttempts, 1);
+  assert.equal(result.state.attempts.rollbackAttempts, 1);
+  assert.deepEqual(result.state.consumedGrantRefs, [
+    "grant-deploy",
+    "grant-release",
+    "grant-rollback",
+  ]);
+});
+
+test("controller mutation authorization compares exact base and head SHAs", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  fixture.workOrder.authorizedGrantIds = ["dependency-patch-publish"];
+  const state = reachPatchAuthorization(policy, fixture);
+  const event = authorizationEvent(
+    policy,
+    fixture.workOrder,
+    "patchPublication",
+    "grant-patch",
+  );
+  event.currentHeadSha = "c".repeat(40);
+  const result = transitionAutomation(policy, fixture.workOrder, state, event);
+  assert.equal(result.state.outcome, "stale");
+  assert.equal(result.effects.length, 0);
+});
+
+test("published repair renews its work order and completes a legal merge path", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  fixture.workOrder.authorizedGrantIds = [
+    "dependency-patch-publish",
+    "dependency-pr-merge",
+  ];
+  let state = reachPatchAuthorization(policy, fixture);
+  state = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    state,
+    authorizationEvent(policy, fixture.workOrder, "patchPublication", "grant-patch"),
+  ).state;
+  assert.equal(state.phase, "patch-publication");
+
+  const publishedHeadSha = "c".repeat(40);
+  const published = transitionAutomation(policy, fixture.workOrder, state, {
+    schemaVersion: 1,
+    type: "patch-publication-succeeded",
+    source: "source-control-broker",
+    expectedBaseSha: fixture.workOrder.baseSha,
+    expectedHeadSha: fixture.workOrder.headSha,
+    currentBaseSha: fixture.workOrder.baseSha,
+    currentHeadSha: fixture.workOrder.headSha,
+    publishedHeadSha,
+  });
+  assert.equal(published.state.phase, "work-order-renewal");
+  assert.equal(published.effects[0].type, "renew-work-order");
+  assert.equal(
+    published.effects[0].requiredIdentity.headSha,
+    publishedHeadSha,
+  );
+  assert.equal(published.state.identity.headSha, publishedHeadSha);
+  assert.equal(published.state.lineageKey, fixture.workOrder.lineageKey);
+
+  const staleWorkOrder = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    published.state,
+    simpleAutomationEvent("work-order-renewed", "deterministic-controller"),
+  );
+  assert.equal(staleWorkOrder.state.outcome, "stale");
+
+  const renewedFixture = rebindAutomationFixtureHead(
+    policy,
+    fixture,
+    publishedHeadSha,
+    "legal-merge",
+  );
+  const currentWorkOrder = renewedFixture.workOrder;
+  const substitutedFixture = substituteAutomationDependency(
+    policy,
+    renewedFixture,
+    "kleur",
+    "4.1.4",
+    "4.1.5",
+  );
+  const substituted = transitionAutomation(
+    policy,
+    substitutedFixture.workOrder,
+    published.state,
+    renewalAutomationEvent(substitutedFixture),
+  );
+  assert.equal(substituted.state.outcome, "stale");
+  assert.equal(substituted.effects.length, 0);
+
+  const bareRenewal = transitionAutomation(
+    policy,
+    currentWorkOrder,
+    published.state,
+    simpleAutomationEvent("work-order-renewed", "deterministic-controller"),
+  );
+  assert.equal(bareRenewal.state.outcome, "failed-terminal");
+  assert.equal(bareRenewal.effects.length, 0);
+  const oldEvidenceRenewal = transitionAutomation(
+    policy,
+    currentWorkOrder,
+    published.state,
+    renewalAutomationEvent(fixture),
+  );
+  assert.equal(oldEvidenceRenewal.state.outcome, "stale");
+  assert.equal(oldEvidenceRenewal.effects.length, 0);
+
+  state = transitionAutomation(
+    policy,
+    currentWorkOrder,
+    published.state,
+    renewalAutomationEvent(renewedFixture),
+  ).state;
+  assert.equal(state.phase, "ci-validation");
+  state = transitionAutomation(
+    policy,
+    currentWorkOrder,
+    state,
+    simpleAutomationEvent("ci-passed", "ci-adapter"),
+  ).state;
+  assert.equal(state.phase, "merge-authorization");
+  state = transitionAutomation(
+    policy,
+    currentWorkOrder,
+    state,
+    authorizationEvent(policy, currentWorkOrder, "pullRequestMerge", "grant-merge"),
+  ).state;
+  assert.equal(state.phase, "merge");
+  state = transitionAutomation(policy, currentWorkOrder, state, {
+    schemaVersion: 1,
+    type: "merge-succeeded",
+    source: "source-control-broker",
+    expectedBaseSha: currentWorkOrder.baseSha,
+    expectedHeadSha: currentWorkOrder.headSha,
+    currentBaseSha: currentWorkOrder.baseSha,
+    currentHeadSha: currentWorkOrder.headSha,
+    mergedCommitSha: "d".repeat(40),
+  }).state;
+  assert.equal(state.phase, "post-merge-verification");
+  const completed = transitionAutomation(
+    policy,
+    currentWorkOrder,
+    state,
+    simpleAutomationEvent("post-merge-passed", "ci-adapter"),
+  );
+  assert.equal(completed.state.outcome, "completed");
+  assert.equal(completed.state.lineageKey, fixture.workOrder.lineageKey);
+  assert.equal(completed.state.attempts.repairAttempts, 1);
+  assert.equal(completed.state.attempts.patchPublications, 1);
+  assert.equal(completed.state.attempts.mergeAttempts, 1);
+});
+
+test("credential-free TypeScript fixture is deferred before model or repair work", () => {
+  const aggregate = runAutomationFixture();
+  assert.equal(aggregate.terminalOutcome, "deferred");
+  assert.equal(aggregate.nextStage, null);
+  assert.equal(aggregate.modelAttempts, 0);
+  assert.equal(aggregate.repairAttempts, 0);
+  assert.equal(aggregate.mutationAttempts, 0);
+  assert.equal(aggregate.networkCalls, 0);
+  assert.equal(aggregate.replayed, true);
 });
 
 test("CI policy locks required artifacts and credential-free workflow topology", () => {

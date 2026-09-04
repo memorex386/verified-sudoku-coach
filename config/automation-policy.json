@@ -1,12 +1,13 @@
 {
   "schemaVersion": 1,
   "policyVersion": "VSC-AUTOMATION-1",
-  "policySha256": "ffb998786bd30f2a5eb0faa8e8a648dd4fe4be111939bb03ebec72acf6aca644",
+  "policySha256": "c71116495cef31a2d75323eb66fe95cb8e3e92a582563c43aa9e0b34caaa5024",
   "mode": "shadow",
   "source": {
     "kind": "dependabot",
     "ecosystem": "npm",
     "actor": "dependabot[bot]",
+    "app": "dependabot",
     "event": "pull_request",
     "classification": "deterministic-diff"
   },
@@ -16,6 +17,27 @@
     "existingDependency": "required",
     "updateType": "semver-patch",
     "allowedFiles": ["package.json", "package-lock.json"],
+    "compilerBuildTools": [
+      "@typescript-eslint/eslint-plugin",
+      "@typescript-eslint/parser",
+      "@typescript-eslint/utils",
+      "esbuild",
+      "eslint",
+      "rollup",
+      "typescript",
+      "typescript-eslint",
+      "vite",
+      "vitest",
+      "webpack"
+    ],
+    "requiredChecks": [
+      "install",
+      "verify",
+      "ubuntu-ci",
+      "windows-ci",
+      "dependency-review",
+      "codeql"
+    ],
     "forbiddenRiskCodes": [
       "compiler-or-build-tool",
       "license-change",
@@ -34,9 +56,18 @@
     "ineligibleOutcome": "deferred"
   },
   "identity": {
+    "baseSha": "required-full-lowercase-sha1",
     "headSha": "required-full-lowercase-sha1",
     "failureFingerprint": "required-lowercase-sha256",
-    "idempotencyKeyTemplate": "dependabot:{repository}:pr-{pullRequestNumber}:{headSha}:{failureFingerprint}:{policyVersion}"
+    "idempotencyKeyTemplate": "dependabot:{repository}:pr-{pullRequestNumber}:{baseSha}:{headSha}:{failureFingerprint}:{policyVersion}"
+  },
+  "evidenceLimits": {
+    "maxFileChanges": 16,
+    "maxManifestBytes": 262144,
+    "maxManifestEntriesPerSection": 512,
+    "maxRequiredChecks": 32,
+    "maxScripts": 128,
+    "maxStringLength": 512
   },
   "modelRoute": {
     "selectionAuthority": "deterministic-controller",
