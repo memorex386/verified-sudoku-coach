@@ -5,7 +5,10 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/contracts.tsbuildinfo",
     "sourceMap": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "newLine": "lf"
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts"
+  ]
 }

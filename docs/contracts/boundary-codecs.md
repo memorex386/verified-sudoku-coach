@@ -77,3 +77,6 @@ not uniquely solvable showcase fixtures, held-out evaluation material, or privat
 Package versions remain `0.0.0`. No private host is upgraded in this checkpoint. Future consumers
 must pin a reviewed immutable commit/release and use the codecs before constructing trusted values;
 proof-bearing success values still require independent proof verification.
+
+Packed Node and Angular/Chromium compatibility is now checked separately by
+[packed consumer conformance](package-conformance.md), without expanding proof authority.

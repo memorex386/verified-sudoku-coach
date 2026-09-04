@@ -3,11 +3,20 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/coach-core.tsbuildinfo"
+    "tsBuildInfoFile": "dist/coach-core.tsbuildinfo",
+    "sourceMap": false,
+    "declarationMap": false,
+    "newLine": "lf"
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../domain" },
-    { "path": "../proof-engine" }
+    {
+      "path": "../domain"
+    },
+    {
+      "path": "../proof-engine"
+    }
   ]
 }

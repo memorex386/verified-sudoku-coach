@@ -5,13 +5,24 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/boundary-codecs.tsbuildinfo",
     "sourceMap": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "newLine": "lf"
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../contracts" },
-    { "path": "../domain" },
-    { "path": "../proof-engine" },
-    { "path": "../coach-core" }
+    {
+      "path": "../contracts"
+    },
+    {
+      "path": "../domain"
+    },
+    {
+      "path": "../proof-engine"
+    },
+    {
+      "path": "../coach-core"
+    }
   ]
 }

@@ -3,8 +3,17 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/proof-engine.tsbuildinfo"
+    "tsBuildInfoFile": "dist/proof-engine.tsbuildinfo",
+    "sourceMap": false,
+    "declarationMap": false,
+    "newLine": "lf"
   },
-  "include": ["src/**/*.ts"],
-  "references": [{ "path": "../domain" }]
+  "include": [
+    "src/**/*.ts"
+  ],
+  "references": [
+    {
+      "path": "../domain"
+    }
+  ]
 }

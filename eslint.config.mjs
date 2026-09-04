@@ -9,7 +9,7 @@ const sharedGlobals = {
 
 export default [
   {
-    ignores: ["**/dist/**", "**/node_modules/**"],
+    ignores: ["**/dist/**", "**/node_modules/**", ".tmp/**"],
   },
   {
     ...eslint.configs.recommended,

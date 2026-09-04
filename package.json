@@ -35,15 +35,27 @@
     "skills:check": "node scripts/verify-skills.mjs",
     "typecheck": "tsc -b --pretty false",
     "test": "node --test scripts/validation.test.mjs && npm run test:domain && npm run test:contracts",
-    "verify": "npm run doctor && npm run ci:check && npm run automation:check && npm run automation:fixture && npm run lint && npm run docs:check && npm run architecture:check && npm run work-packages:check && npm run runtime-ai:check && npm run eval:replay && npm run security:check && npm run licenses:check && npm run skills:check && npm test && npm run typecheck",
+    "verify": "npm run doctor && npm run ci:check && npm run automation:check && npm run automation:fixture && npm run lint && npm run docs:check && npm run architecture:check && npm run work-packages:check && npm run runtime-ai:check && npm run eval:replay && npm run security:check && npm run licenses:check && npm run skills:check && npm test && npm run typecheck && npm run pack:smoke",
     "test:domain": "tsc -b packages/domain --pretty false && node scripts/verify-domain-api.mjs && node --test packages/domain/test/domain.test.mjs",
-    "test:contracts": "tsc -b packages/boundary-codecs --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs"
+    "test:contracts": "tsc -b packages/boundary-codecs --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs",
+    "pack:smoke": "tsc -b --pretty false && node --test scripts/package-conformance.test.mjs && node scripts/verify-package-conformance.mjs"
   },
   "devDependencies": {
+    "@angular/common": "21.2.22",
+    "@angular/compiler": "21.2.22",
+    "@angular/compiler-cli": "21.2.22",
+    "@angular/core": "21.2.22",
+    "@angular/platform-browser": "21.2.22",
+    "@babel/core": "7.29.7",
     "@eslint/js": "10.0.1",
+    "esbuild": "0.28.2",
     "eslint": "10.9.1",
     "globals": "17.12.0",
-    "typescript-eslint": "8.69.0",
-    "typescript": "5.9.2"
+    "playwright": "1.62.1",
+    "rxjs": "7.8.2",
+    "tar": "7.5.22",
+    "tslib": "2.8.1",
+    "typescript": "5.9.2",
+    "typescript-eslint": "8.69.0"
   }
 }

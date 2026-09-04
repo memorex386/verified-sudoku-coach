@@ -43,7 +43,9 @@ integration, publication, or live evaluation belongs here.
 
 `packages/domain`, `packages/contracts`, `packages/boundary-codecs`, `packages/proof-engine`, the
 proof/fixture portions of `packages/testing`, generated public fixtures/schemas, and their docs,
-tests, scripts, manifests, and aggregate conformance evidence.
+tests, scripts, manifests, and aggregate conformance evidence. The package-consumer slice may
+seal the empty `packages/coach-core` manifest/compiler output as a transitive codec dependency;
+coaching implementation remains outside this package.
 The transition PR contains documentation only; schemas, compatibility fixtures, API artifacts,
 and codecs required by the change matrix land with their implementing slices before package Done.
 
@@ -159,6 +161,25 @@ Contract-slice validation on Windows, 2026-09-04:
 Package versions remain `0.0.0`. The wire reader requires exact safe decimal integer spelling;
 snapshot/consumer notes distinguish JSON Schema structure from semantic and proof authority.
 
+The maintainer authorized [PR #7](https://github.com/memorex386/verified-sudoku-coach/pull/7),
+merged at `9089db2af7d97808a7fc4444484e09dda3b5a643`, preserving reviewed head
+`e7bb4faac045462e1dba826a6bad894390353b73` after Windows, Ubuntu, dependency review and CodeQL passed.
+The [packed consumer checkpoint](../contracts/package-conformance.md) adds reproducible tarballs,
+offline clean installs, sealed root exports, strict Angular AOT and pinned-Chromium compatibility.
+Its snapshot explicitly covers initial domain and wire-boundary behavior only.
+
+Packed-consumer validation on Windows, 2026-09-04:
+
+- `npm run pack:smoke`: PASS — two archive/lock adversarial tests; five repeatable tarballs;
+  independent integrity checks; two clean offline consumers; root/deep-import checks; strict
+  Angular 21.2.22 AOT/linking; real Chromium 151.0.7922.34 and Node 22 matched the checked snapshot.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 147 tests, strict
+  compilation, existing API/schema artifacts and all foundation gates, including `pack:smoke`.
+- `npm audit --audit-level=low`: PASS — zero reported runtime/development vulnerabilities.
+- `npm run licenses:check`: PASS — reviewed tooling and version-scoped caniuse-lite attribution.
+- `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -168,14 +189,16 @@ schema, and codec work may proceed, but the proof-technique runbook blocks detec
 until the private counterpart and its linked evidence package are executable.
 The domain slice is only an initial-state API. Technique application and replay retention of
 verified eliminations remain unimplemented, as do generated showcase fixtures, executable replay
-acceptance, private conformance, Chromium/Angular checks and packed-consumer conformance.
+acceptance and private conformance. Chromium/Angular and packed-consumer checks cover only
+the implemented domain and wire-boundary surfaces.
 Proof/trace/replay codecs check framing and integrity only and return explicit `unverified` data.
-`test:domain` and `test:contracts` are executable; the other package commands remain required before
-Done. Root-entrypoint workspace checks do not replace pack or browser acceptance.
+`test:domain`, `test:contracts` and `pack:smoke` are executable; `test:proof`, `fixtures:check`
+and `proof:hashes` remain required before Done. Packed empty proof-engine/coach-core exports do
+not count as implementation of those services.
 
 ## Next action
 
-- Review the V1 contract/codecs implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
+- Review the packed-consumer conformance implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
 
 ## Checkpoints
 
@@ -207,3 +230,11 @@ Done. Root-entrypoint workspace checks do not replace pack or browser acceptance
   including artifact drift, workspace entrypoint and malformed-wire checks. The implementation is
   ready for review; this checkpoint does not claim packed/browser conformance, proof soundness,
   uniqueness, executable replay acceptance or private corpus parity.
+- 2026-09-04 — Maintainer authorized PR #7 integration and the next WP-2026-003 slice. Merged
+  its checked head, created a fresh worktree from updated main, and implemented packed Node/Angular
+  consumers with pinned Chromium, archive inspection and portable artifact evidence. Sealed the
+  empty proof-engine/coach-core build exports without adding service behavior. The private
+  conformance gate remains blocking for technique implementation; no private material was accessed.
+- 2026-09-04 — Packed-consumer verification and the full CI-base-ref verifier passed locally:
+  147 tests plus matching Node/Chromium results and reproducible archive evidence. The new gate
+  is CI-wired; this implementation stops at its review PR and does not authorize merge or release.

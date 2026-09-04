@@ -5,7 +5,10 @@
     "outDir": "dist",
     "tsBuildInfoFile": "dist/domain.tsbuildinfo",
     "sourceMap": false,
-    "declarationMap": false
+    "declarationMap": false,
+    "newLine": "lf"
   },
-  "include": ["src/**/*.ts"]
+  "include": [
+    "src/**/*.ts"
+  ]
 }
