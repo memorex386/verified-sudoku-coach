@@ -35,7 +35,7 @@ applied or registered for a model reference.
 
 ## Generated showcase
 
-WP-2026-002 will generate the public fixture from seed `vsc-fixture/v1:<attempt>` using a documented
+WP-2026-003 will generate the public fixture from seed `vsc-fixture/v1:<attempt>` using a documented
 deterministic PRNG, a randomized complete grid, and 180-degree clue removals that preserve
 uniqueness. It targets 27–30 givens, six-technique completion, and visible locked-candidate plus
 naked-pair eliminations in canonical steps 1–20. It is labeled `curated` until human timing exists.

@@ -2,15 +2,15 @@
 
 ## Credential-free replay
 
-Frozen replay is the default. Until WP-2026-004 replaces the bootstrap, `npm run eval:replay`
+Frozen replay is the default. Until WP-2026-005 replaces the bootstrap, `npm run eval:replay`
 returns a stable machine-readable `not_implemented` result with `claimsMeasured: false` and zero
-evaluated cases. This keeps the credential-free command stable through WP-2026-002 and WP-2026-003;
+evaluated cases. This keeps the credential-free command stable through WP-2026-003 and WP-2026-004;
 it is not an evaluation pass or quality evidence.
 
-WP-2026-004 replaces that bootstrap with a runner that accepts only versioned synthetic fixtures and
+WP-2026-005 replaces that bootstrap with a runner that accepts only versioned synthetic fixtures and
 approved structured responses, produces deterministic scores, and performs no network call. Its
 implementation must update this runbook, CI, the data card, and work-package evidence together.
-WP-2026-004 cannot reach `Done` while the bootstrap result remains.
+WP-2026-005 cannot reach `Done` while the bootstrap result remains.
 
 ## Protected live evaluation
 

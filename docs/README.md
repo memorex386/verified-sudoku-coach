@@ -5,7 +5,7 @@ without private conversation history.
 
 ## Source-of-truth order
 
-1. The [accepted plan record](product/plans/VSC-PLAN-2026-09-03.1.md),
+1. The [current accepted plan record](product/plans/VSC-PLAN-2026-09-04.2.md),
    [product charter](product/charter.md), and [acceptance catalog](acceptance/catalog.md) define
    approved intent, value, scope, claims, and release gates.
 2. [Architecture](architecture/principles.md), [contracts](contracts/versioning.md), accepted
@@ -32,13 +32,18 @@ into multiple layers.
   [AI-assisted development](provenance/ai-assisted-development.md). Private reasoning and chat
   transcripts are never project authority.
 
+Both use the capability-based boundaries in
+[agent and provider interoperability](architecture/interoperability.md). OpenAI, Codex, Claude,
+Gemini, and open-weight names identify adapters or provenance; none is a core authority.
+
 ## Documents by task
 
 | Need | Read |
 | --- | --- |
 | Understand the proposal | [Product charter](product/charter.md) |
-| Resolve the accepted plan version | [Accepted plan record](product/plans/VSC-PLAN-2026-09-03.1.md) |
+| Resolve the accepted plan version | [Current plan amendment](product/plans/VSC-PLAN-2026-09-04.2.md) and its linked predecessor |
 | Understand system boundaries | [System](architecture/system.md) and [trust boundaries](architecture/trust-boundaries.md) |
+| Add an agent/provider or automation | [Interoperability](architecture/interoperability.md), [automation contracts](contracts/agent-automation.md), and ADR-0007/0008 |
 | Understand proof scope and ordering | [Proof policy](architecture/proof-policy.md) |
 | Review candidate model choices | [Model profiles](architecture/model-profiles.md) |
 | Change an interface | [Contract versioning](contracts/versioning.md) and [change matrix](change-matrix.md) |
@@ -49,7 +54,9 @@ into multiple layers.
 | Judge a claim | [Evaluation policy](evaluation/policy.md) and [acceptance catalog](acceptance/catalog.md) |
 | Start an implementation task | [Agent workflow](runbooks/agent-workflow.md) |
 | Change a model or prompt | [Runtime-AI change runbook](runbooks/change-runtime-ai.md) |
+| Add an agent or provider adapter | [Adapter runbook](runbooks/add-agent-or-provider-adapter.md) |
 | Investigate an eval failure | [Eval-failure playbook](playbooks/eval-failure.md) |
+| Triage a dependency pull request | [Dependency steward playbook](playbooks/dependency-pr-steward.md) |
 | Review public safety | [Public-boundary playbook](playbooks/public-boundary-review.md) |
 | Prepare a release | [Release runbook](runbooks/release.md) |
 | Upgrade the private host | [Sudoku World upgrade runbook](runbooks/upgrade-sudoku-world.md) |

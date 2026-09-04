@@ -1,17 +1,19 @@
 # Public contract catalog
 
-This catalog fixes ownership and semantic boundaries before WP-2026-002 defines exact fields and
+This catalog fixes ownership and semantic boundaries before WP-2026-003 defines exact fields and
 Zod schemas. A name ending in `V1` is a serialized contract family; internal branded/immutable values
 remain separate and cross the boundary only through codecs.
 
 ## Canonical behavior identity
 
 `BehaviorIdentityV1` is an exact object containing `rulesetVersion`, `schemaVersion`,
-`promptVersion`, `modelProfileVersion`, `rendererVersion`, `fixtureVersion`, and
-`evaluationSuiteVersion`. Every `ReplayArtifactV1` and every `TraceEnvelopeV1` embeds all seven
-fields; none is optional or inferred from the current deployment. A trace freezes the identity at
-session start, and each event carries the envelope's identity hash so a partial/mixed export fails
-validation. Versions identify behavior definitions, not merely a source commit.
+`promptVersion`, `modelProfileVersion`, `runtimeRegistrationId`, `runtimeBehaviorVersion`,
+`rendererVersion`, `fixtureVersion`, and `evaluationSuiteVersion`. Every `ReplayArtifactV1` and
+every `TraceEnvelopeV1` embeds all nine fields; none is optional or inferred from the current
+deployment. A trace freezes the identity at session start, and each event carries the envelope's
+identity hash so a partial/mixed export fails validation. Versions identify behavior definitions,
+not merely a source commit. The registration resolves the provider profile, adapter, requested
+model, and exact native settings without making those provider details part of core policy.
 
 ## Sudoku and proof DTOs
 
@@ -64,4 +66,4 @@ most one billable model effect at a time, then submits the result as a new comma
 return `paused`; neither can display a lesson.
 
 Exact keys, bounds, schema literals, JSON Schema snapshots, compatibility fixtures, and package
-exports land in WP-2026-002 under the [versioning policy](versioning.md).
+exports land in WP-2026-003 under the [versioning policy](versioning.md).

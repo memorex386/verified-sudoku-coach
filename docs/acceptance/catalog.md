@@ -12,10 +12,10 @@ true.
 Owner: `WP-2026-001`
 
 A fresh clone on Node 22 passes `npm ci`, `npm run doctor`, `npm run docs:check`,
-`npm run eval:replay`, and `npm run verify` on Ubuntu and Windows. Until WP-2026-004 replaces the
+`npm run eval:replay`, and `npm run verify` on Ubuntu and Windows. Until WP-2026-005 replaces the
 bootstrap under VSC-EVAL-001, `eval:replay` may return machine-readable `not_implemented`, zero
 cases, and `claimsMeasured: false`; this is command readiness, not an evaluation result or quality
-claim. WP-2026-004 cannot reach `Done` with the bootstrap result.
+claim. WP-2026-005 cannot reach `Done` with the bootstrap result.
 
 ## VSC-FOUND-002 — Durable engineering authority
 
@@ -51,9 +51,41 @@ runtime prompts, remain permitted source code under the provenance policy. Indep
 fixtures and reviewed synthetic replay records are permitted with provenance. Oversized or
 undecodable files require explicit review rather than silent acceptance.
 
-## VSC-ARCH-002 — Sealed core package and API boundaries
+## VSC-ARCH-007 — Capability-based agent and provider boundaries
 
 Owner: `WP-2026-002`
+
+Core packages and deterministic workflow policy contain no provider- or coding-agent-specific
+branching. An exact provider policy identifies leaf adapters, capabilities, role/model and settings
+constraints, data-handling requirements, and browser SDK/key/endpoint boundaries. Runtime behavior
+identity includes the registered route and complete runtime-behavior version. Unknown providers,
+settings, capabilities, fields, or unregistered substitutions fail. OpenAI remains the first
+candidate adapter without becoming the application contract.
+
+## VSC-OPS-004 — Finite least-privilege automation policy
+
+Owner: `WP-2026-002`
+
+A machine-readable policy separates analysis, patch publication, merge, release, and production
+credentials. Dependency handling verifies source and exact SHA, deduplicates by failure identity,
+classifies deterministically first, and permits at most one inexpensive diagnosis, one stronger
+escalation, one repair, and one recognized-infrastructure rerun before a terminal result. Shadow
+mode cannot merge. Future release execution permits at most one deployment and one rollback, then
+verifies and stops; stateful/irreversible changes are ineligible.
+
+## VSC-EVID-003 — Portable repository handoff
+
+Owner: `WP-2026-002`
+
+Canonical `AGENTS.md`, repository scripts/docs, and open-format `.agents/skills` contain substantive
+policy. Claude and Gemini discovery files are thin, machine-checked adapters. Future work uses a
+vendor-neutral branch convention and records real runner/provider/model/adapter identity in
+sanitized execution evidence. Structural compatibility is never presented as measured live-agent
+or named-provider quality.
+
+## VSC-ARCH-002 — Sealed core package and API boundaries
+
+Owner: `WP-2026-003`
 
 Public packages expose root entrypoints only and reject deep imports. TypeScript project references
 and manifest dependencies match the inward graph. Contracts/codecs keep wire and domain values
@@ -62,16 +94,16 @@ fixtures with deterministic package/API hashes.
 
 ## VSC-ARCH-003 — Exact versioned contracts and behavior identity
 
-Owner: `WP-2026-002`
+Owner: `WP-2026-003`
 
 Every implemented board, proof, trace, and replay DTO has an exact-key, bounded, versioned Zod
 schema with valid, malformed, unknown-key, boundary-size, and unsupported-version tests. Codecs do
-not coerce or invent domain defaults. Every replay and trace carries all seven fields of
+not coerce or invent domain defaults. Every replay and trace carries all nine fields of
 `BehaviorIdentityV1`; mixed identity hashes fail. Generated schema/API artifacts cannot drift.
 
 ## VSC-PROOF-001 — Six verified techniques
 
-Owner: `WP-2026-002`
+Owner: `WP-2026-003`
 
 Naked single, hidden single, locked pointing, locked claiming, naked pair, and hidden pair each
 have positive, near-miss, stale, and field-tamper tests. Detectors only propose; an independent
@@ -80,7 +112,7 @@ Canonical ordering is deterministic across Node and Chromium.
 
 ## VSC-PROOF-002 — Sound generated and private-corpus conformance
 
-Owner: `WP-2026-002`
+Owner: `WP-2026-003`
 
 Public fixtures are independently generated and uniquely solvable. Property, path-replay, digit,
 D4, band, and stack transformation tests report zero invalid placements or eliminations. Aggregate
@@ -89,7 +121,7 @@ any count change, including an increase, requires an explicit ruleset/version de
 
 ## VSC-AI-001 — Reference-only model authority
 
-Owner: `WP-2026-003`
+Owner: `WP-2026-004`
 
 Observer and teacher outputs can reference only registered opportunity, proof, fact, branch, and
 template IDs. Model output cannot mutate boards or mastery. All digits, cells, candidates,
@@ -97,7 +129,7 @@ techniques, and factual explanations render deterministically from reverified fa
 
 ## VSC-AI-002 — Invalid application output never displays
 
-Owner: `WP-2026-003`
+Owner: `WP-2026-004`
 
 Recorded malformed, hallucinated, unknown-reference, refused, timeout, quota, budget, kill-switch,
 trace-limit, and provider-failure outcomes visibly yield `paused`; an obsolete board revision yields
@@ -107,7 +139,7 @@ responses, and stack traces never cross the application boundary; there is no au
 
 ## VSC-UX-001 — Deterministic coaching behavior
 
-Owner: `WP-2026-003`
+Owner: `WP-2026-004`
 
 Latest-wins cadence permits one call in flight, at least five seconds between background calls, and
 immediate explicit help. The board remains playable for every pause, recovery is explicit, the
@@ -116,26 +148,31 @@ produces 8–15 interventions without touching normal product state.
 
 ## VSC-ARCH-004 — Contained provider and local-gateway boundary
 
-Owner: `WP-2026-004`
+Owner: `WP-2026-005`
 
-Browser artifacts cannot reach or contain the Node-only OpenAI adapter, provider SDK, key names, or
-direct provider composition. The BYOK gateway binds numeric loopback only, uses exact Host/Origin
+Browser artifacts cannot reach or contain any Node-only provider adapter, provider SDK, key name,
+endpoint, or direct provider composition. Registered and known provider boundaries are derived from
+one exact policy and include adversarial OpenAI, Anthropic, and Google fixtures. The BYOK gateway
+binds numeric loopback only, uses exact Host/Origin
 allowlists and no wildcard CORS, requires an unpersisted per-launch capability, and bounds
 route/model/body/output/cadence. Hostile Origin/Host, DNS-rebinding, capability, and oversized
 requests cause zero provider calls.
 
 ## VSC-AI-003 — Approved, versioned runtime bundles
 
-Owner: `WP-2026-004`
+Owner: `WP-2026-005`
 
 Runtime composition accepts only model/prompt/schema/validator/renderer bundles marked `approved`.
 Changing a prompt, schema, model profile, proof policy, or renderer changes its manifest and
-comparative evaluation. Candidate observer/teacher profiles request GPT-5.6 Luna/Terra with
-structured Responses output, `store:false`, finite limits, and no automatic retry.
+comparative evaluation. Every registration binds an approved provider profile and exact adapter
+settings. Initial candidate observer/teacher profiles request GPT-5.6 Luna/Terra through the OpenAI
+Responses adapter with strict structured output, request storage disabled (`store:false` at that
+adapter), finite limits, and no automatic retry. Alternate providers remain evaluation-only until
+their own conformance and approval evidence exists.
 
 ## VSC-EVAL-001 — Complete, guarded evaluation tooling
 
-Owner: `WP-2026-004`
+Owner: `WP-2026-005`
 
 Frozen, adversarial, and comparative suites run without credentials and account for every pass,
 validator rejection, refusal, timeout, provider error, and exclusion. Aggregate JSON reproduces its
@@ -144,7 +181,7 @@ a numeric spend cap; raw requests/responses remain local and ignored.
 
 ## VSC-UX-002 — Truthful accessible public replay
 
-Owner: `WP-2026-005`
+Owner: `WP-2026-006`
 
 The static React replay uses only generated puzzles and reviewed synthetic recordings, labels
 itself as replay rather than live AI, presents 8–15 proof-bound interventions, and passes responsive,
@@ -152,24 +189,26 @@ keyboard, touch, screen-reader, and bundle-isolation checks. TTS is off by defau
 
 ## VSC-EVID-001 — Reproducible pre-results release evidence
 
-Owner: `WP-2026-005`
+Owner: `WP-2026-006`
 
 Every public pre-results claim links to a test, ADR, evaluation, PR, or immutable release. Release
-JSON binds source/tag, lockfile/artifact hashes, all seven behavior versions, CI, demo hash,
+JSON binds source/tag, lockfile/artifact hashes, all nine behavior-identity fields, provider-policy
+digest, CI, demo hash,
 SBOM/license results, and limitations, and reproduces summaries. Pages and the Sudoku World demo
 link remain inactive until separately authorized and verified.
 
 ## VSC-ARCH-005 — Private Functions release parity
 
-Owner: `WP-2026-006`
+Owner: `WP-2026-007`
 
 Firebase Functions imports only immutable Node/public artifacts through narrow adapters. Its exact
 artifact URLs, lock integrity, ruleset/contracts/renderer identity, and release hashes match the
-public manifest. No database transaction remains open during a model call, and OpenAI owns no state.
+public manifest. No database transaction remains open during a model call, and no provider owns
+application state.
 
 ## VSC-PRIV-002 — Private consent and model-data minimization
 
-Owner: `WP-2026-006`
+Owner: `WP-2026-007`
 
 Private integration requires account-linked consent and collects no separate name, email, phone, or
 employer fields. Provider packets exclude identity and unrelated trace data. Logs and analytics
@@ -177,7 +216,7 @@ contain only allowlisted codes, versions, counts, costs, and durations—never r
 
 ## VSC-PRIV-003 — Withdrawal, retention, and sealed-disclosure controls
 
-Owner: `WP-2026-006`
+Owner: `WP-2026-007`
 
 Account withdrawal immediately disables access and starts deletion. Raw pilot traces expire within
 30 days. Consent discloses that reviewed cohort aggregates seal at close and cannot be unwound after
@@ -186,7 +225,7 @@ Emulator tests cover expiry, deletion jobs, withdrawal, and disclosure state.
 
 ## VSC-OPS-001 — Authorized, idempotent bounded operation
 
-Owner: `WP-2026-006`
+Owner: `WP-2026-007`
 
 Every call applies its endpoint-specific authorization policy. Invites are one-use and stored hashed; session persistence uses
 compare-and-swap; stable command/call IDs make retries idempotent; stale responses are discarded.
@@ -195,7 +234,7 @@ board remains playable.
 
 ## VSC-OPS-002 — Cost and service observability
 
-Owner: `WP-2026-006`
+Owner: `WP-2026-007`
 
 Every model call records allowlisted latency, cost/token, outcome, validator, and version metrics
 without content. Atomic reservation/reconciliation prevents concurrent overspend, and an
@@ -203,7 +242,7 @@ application-level $250 pilot guard is tested alongside external billing visibili
 
 ## VSC-UX-003 — Server-enforced web-only entitlement
 
-Owner: `WP-2026-006`
+Owner: `WP-2026-007`
 
 Every public Coach endpoint requires Firebase authentication and the approved web App Check
 identity; Android/iOS App Check identities and self-asserted client-surface values are denied.
@@ -219,16 +258,17 @@ expired and revoked invites/capabilities, stale revisions, and withdrawal after 
 
 ## VSC-ARCH-006 — Private Angular artifact and browser parity
 
-Owner: `WP-2026-007`
+Owner: `WP-2026-008`
 
 Angular consumes the same immutable browser-safe core release as Functions and maps private mutable
-objects only through its anti-corruption adapter. Production bundle inspection excludes the OpenAI
-adapter, provider SDK/key names, and unpinned/deep imports. `HintEngine` characterization proves the
+objects only through its anti-corruption adapter. Production bundle inspection excludes every
+provider adapter, provider SDK/key/endpoint, and unpinned/deep import. `HintEngine`
+characterization proves the
 public proof engine is the sole factual authority.
 
 ## VSC-UX-004 — Isolated accessible private Coach UI
 
-Owner: `WP-2026-007`
+Owner: `WP-2026-008`
 
 Coach routes/storage never invoke normal progress, completion, Journey, statistics, challenge,
 race, ad, or reward paths. Keyboard, touch, screen-reader, responsive, pause/recovery, self-rating,
@@ -238,7 +278,7 @@ verification.
 
 ## VSC-EVAL-002 — Reviewer release quality gate
 
-Owner: `WP-2026-008`
+Owner: `WP-2026-009`
 
 Across deterministic, adversarial, protected live, and owner-alpha runs, zero unsupported factual
 claim is displayed. Full schema-plus-semantic validator acceptance is at least 98% overall and at
@@ -248,7 +288,7 @@ behavior/eval manifest freezes before invitations.
 
 ## VSC-OPS-003 — Operational reviewer release gate
 
-Owner: `WP-2026-008`
+Owner: `WP-2026-009`
 
 Disabled-first deployment, monitoring, access, one-use invites, rate limits, budget reservation,
 external alerts, $250 guard, kill switch, retention, withdrawal, and deletion rehearsal all pass.
@@ -257,7 +297,7 @@ issuance each have separately recorded authorization.
 
 ## VSC-PILOT-001 — Complete bounded reviewer outcome accounting
 
-Owner: `WP-2026-008`
+Owner: `WP-2026-009`
 
 The preregistered cohort closes according to its unchanged stop rule, and every invitation,
 completion, exclusion, intervention count, breach outcome, and survey denominator is accounted for.
@@ -270,7 +310,7 @@ Results remain small-cohort portfolio evidence, not causal learning or commercia
 
 ## VSC-PRIV-004 — Verified cohort-close deletion
 
-Owner: `WP-2026-009`
+Owner: `WP-2026-010`
 
 At cohort close, the reviewed aggregate is sealed with complete denominators and all account-linked
 raw traces are deleted within their 30-day windows. A private verification record proves deletion
@@ -279,7 +319,7 @@ honors anonymous-quote opt-out and separate named-attribution approval.
 
 ## VSC-EVID-002 — Reproducible final career claims
 
-Owner: `WP-2026-009`
+Owner: `WP-2026-010`
 
 The final case study, diagram, walkthrough, LinkedIn copy, and resume bullet are generated or checked
 against sealed aggregate JSON. Every claim links to a test, ADR, evaluation, PR, release, or deletion

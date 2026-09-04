@@ -201,10 +201,10 @@ test("eval replay bootstrap is exact machine-readable no-claim output", () => {
   assert.deepEqual(JSON.parse(output), {
     schemaVersion: 1,
     status: "not_implemented",
-    plannedWorkPackage: "WP-2026-004",
+    plannedWorkPackage: "WP-2026-005",
     claimsMeasured: false,
     casesEvaluated: 0,
-    message: "Frozen coach evaluation is planned for WP-2026-004; this bootstrap contains no evaluator or feature results.",
+    message: "Frozen coach evaluation is planned for WP-2026-005; this bootstrap contains no evaluator or feature results.",
   });
 });
 
@@ -1353,12 +1353,12 @@ test("work-package verifier rejects cross-milestone acceptance ownership", async
   foundation.metadata.acceptance = foundation.acceptance.join(", ");
   const errors = await validateWorkPackagesOffline(packages, readText("docs/acceptance/catalog.md"));
   assert.ok(errors.some((error) =>
-    error.includes("acceptance gate VSC-PROOF-001 is owned by WP-2026-002")));
+    error.includes("acceptance gate VSC-PROOF-001 is owned by WP-2026-003")));
 });
 
 test("accepted seed packages cannot bypass the foundation dependency chain", async () => {
   const packages = structuredClone(loadWorkPackages());
-  const proofPackage = packages.find((item) => item.id === "WP-2026-002");
+  const proofPackage = packages.find((item) => item.id === "WP-2026-003");
   assert.ok(proofPackage);
   proofPackage.dependsOn = [];
   proofPackage.metadata.depends_on = "none";
@@ -1630,8 +1630,8 @@ test("checkpoint history follows work-package ID across a filename change", () =
 
 test("checkpoint history preserves multiline content and enforces lifecycle transitions", () => {
   const base = [{
-    file: "docs/work-packages/WP-2026-009-result.md",
-    id: "WP-2026-009",
+    file: "docs/work-packages/WP-2026-010-result.md",
+    id: "WP-2026-010",
     status: "Done",
     checkpointContent: "- 2026-09-03 — sealed evidence\n  with reviewed denominators",
   }];
@@ -1668,8 +1668,8 @@ test("checkpoint history preserves multiline content and enforces lifecycle tran
 
 test("a not-started package may replace setup prose with its first checkpoint", () => {
   const base = [{
-    file: "docs/work-packages/WP-2026-002-proof.md",
-    id: "WP-2026-002",
+    file: "docs/work-packages/WP-2026-003-proof.md",
+    id: "WP-2026-003",
     status: "Ready",
     checkpointContent: "Implementation has not begun.",
   }];
@@ -1738,8 +1738,8 @@ test("work-package verifier permits future schema-valid packages beyond the acce
   future.file = "docs/work-packages/WP-2027-001-future-maintenance.md";
   future.status = "Draft";
   future.metadata.status = future.status;
-  future.dependsOn = ["WP-2026-009"];
-  future.metadata.depends_on = "WP-2026-009";
+  future.dependsOn = ["WP-2026-010"];
+  future.metadata.depends_on = "WP-2026-010";
   future.acceptance = ["VSC-MAINT-001"];
   future.metadata.acceptance = "VSC-MAINT-001";
   packages.push(future);

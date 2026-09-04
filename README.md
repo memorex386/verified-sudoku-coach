@@ -22,6 +22,9 @@ sole authority for every Sudoku fact?
    [evaluation policy](docs/evaluation/policy.md) for the evidence required before any claim ships.
 6. Read [how AI assists development](docs/provenance/ai-assisted-development.md) without publishing
    private reasoning or noisy transcripts.
+7. See the [interoperability design](docs/architecture/interoperability.md) and
+   [bounded dependency steward](docs/playbooks/dependency-pr-steward.md) for the portable engineering
+   control plane and finite automation policy.
 
 ## Intended architecture
 
@@ -65,7 +68,7 @@ test will not be represented as proof of player learning or business impact.
 - `packages/coach-core`: pure state transitions, provider ports, teaching policy, and rendering.
 - `packages/contracts`: strict, versioned wire and model schemas with no domain imports.
 - `packages/boundary-codecs`: anti-corruption mapping between untrusted DTOs and trusted values.
-- `packages/adapter-openai`: Node-only OpenAI Responses API port implementations.
+- `packages/adapter-openai`: first Node-only provider adapter; product ports remain provider-neutral.
 - `packages/testing`: generated fixtures, fakes, conformance tests, and adversarial responses.
 - `apps/replay-web`: static React replay with no provider dependency.
 - `apps/local-gateway`: local Node proxy for explicit BYOK development.
@@ -74,6 +77,12 @@ test will not be represented as proof of player learning or business impact.
   operating procedures.
 
 These directories currently contain boundaries only, not feature implementations.
+
+Canonical repository instructions and skills are open-format, with thin discovery adapters for
+supported coding agents. Product inference uses registered capability/data-handling profiles;
+engineering automation uses bounded work orders and separate mutation brokers. Structural
+portability is tested, while compatibility or quality claims for a named agent/provider require
+their own conformance and measured evidence.
 
 ## Local foundation checks
 

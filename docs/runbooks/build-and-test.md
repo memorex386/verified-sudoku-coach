@@ -29,7 +29,7 @@ That command runs, in order:
 - Workspace dependency and browser/provider boundary verification.
 - Work-package metadata, dependency, acceptance, and generated-registry verification.
 - Runtime prompt/model/schema manifest verification.
-- The honest frozen-evaluation bootstrap, which reports no measured claims until WP-2026-004.
+- The honest frozen-evaluation bootstrap, which reports no measured claims until WP-2026-005.
 - Working-tree, Git-index, commit-message/diff, and every reachable historical path/blob
   public-boundary scanning; binary, invalid-UTF-8, and oversized content fails for explicit review.
 - Installed dependency-license verification without a network request; GitHub dependency review

@@ -16,7 +16,9 @@ read authority -> select ready work package -> isolated branch/worktree -> focus
    guessing.
 3. Read the [change matrix](../change-matrix.md) and identify companion work.
 4. From the read-only primary checkout, fetch and create a dedicated sibling worktree on a
-   `codex/<short-topic>` branch. Never share a writing worktree between agents.
+   `work/<work-package-id>-<short-topic>` branch. Never share a writing worktree between agents.
+   Older `codex/*` branches remain historical evidence; an already-active branch need not be
+   renamed solely to adopt this convention.
 
 `Ready` means command names, arguments, and evidence expectations are decided; a planned command
 does not need to exist before its implementing package starts. Implementation makes those commands

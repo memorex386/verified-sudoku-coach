@@ -1,14 +1,14 @@
 ---
-id: WP-2026-003
+id: WP-2026-004
 title: Provider-neutral coach application
 status: Draft
-depends_on: WP-2026-002
+depends_on: WP-2026-003
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-AI-001, VSC-AI-002, VSC-UX-001
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Provider-neutral coach application
@@ -72,7 +72,7 @@ npm run verify
 ```
 
 `eval:replay` may still return the explicit zero-case bootstrap here; its inclusion preserves the
-CLI/CI contract, while `test:coach` supplies this package's behavioral evidence. WP-2026-004 owns
+CLI/CI contract, while `test:coach` supplies this package's behavioral evidence. WP-2026-005 owns
 the credential-free evaluation implementation.
 
 `test:coach` must cover reducer/effect determinism, fake-clock cadence, idempotency/stale results,
@@ -85,7 +85,7 @@ No implementation evidence exists because this package has not started.
 
 ## Known limitations and blockers
 
-WP-2026-002 is incomplete. This package defines provider-neutral behavior only; model quality and player
+WP-2026-003 is incomplete. This package defines provider-neutral behavior only; model quality and player
 value remain unmeasured.
 
 ## Next action

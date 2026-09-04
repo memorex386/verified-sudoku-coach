@@ -1,14 +1,14 @@
 ---
-id: WP-2026-007
+id: WP-2026-008
 title: Private Angular integration
 status: Draft
-depends_on: WP-2026-006
+depends_on: WP-2026-007
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public metadata only
 acceptance: VSC-ARCH-006, VSC-UX-004
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Private Angular integration
@@ -122,7 +122,7 @@ compatibility identifiers will be referenced publicly.
 
 ## Known limitations and blockers
 
-WP-2026-006 is incomplete. Native shells host the web bundle but Coach v1 remains web-only; store releases
+WP-2026-007 is incomplete. Native shells host the web bundle but Coach v1 remains web-only; store releases
 and normal-game feature changes are outside this package.
 
 ## Next action

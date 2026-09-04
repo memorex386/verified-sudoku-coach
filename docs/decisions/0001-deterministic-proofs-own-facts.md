@@ -32,5 +32,5 @@ falling through to a model guess.
 
 ## Verification
 
-`VSC-PROOF-001`, `VSC-PROOF-002`, proof property/metamorphic suites in WP-2026-002, and semantic plan
-tests in WP-2026-003.
+`VSC-PROOF-001`, `VSC-PROOF-002`, proof property/metamorphic suites in WP-2026-003, and semantic plan
+tests in WP-2026-004.

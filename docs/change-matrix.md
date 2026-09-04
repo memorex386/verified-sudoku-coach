@@ -10,7 +10,9 @@ the same change unless the work package explicitly stages it later.
 | Proof technique or candidate semantics | Proof invariants, positive/near-miss/property/metamorphic tests, canonical ordering, and eval dataset coverage |
 | Coaching policy, validator, or factual renderer | Contract version when affected, adversarial fixtures, frozen eval comparison, and visible failure/recovery tests |
 | Runtime prompt, model, output schema, or inference setting | Runtime manifest, prompt/schema hash, before/after eval report, cost/latency evidence, and approval status |
-| Provider adapter or live-eval behavior | Trust-boundary review, mocked transport tests, redaction tests, failure behavior, and protected workflow review |
+| Provider profile, adapter, or live-eval behavior | Provider-policy digest, capability/data-handling review, browser-boundary patterns, conformance/mocked transport tests, redaction/failure tests, comparative evaluation, and protected workflow review |
+| Agent adapter, entrypoint, or tool protocol | Canonical source pointer, exact manifest/capabilities, least-privilege work-order tests, stale/hostile-input fixtures, real identity provenance, and no duplicated policy |
+| Automation trigger, attempt, merge, deploy, or rollback policy | Exact machine policy, source/SHA/dedupe tests, finite terminal paths, separated credentials/approvals, shadow evidence, and incident/notification behavior |
 | Evaluation fixture or threshold | Data-card provenance, suite version, held-out split integrity, baseline invalidation decision, and report limitations |
 | Replay UI or hosted artifact | Static-only boundary, accessibility checks, truthful replay labeling, production build, and release manifest |
 | Data collection, retention, telemetry, or publication | Trust boundaries, privacy threat review, deletion/expiry behavior, aggregate schema, and prohibited-data tests |

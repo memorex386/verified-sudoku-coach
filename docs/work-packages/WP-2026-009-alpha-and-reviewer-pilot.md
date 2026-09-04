@@ -1,14 +1,14 @@
 ---
-id: WP-2026-008
+id: WP-2026-009
 title: Owner alpha and reviewer pilot
 status: Draft
-depends_on: WP-2026-007
+depends_on: WP-2026-008
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public metadata only
 acceptance: VSC-EVAL-002, VSC-OPS-003, VSC-PILOT-001
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Owner alpha and reviewer pilot
@@ -60,7 +60,7 @@ least 98% overall, every technique subgroup and every player self-rating subgrou
 observer p95 at most four seconds, and verified budget, monitoring, kill switch, access, retention,
 and deletion. At the unchanged preregistered stop rule, close the cohort, account for every outcome,
 and report VSC-PILOT-001's fixed success threshold as pass or fail. A failed result does not block
-truthful evidence sealing in WP-2026-009.
+truthful evidence sealing in WP-2026-010.
 
 ## Validation
 
@@ -99,7 +99,7 @@ labeled as goals until reviewed aggregates are available.
 
 ## Known limitations and blockers
 
-WP-2026-007, business measurement/configuration gates, credentials, and four distinct human
+WP-2026-008, business measurement/configuration gates, credentials, and four distinct human
 authorizations—spend, deploy, invite exposure, and aggregate publication—remain outstanding.
 
 ## Next action

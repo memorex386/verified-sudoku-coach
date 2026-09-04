@@ -3,10 +3,10 @@
 const bootstrapStatus = {
   schemaVersion: 1,
   status: "not_implemented",
-  plannedWorkPackage: "WP-2026-004",
+  plannedWorkPackage: "WP-2026-005",
   claimsMeasured: false,
   casesEvaluated: 0,
-  message: "Frozen coach evaluation is planned for WP-2026-004; this bootstrap contains no evaluator or feature results.",
+  message: "Frozen coach evaluation is planned for WP-2026-005; this bootstrap contains no evaluator or feature results.",
 };
 
 console.log(JSON.stringify(bootstrapStatus, null, 2));

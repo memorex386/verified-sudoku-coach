@@ -10,7 +10,7 @@ Read the selected work package, its dependencies, linked acceptance gates, and t
 `In progress` package may resume. Stop implementation for every other status, an incomplete
 dependency, or an absent required human decision; repair project authority instead of guessing.
 
-Use a dedicated worktree and `codex/<short-topic>` branch. Follow the
+Use a dedicated worktree and `work/<work-package-id>-<short-topic>` branch. Follow the
 [change matrix](../../../docs/change-matrix.md), remain inside the allowed edit surface, and record
 decisions in contracts or ADRs rather than conversations. Run every package validation plus
 `npm run verify`. Append evidence and exactly one next action, regenerate the registry, complete the

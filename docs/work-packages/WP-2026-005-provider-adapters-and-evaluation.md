@@ -1,17 +1,17 @@
 ---
-id: WP-2026-004
-title: OpenAI adapter and evaluation
+id: WP-2026-005
+title: Provider adapters and evaluation
 status: Draft
-depends_on: WP-2026-003
+depends_on: WP-2026-004
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-ARCH-004, VSC-AI-003, VSC-EVAL-001
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
-# OpenAI adapter and evaluation
+# Provider adapters and evaluation
 
 ## Goal
 
@@ -94,7 +94,7 @@ No implementation evidence exists because this package has not started.
 
 ## Known limitations and blockers
 
-WP-2026-003 is incomplete. No OpenAI credential is available or required for implementation and frozen
+WP-2026-004 is incomplete. No OpenAI credential is available or required for implementation and frozen
 evaluation; live quality, latency, token, and cost claims remain unmeasured.
 
 ## Next action

@@ -5,7 +5,7 @@
 The first implementation will define runtime schemas for puzzle definitions, board snapshots,
 proof steps/paths, board actions, coach observations, observer decisions, teacher plans, validator
 results, replay records, and aggregate evaluation reports. Names and fields become authoritative
-only when WP-2026-002 lands.
+only when WP-2026-003 lands.
 
 Every serialized value must:
 
@@ -33,14 +33,16 @@ at the application boundary.
 
 A model behavior is identified by more than a model name. The manifest in
 [`ai/runtime-manifest.json`](../../ai/runtime-manifest.json) records the prompt source/hash, request
-schema/hash, requested model, inference settings, output bound, storage choice, evaluator version,
-and visible failure/recovery policy. Live reports additionally record the returned model identifier
-and returned service tier.
+schema/hash, provider-profile ID/hash, adapter route, requested model, provider-native settings,
+output bound, storage choice, evaluator version, and visible failure/recovery policy. The
+registration ID and complete runtime-behavior version enter every replay/trace identity. Live
+reports additionally record the real provider/adapter and requested/returned model metadata.
 
-Inference settings are inline, exact-key manifest data rather than an undocumented provider
-default. They bind reasoning effort, strict structured-output mode, service tier, absence of tools,
-and the deliberate sampling-parameter policy. A caller cannot add or override a setting outside the
-approved registration.
+Provider-native settings are inline, exact-key manifest data rather than undocumented defaults.
+Their allowed shape comes from the digest-pinned provider profile. Common application constraints
+bind strict structured output, absence of tools, disabled request storage, no automatic retry,
+finite output/deadline, and visible failure. A caller cannot add, omit, or override a setting
+outside the approved registration.
 
 A change to any of these values is behavior-changing even when TypeScript does not change. Follow
 the [runtime-AI change runbook](../runbooks/change-runtime-ai.md); compare against the prior frozen

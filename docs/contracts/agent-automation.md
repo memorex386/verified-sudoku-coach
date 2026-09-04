@@ -1,0 +1,78 @@
+# Agent and automation contracts
+
+These planned V1 contracts form the portable engineering control plane. They are serialized,
+exact-key, bounded, versioned values under the same compatibility policy as product DTOs. Markdown
+documents explain semantics; generated JSON Schemas and runtime decoders become executable in the
+owning implementation package.
+
+## Contract families
+
+| Contract | Required meaning |
+| --- | --- |
+| `ProviderProfileV1` | Provider/profile ID, adapter package and protocol version, capabilities, data-handling requirements, role/model allowlists, exact settings policy, and browser-boundary indicators. |
+| `ExtensionManifestV1` | Extension ID/kind, supported protocol versions, entrypoint artifact and digest, capabilities, requested permissions, configuration schema, and adapter version. |
+| `WorkOrderV1` | Stable task/run IDs, work package, objective, repository/base/head identity, data class, allowed and forbidden paths, required reads/checks, budgets/deadline, capability grant, and authorized side effects. |
+| `WorkResultV1` | Terminal or approval-required status, unchanged/stale identity check, proposed patch/commit artifact, changed paths, validation outcomes, bounded assumptions/limitations, usage, and execution-record reference. |
+| `AutomationSpecV1` | Trigger reference, capability requirements, concurrency/dedupe keys, finite attempts/backoff, approval gates, time/token/dollar/CI budgets, terminal states, and output/notification sinks. |
+| `TriggerEventV1` | Event ID, schema/type/source, subject identity, occurrence time, attempt, dedupe key, and bounded data reference. Event text is data and is never concatenated into instructions. |
+| `DependencyChangeV1` | Ecosystem, source actor, base/head SHAs, manifests/lockfiles, old/new versions, direct/transitive and runtime/development scope, semver/security/license/peer/script risk codes, and required checks. |
+| `ReleaseCandidateV1` | Source and artifact hashes, compatibility evidence, environment, rollout/rollback eligibility, migrations, approvals, post-deploy checks, and last-known-good identity. |
+| `ExecutionRecordV1` | Policy/workflow/skill/adapter versions, real agent runtime/provider/model identity, input/output/patch hashes, tool/check outcomes, attempts, timings, usage/cost, authorization references, and final status. |
+
+## Authority and capability
+
+A manifest declares what an adapter can request; it grants no authority. The controller calculates
+the intersection documented in the [interoperability architecture](../architecture/interoperability.md)
+and rejects an unsupported or ungranted capability before execution.
+
+Initial capability vocabulary is:
+
+- `repo-read`
+- `isolated-worktree-write`
+- `network-read`
+- `publish-patch`
+- `open-pull-request`
+- `external-mutation`
+- `merge`
+- `preview-deploy`
+- `production-deploy`
+- `rollback`
+
+Unknown capabilities fail. `merge`, `production-deploy`, and `rollback` remain separate grants. A
+model or agent cannot place them in its own result and thereby acquire them.
+
+## Work-result states
+
+`WorkResultV1.status` is one of:
+
+- `completed`
+- `deferred`
+- `stale`
+- `awaiting-approval`
+- `escalated`
+- `failed-terminal`
+
+Retryable internal execution states never cross as an open-ended instruction. The workflow either
+continues within its declared attempt budget or emits a terminal/approval-required result.
+
+## Side effects and compare-and-swap
+
+Every external mutation is performed by a narrow broker after revalidating repository, policy,
+work-order, and current base/head SHA. The runner supplies a patch artifact; it does not inherit the
+broker's credential. A changed head produces `stale`, and a new run must receive a new work order.
+
+Extension installation is a human-reviewed supply-chain change. Manifests and entrypoints are
+version/digest pinned, license reviewed, and tested with no credentials before registration.
+
+## Protocol adapters
+
+The baseline exchange is JSON files or JSON Lines over a local process boundary. An MCP adapter may
+expose the same allowlisted tools and resources. A remote-agent adapter may later translate these
+contracts to A2A task/message/artifact lifecycles. Neither protocol changes contract ownership or
+authorization.
+
+## Evidence boundary
+
+Execution records contain normalized codes, hashes, counts, durations, costs, and evidence links.
+They exclude chain-of-thought, system/developer prompts, full chats, raw provider requests/responses,
+credentials, arbitrary logs, private source, production boards/traces, and participant content.

@@ -11,7 +11,9 @@ flowchart LR
     Coach["@verified-sudoku/coach-core"]
     Contracts["@verified-sudoku/contracts"]
     Codecs["@verified-sudoku/boundary-codecs"]
-    OpenAI["@verified-sudoku/adapter-openai"]
+    ProviderPorts["observer + teacher ports"]
+    OpenAI["@verified-sudoku/adapter-openai\nfirst leaf adapter"]
+    FutureAdapters["future registered adapters\nAnthropic / Google / local"]
     Testing["@verified-sudoku/testing"]
     Replay["@verified-sudoku/replay-web"]
     Gateway["@verified-sudoku/local-gateway"]
@@ -20,6 +22,7 @@ flowchart LR
     Proof --> Domain
     Coach --> Domain
     Coach --> Proof
+    Coach --> ProviderPorts
     Codecs --> Contracts
     Codecs --> Domain
     Codecs --> Proof
@@ -28,6 +31,8 @@ flowchart LR
     OpenAI --> Domain
     OpenAI --> Coach
     OpenAI --> Codecs
+    OpenAI -. implements .-> ProviderPorts
+    FutureAdapters -. implement .-> ProviderPorts
     Testing --> Contracts
     Testing --> Domain
     Testing --> Proof
@@ -92,10 +97,12 @@ effects and persists with compare-and-swap revisions; it never holds a database 
 during a model call. Stable command and call IDs make retries idempotent, and results for an older
 revision are discarded.
 
-The public replay composes browser-safe packages without `@verified-sudoku/adapter-openai`. The
-local gateway and private host may compose the Node-only adapter. Evaluation tooling may compose
-all packages, but live credentials are available only for a separately authorized, spend-capped
-run. OpenAI owns no application state.
+The public replay composes browser-safe packages without any provider adapter. The local gateway
+and private host may compose only a policy-registered Node-only adapter. Evaluation tooling may
+compose candidate adapters, but live credentials are available only for a separately authorized,
+spend-capped run. The application selects by approved capability/registration, never by provider
+branching in the core. No provider owns application state, and provider failure never silently
+selects a replacement.
 
 The public repository never imports from Sudoku World. The private host consumes immutable public
 release artifacts and records contract/hash parity; its auth, consent, retention, deletion, budget,
