@@ -21,10 +21,13 @@ const requiredPaths = [
   "SECURITY.md",
   "THIRD_PARTY_NOTICES.md",
   "config/architecture.json",
+  "config/automation-policy.json",
   "docs/README.md",
   "docs/work-packages/README.md",
   "package-lock.json",
   "package.json",
+  "scripts/lib/automation-policy.mjs",
+  "scripts/verify-automation-policy.mjs",
   "scripts/verify-ci.mjs",
   "tsconfig.base.json",
   "tsconfig.json",
@@ -32,6 +35,7 @@ const requiredPaths = [
 
 const expectedFoundationScripts = {
   "architecture:check": "node scripts/verify-architecture.mjs",
+  "automation:check": "node scripts/verify-automation-policy.mjs",
   "ci:check": "node scripts/verify-ci.mjs",
   "docs:check": "node scripts/verify-docs.mjs",
   doctor: "node scripts/doctor.mjs",
@@ -50,6 +54,7 @@ const expectedFoundationScripts = {
 const expectedVerifyCommand = [
   "npm run doctor",
   "npm run ci:check",
+  "npm run automation:check",
   "npm run lint",
   "npm run docs:check",
   "npm run architecture:check",

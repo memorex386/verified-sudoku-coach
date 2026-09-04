@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "VSC-AUTOMATION-1",
+  "mode": "shadow",
+  "source": {
+    "kind": "dependabot",
+    "ecosystem": "npm",
+    "classification": "deterministic-diff"
+  },
+  "eligibility": {
+    "dependencySection": "devDependencies",
+    "updateType": "semver-patch",
+    "allowedFiles": ["package.json", "package-lock.json"],
+    "statefulChanges": "ineligible",
+    "irreversibleChanges": "ineligible",
+    "ineligibleOutcome": "deferred"
+  },
+  "identity": {
+    "headSha": "required-full-lowercase-sha1",
+    "idempotencyKeyTemplate": "dependabot:{headSha}"
+  },
+  "decisionOrder": [
+    "deterministic-classification",
+    "cheap-model-assessment",
+    "strong-model-escalation",
+    "repair",
+    "ci-flake-rerun",
+    "merge-grant",
+    "deploy-grant",
+    "terminal-outcome"
+  ],
+  "attemptCaps": {
+    "cheapAssessments": 1,
+    "strongEscalations": 1,
+    "repairAttempts": 1,
+    "ciFlakeReruns": 1,
+    "deployAttempts": 1,
+    "rollbackAttempts": 1
+  },
+  "authority": {
+    "pullRequestMerge": {
+      "grantId": "dependency-pr-merge",
+      "required": true,
+      "automatic": false
+    },
+    "productionDeploy": {
+      "grantId": "production-deploy",
+      "required": true,
+      "automatic": false,
+      "humanGatedPhase": "evidence"
+    }
+  },
+  "terminalOutcomes": ["verified", "deferred", "escalated", "reverted"]
+}

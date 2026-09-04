@@ -62,6 +62,14 @@ import {
   validateRuntimeManifestTransition,
   validateTimeoutBound,
 } from "./lib/runtime-ai.mjs";
+import {
+  classifyDependencyPullRequest,
+  dependencyPullRequestIdempotencyKey,
+  isSemverPatchUpdate,
+  isTerminalAutomationOutcome,
+  validateAutomationPolicy,
+} from "./lib/automation-policy.mjs";
+import { verifyAutomationPolicyAtRoot } from "./verify-automation-policy.mjs";
 
 const verifyReviewShapeOffline = (review, revisions) =>
   review !== null && revisions.length > 0;
@@ -224,6 +232,132 @@ test("doctor locks the complete foundation verification aggregator", () => {
   hooked.scripts.preverify = "node scripts/mutate-before-verification.mjs";
   assert.ok(validateFoundationVerificationScripts(hooked).includes(
     "package.json: lifecycle script preverify is forbidden by the credential-free foundation",
+  ));
+});
+
+function validDependencyPullRequest() {
+  const headSha = "a".repeat(40);
+  return {
+    source: "dependabot",
+    ecosystem: "npm",
+    dependencyName: "typescript",
+    dependencySection: "devDependencies",
+    currentVersion: "5.9.2",
+    proposedVersion: "5.9.3",
+    changedFiles: ["package.json", "package-lock.json"],
+    headSha,
+    idempotencyKey: dependencyPullRequestIdempotencyKey(headSha),
+    statefulChange: false,
+    irreversibleChange: false,
+  };
+}
+
+test("automation policy is exact, shadow-only, and independently authorized", () => {
+  const policy = JSON.parse(readText("config/automation-policy.json"));
+  assert.deepEqual(verifyAutomationPolicyAtRoot(), []);
+  assert.deepEqual(validateAutomationPolicy(policy), []);
+
+  const unknown = structuredClone(policy);
+  unknown.unreviewed = true;
+  unknown.authority.pullRequestMerge.unreviewed = true;
+  const unknownErrors = validateAutomationPolicy(unknown);
+  assert.ok(unknownErrors.includes("automation policy unknown field unreviewed"));
+  assert.ok(unknownErrors.includes(
+    "authority.pullRequestMerge unknown field unreviewed",
+  ));
+  const missing = structuredClone(policy);
+  delete missing.source.classification;
+  assert.ok(validateAutomationPolicy(missing).includes("source missing classification"));
+
+  for (const cap of Object.keys(policy.attemptCaps)) {
+    const unbounded = structuredClone(policy);
+    unbounded.attemptCaps[cap] = 2;
+    assert.ok(validateAutomationPolicy(unbounded).includes(
+      `attemptCaps.${cap} must be an integer from 0 through 1`,
+    ));
+  }
+
+  const automatic = structuredClone(policy);
+  automatic.authority.pullRequestMerge.automatic = true;
+  automatic.authority.productionDeploy.automatic = true;
+  const automaticErrors = validateAutomationPolicy(automatic);
+  assert.ok(automaticErrors.includes("shadow mode cannot automatically merge a pull request"));
+  assert.ok(automaticErrors.includes("shadow mode cannot automatically deploy production"));
+
+  const conflated = structuredClone(policy);
+  conflated.authority.productionDeploy.grantId = "dependency-pr-merge";
+  const conflatedErrors = validateAutomationPolicy(conflated);
+  assert.ok(conflatedErrors.includes(
+    "pull-request merge and production deploy must use separate grants",
+  ));
+  assert.ok(conflatedErrors.includes(
+    "authority.productionDeploy.grantId must be production-deploy",
+  ));
+});
+
+test("automation policy has bounded terminal outcomes and deterministic ordering", () => {
+  const policy = JSON.parse(readText("config/automation-policy.json"));
+  for (const outcome of ["verified", "deferred", "escalated", "reverted"]) {
+    assert.equal(isTerminalAutomationOutcome(policy, outcome), true);
+  }
+  assert.equal(isTerminalAutomationOutcome(policy, "retrying"), false);
+
+  const incomplete = structuredClone(policy);
+  incomplete.terminalOutcomes.pop();
+  assert.ok(validateAutomationPolicy(incomplete).includes(
+    "terminalOutcomes must be exactly verified, deferred, escalated, and reverted",
+  ));
+
+  const modelFirst = structuredClone(policy);
+  modelFirst.decisionOrder.reverse();
+  assert.ok(validateAutomationPolicy(modelFirst).includes(
+    "decisionOrder must classify deterministically before model stages and terminate",
+  ));
+});
+
+test("dependency pull-request eligibility is a deterministic narrow allowlist", () => {
+  const policy = JSON.parse(readText("config/automation-policy.json"));
+  const candidate = validDependencyPullRequest();
+  assert.deepEqual(classifyDependencyPullRequest(policy, candidate), {
+    eligible: true,
+    nextStage: "cheap-model-assessment",
+    terminalOutcome: null,
+    reasons: [],
+  });
+  assert.equal(isSemverPatchUpdate("1.2.3", "1.2.4"), true);
+  assert.equal(isSemverPatchUpdate("1.2.3", "1.3.0"), false);
+  assert.equal(isSemverPatchUpdate("1.2.3", "2.0.0"), false);
+  assert.equal(isSemverPatchUpdate("1.2.3", "1.2.4-beta.1"), false);
+
+  for (const [field, value, reason] of [
+    ["source", "renovate", "source is not the allowlisted dependency updater"],
+    ["ecosystem", "github-actions", "ecosystem is not npm"],
+    ["dependencySection", "dependencies", "dependency is not a devDependency"],
+    ["proposedVersion", "5.10.0", "dependency update is not a stable semver patch"],
+    ["changedFiles", ["package.json", "scripts/install.mjs"],
+      "changedFiles must be a unique non-empty subset of the allowlist"],
+    ["headSha", "main", "headSha must be an exact full lowercase SHA-1"],
+    ["statefulChange", true, "stateful changes are ineligible"],
+    ["irreversibleChange", true, "irreversible changes are ineligible"],
+  ]) {
+    const changed = structuredClone(candidate);
+    changed[field] = value;
+    assert.ok(classifyDependencyPullRequest(policy, changed).reasons.includes(reason));
+  }
+
+  const staleIdentity = structuredClone(candidate);
+  staleIdentity.headSha = "b".repeat(40);
+  assert.ok(classifyDependencyPullRequest(policy, staleIdentity).reasons.includes(
+    `idempotencyKey must be exactly dependabot:${"b".repeat(40)}`,
+  ));
+
+  const unknown = structuredClone(candidate);
+  unknown.freeform = true;
+  const unknownResult = classifyDependencyPullRequest(policy, unknown);
+  assert.equal(unknownResult.nextStage, null);
+  assert.equal(unknownResult.terminalOutcome, "deferred");
+  assert.ok(unknownResult.reasons.includes(
+    "dependency pull request unknown field freeform",
   ));
 });
 
