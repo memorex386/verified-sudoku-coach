@@ -1983,6 +1983,13 @@ export function startDependencyAutomationWithStores(
           "stored automation replay outcome contradicts deterministic classification",
         );
       }
+      if (classification.terminalOutcome !== null && JSON.stringify(
+        existing.terminalState.reasonCodes,
+      ) !== JSON.stringify([`classification-${classification.terminalOutcome}`])) {
+        semanticErrors.push(
+          "stored automation replay reasons contradict deterministic classification",
+        );
+      }
       if (classification.terminalOutcome === null &&
           existing.terminalState.outcome === "reverted") {
         semanticErrors.push("dependency automation replay cannot contain a release rollback");

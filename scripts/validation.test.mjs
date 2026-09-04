@@ -1381,6 +1381,22 @@ test("composed dependency start replays after identity derivation and before eff
   assert.equal(contradicted.conflict, true);
   assert.equal(contradicted.result.terminalOutcome, "failed-terminal");
   assert.deepEqual(contradicted.effects, []);
+
+  const reasonForgedStore = new Map(majorFirst.resultStore);
+  const reasonForgedRecord = reasonForgedStore.get(majorFixture.workOrder.idempotencyKey);
+  reasonForgedRecord.result.reasonCodes = ["deployment-verified"];
+  reasonForgedRecord.terminalState.reasonCodes = ["deployment-verified"];
+  const reasonContradicted = startDependencyAutomationWithStores(
+    policy,
+    majorFixture.workOrder,
+    classificationAutomationEvent(majorFixture),
+    new Map(),
+    reasonForgedStore,
+  );
+  assert.equal(reasonContradicted.replayed, false);
+  assert.equal(reasonContradicted.conflict, true);
+  assert.equal(reasonContradicted.result.terminalOutcome, "failed-terminal");
+  assert.deepEqual(reasonContradicted.effects, []);
 });
 
 test("work orders separate workflow authority and controller forbids model self-escalation", () => {
