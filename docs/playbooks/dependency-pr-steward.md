@@ -45,7 +45,8 @@ gate weakening, or unrelated upgrades to manufacture a green result.
 
 ## Initial merge eligibility
 
-The checked-in automation policy begins in `shadow` mode. Future activation requires a separate
+The checked-in [`automation policy`](../../config/automation-policy.json) begins in `shadow` mode.
+Future activation requires a separate
 accepted policy change, enforced required checks, and evidence from frozen/adversarial plus shadow
 runs. Initial eligibility is deliberately limited to:
 
@@ -88,7 +89,8 @@ The dependency steward stops after merge and post-merge verification. A future r
 builds once, promotes the identical hashed artifact, and keeps production human-gated during the
 evidence phase. Reversible static deployments may later receive bounded policy authority.
 
-One deployment and one rollback are the maximum. Failed or timed-out verification restores the
+Patch publication, merge, release promotion, production deployment, and rollback use distinct
+grants and credential classes. One deployment and one rollback are the maximum. Failed or timed-out verification restores the
 last-known-good immutable artifact once, verifies restoration once, then stops and escalates. There
 is no automatic production fix-forward loop. Functions, rules, data/schema migrations, secrets,
 and native-store releases remain outside automatic rollback eligibility.

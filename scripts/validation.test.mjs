@@ -237,19 +237,27 @@ test("doctor locks the complete foundation verification aggregator", () => {
 
 function validDependencyPullRequest() {
   const headSha = "a".repeat(40);
-  return {
+  const candidate = {
     source: "dependabot",
+    sourceActor: "dependabot[bot]",
+    sourceEvent: "pull_request",
     ecosystem: "npm",
+    repository: "memorex386/verified-sudoku-coach",
+    pullRequestNumber: 42,
     dependencyName: "typescript",
     dependencySection: "devDependencies",
     currentVersion: "5.9.2",
     proposedVersion: "5.9.3",
     changedFiles: ["package.json", "package-lock.json"],
     headSha,
-    idempotencyKey: dependencyPullRequestIdempotencyKey(headSha),
+    failureFingerprint: "b".repeat(64),
+    policyVersion: "VSC-AUTOMATION-1",
+    idempotencyKey: "",
     statefulChange: false,
     irreversibleChange: false,
   };
+  candidate.idempotencyKey = dependencyPullRequestIdempotencyKey(candidate);
+  return candidate;
 }
 
 test("automation policy is exact, shadow-only, and independently authorized", () => {
@@ -269,6 +277,12 @@ test("automation policy is exact, shadow-only, and independently authorized", ()
   delete missing.source.classification;
   assert.ok(validateAutomationPolicy(missing).includes("source missing classification"));
 
+  const selfSelecting = structuredClone(policy);
+  selfSelecting.modelRoute.selfSelection = "allowed";
+  assert.ok(validateAutomationPolicy(selfSelecting).includes(
+    "modelRoute.selfSelection must be forbidden",
+  ));
+
   for (const cap of Object.keys(policy.attemptCaps)) {
     const unbounded = structuredClone(policy);
     unbounded.attemptCaps[cap] = 2;
@@ -277,27 +291,41 @@ test("automation policy is exact, shadow-only, and independently authorized", ()
     ));
   }
 
-  const automatic = structuredClone(policy);
-  automatic.authority.pullRequestMerge.automatic = true;
-  automatic.authority.productionDeploy.automatic = true;
-  const automaticErrors = validateAutomationPolicy(automatic);
-  assert.ok(automaticErrors.includes("shadow mode cannot automatically merge a pull request"));
-  assert.ok(automaticErrors.includes("shadow mode cannot automatically deploy production"));
+  for (const authorityName of Object.keys(policy.authority)) {
+    const automatic = structuredClone(policy);
+    automatic.authority[authorityName].automatic = true;
+    assert.ok(validateAutomationPolicy(automatic).includes(
+      `shadow mode cannot automatically exercise authority.${authorityName}`,
+    ));
+  }
 
   const conflated = structuredClone(policy);
   conflated.authority.productionDeploy.grantId = "dependency-pr-merge";
+  conflated.authority.productionDeploy.credentialClass = "source-control-merge";
   const conflatedErrors = validateAutomationPolicy(conflated);
   assert.ok(conflatedErrors.includes(
-    "pull-request merge and production deploy must use separate grants",
+    "authority.productionDeploy.grantId must be unique",
   ));
   assert.ok(conflatedErrors.includes(
     "authority.productionDeploy.grantId must be production-deploy",
+  ));
+  assert.ok(conflatedErrors.includes(
+    "authority.productionDeploy.credentialClass must be unique",
   ));
 });
 
 test("automation policy has bounded terminal outcomes and deterministic ordering", () => {
   const policy = JSON.parse(readText("config/automation-policy.json"));
-  for (const outcome of ["verified", "deferred", "escalated", "reverted"]) {
+  for (const outcome of [
+    "verified",
+    "completed",
+    "deferred",
+    "stale",
+    "awaiting-approval",
+    "escalated",
+    "failed-terminal",
+    "reverted",
+  ]) {
     assert.equal(isTerminalAutomationOutcome(policy, outcome), true);
   }
   assert.equal(isTerminalAutomationOutcome(policy, "retrying"), false);
@@ -305,7 +333,7 @@ test("automation policy has bounded terminal outcomes and deterministic ordering
   const incomplete = structuredClone(policy);
   incomplete.terminalOutcomes.pop();
   assert.ok(validateAutomationPolicy(incomplete).includes(
-    "terminalOutcomes must be exactly verified, deferred, escalated, and reverted",
+    "terminalOutcomes must be exactly verified, completed, deferred, stale, awaiting-approval, escalated, failed-terminal, reverted",
   ));
 
   const modelFirst = structuredClone(policy);
@@ -331,12 +359,18 @@ test("dependency pull-request eligibility is a deterministic narrow allowlist", 
 
   for (const [field, value, reason] of [
     ["source", "renovate", "source is not the allowlisted dependency updater"],
+    ["sourceActor", "renovate[bot]", "source actor is not the verified Dependabot actor"],
+    ["sourceEvent", "issue_comment", "source event is not an allowlisted pull request event"],
     ["ecosystem", "github-actions", "ecosystem is not npm"],
+    ["repository", "Not Canonical", "repository must be a canonical lowercase owner/name"],
+    ["pullRequestNumber", 0, "pullRequestNumber must be a positive safe integer"],
     ["dependencySection", "dependencies", "dependency is not a devDependency"],
     ["proposedVersion", "5.10.0", "dependency update is not a stable semver patch"],
     ["changedFiles", ["package.json", "scripts/install.mjs"],
-      "changedFiles must be a unique non-empty subset of the allowlist"],
+      "changedFiles must be exactly package.json and package-lock.json"],
     ["headSha", "main", "headSha must be an exact full lowercase SHA-1"],
+    ["failureFingerprint", "unknown", "failureFingerprint must be an exact lowercase SHA-256"],
+    ["policyVersion", "VSC-AUTOMATION-0", "policyVersion must match the active automation policy"],
     ["statefulChange", true, "stateful changes are ineligible"],
     ["irreversibleChange", true, "irreversible changes are ineligible"],
   ]) {
@@ -346,9 +380,10 @@ test("dependency pull-request eligibility is a deterministic narrow allowlist", 
   }
 
   const staleIdentity = structuredClone(candidate);
-  staleIdentity.headSha = "b".repeat(40);
+  staleIdentity.headSha = "c".repeat(40);
+  const expectedStaleKey = dependencyPullRequestIdempotencyKey(staleIdentity);
   assert.ok(classifyDependencyPullRequest(policy, staleIdentity).reasons.includes(
-    `idempotencyKey must be exactly dependabot:${"b".repeat(40)}`,
+    `idempotencyKey must be exactly ${expectedStaleKey}`,
   ));
 
   const unknown = structuredClone(candidate);
@@ -358,6 +393,23 @@ test("dependency pull-request eligibility is a deterministic narrow allowlist", 
   assert.equal(unknownResult.terminalOutcome, "deferred");
   assert.ok(unknownResult.reasons.includes(
     "dependency pull request unknown field freeform",
+  ));
+
+  const currentTypeScriptMajorFixture = validDependencyPullRequest();
+  currentTypeScriptMajorFixture.pullRequestNumber = 2;
+  currentTypeScriptMajorFixture.proposedVersion = "7.0.0";
+  currentTypeScriptMajorFixture.idempotencyKey = dependencyPullRequestIdempotencyKey(
+    currentTypeScriptMajorFixture,
+  );
+  const currentFixtureResult = classifyDependencyPullRequest(
+    policy,
+    currentTypeScriptMajorFixture,
+  );
+  assert.equal(currentFixtureResult.eligible, false);
+  assert.equal(currentFixtureResult.nextStage, null);
+  assert.equal(currentFixtureResult.terminalOutcome, "deferred");
+  assert.ok(currentFixtureResult.reasons.includes(
+    "dependency update is not a stable semver patch",
   ));
 });
 

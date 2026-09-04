@@ -5,12 +5,13 @@ const policyKeys = [
   "source",
   "eligibility",
   "identity",
+  "modelRoute",
   "decisionOrder",
   "attemptCaps",
   "authority",
   "terminalOutcomes",
 ];
-const sourceKeys = ["kind", "ecosystem", "classification"];
+const sourceKeys = ["kind", "ecosystem", "actor", "event", "classification"];
 const eligibilityKeys = [
   "dependencySection",
   "updateType",
@@ -19,32 +20,55 @@ const eligibilityKeys = [
   "irreversibleChanges",
   "ineligibleOutcome",
 ];
-const identityKeys = ["headSha", "idempotencyKeyTemplate"];
+const identityKeys = ["headSha", "failureFingerprint", "idempotencyKeyTemplate"];
+const modelRouteKeys = [
+  "selectionAuthority",
+  "cheapProfileClass",
+  "strongProfileClass",
+  "selfSelection",
+  "inputData",
+  "outputMode",
+];
 const attemptCapKeys = [
   "cheapAssessments",
   "strongEscalations",
   "repairAttempts",
+  "patchPublications",
   "ciFlakeReruns",
+  "mergeAttempts",
+  "releasePromotions",
   "deployAttempts",
   "rollbackAttempts",
 ];
-const authorityKeys = ["pullRequestMerge", "productionDeploy"];
-const mergeAuthorityKeys = ["grantId", "required", "automatic"];
-const deployAuthorityKeys = [
+const authorityKeys = [
+  "patchPublication",
+  "pullRequestMerge",
+  "releasePromotion",
+  "productionDeploy",
+  "productionRollback",
+];
+const authorityGrantKeys = [
   "grantId",
+  "credentialClass",
   "required",
   "automatic",
   "humanGatedPhase",
 ];
 const dependencyPullRequestKeys = [
   "source",
+  "sourceActor",
+  "sourceEvent",
   "ecosystem",
+  "repository",
+  "pullRequestNumber",
   "dependencyName",
   "dependencySection",
   "currentVersion",
   "proposedVersion",
   "changedFiles",
   "headSha",
+  "failureFingerprint",
+  "policyVersion",
   "idempotencyKey",
   "statefulChange",
   "irreversibleChange",
@@ -56,15 +80,29 @@ const expectedDecisionOrder = [
   "cheap-model-assessment",
   "strong-model-escalation",
   "repair",
+  "patch-publication-grant",
   "ci-flake-rerun",
   "merge-grant",
+  "release-promotion-grant",
   "deploy-grant",
+  "rollback-grant",
   "terminal-outcome",
 ];
-const expectedTerminalOutcomes = ["verified", "deferred", "escalated", "reverted"];
+const expectedTerminalOutcomes = [
+  "verified",
+  "completed",
+  "deferred",
+  "stale",
+  "awaiting-approval",
+  "escalated",
+  "failed-terminal",
+  "reverted",
+];
 const fullLowercaseSha1 = /^[0-9a-f]{40}$/;
+const fullLowercaseSha256 = /^[0-9a-f]{64}$/;
 const stableSemver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const npmPackageName = /^(?:@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*|[a-z0-9][a-z0-9._-]*)$/;
+const githubRepository = /^[a-z0-9][a-z0-9_.-]{0,99}\/[a-z0-9][a-z0-9_.-]{0,99}$/;
 
 function isExactObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -98,54 +136,48 @@ function validateAuthority(authority, mode) {
     return errors;
   }
 
-  const merge = authority.pullRequestMerge;
-  const deploy = authority.productionDeploy;
-  errors.push(...exactObjectErrors(
-    merge,
-    "authority.pullRequestMerge",
-    mergeAuthorityKeys,
-  ));
-  errors.push(...exactObjectErrors(
-    deploy,
-    "authority.productionDeploy",
-    deployAuthorityKeys,
-  ));
-
-  if (isExactObject(merge)) {
-    if (merge.grantId !== "dependency-pr-merge") {
-      errors.push("authority.pullRequestMerge.grantId must be dependency-pr-merge");
+  const expectedGrants = {
+    patchPublication: ["dependency-patch-publish", "source-control-patch"],
+    pullRequestMerge: ["dependency-pr-merge", "source-control-merge"],
+    releasePromotion: ["release-promotion", "release-artifact"],
+    productionDeploy: ["production-deploy", "production-deploy"],
+    productionRollback: ["production-rollback", "production-rollback"],
+  };
+  const seenGrantIds = new Set();
+  const seenCredentialClasses = new Set();
+  for (const key of authorityKeys) {
+    const grant = authority[key];
+    errors.push(...exactObjectErrors(grant, `authority.${key}`, authorityGrantKeys));
+    if (!isExactObject(grant)) {
+      continue;
     }
-    if (merge.required !== true) {
-      errors.push("authority.pullRequestMerge.required must be true");
+    const [expectedGrantId, expectedCredentialClass] = expectedGrants[key];
+    if (grant.grantId !== expectedGrantId) {
+      errors.push(`authority.${key}.grantId must be ${expectedGrantId}`);
     }
-    if (typeof merge.automatic !== "boolean") {
-      errors.push("authority.pullRequestMerge.automatic must be a boolean");
+    if (grant.credentialClass !== expectedCredentialClass) {
+      errors.push(`authority.${key}.credentialClass must be ${expectedCredentialClass}`);
     }
-  }
-
-  if (isExactObject(deploy)) {
-    if (deploy.grantId !== "production-deploy") {
-      errors.push("authority.productionDeploy.grantId must be production-deploy");
+    if (grant.required !== true) {
+      errors.push(`authority.${key}.required must be true`);
     }
-    if (deploy.required !== true) {
-      errors.push("authority.productionDeploy.required must be true");
+    if (typeof grant.automatic !== "boolean") {
+      errors.push(`authority.${key}.automatic must be a boolean`);
     }
-    if (typeof deploy.automatic !== "boolean") {
-      errors.push("authority.productionDeploy.automatic must be a boolean");
+    if (grant.humanGatedPhase !== "evidence") {
+      errors.push(`authority.${key}.humanGatedPhase must be evidence`);
     }
-    if (deploy.humanGatedPhase !== "evidence") {
-      errors.push("authority.productionDeploy.humanGatedPhase must be evidence");
+    if (seenGrantIds.has(grant.grantId)) {
+      errors.push(`authority.${key}.grantId must be unique`);
     }
-  }
-
-  if (isExactObject(merge) && isExactObject(deploy) && merge.grantId === deploy.grantId) {
-    errors.push("pull-request merge and production deploy must use separate grants");
-  }
-  if (mode === "shadow" && isExactObject(merge) && merge.automatic !== false) {
-    errors.push("shadow mode cannot automatically merge a pull request");
-  }
-  if (mode === "shadow" && isExactObject(deploy) && deploy.automatic !== false) {
-    errors.push("shadow mode cannot automatically deploy production");
+    if (seenCredentialClasses.has(grant.credentialClass)) {
+      errors.push(`authority.${key}.credentialClass must be unique`);
+    }
+    seenGrantIds.add(grant.grantId);
+    seenCredentialClasses.add(grant.credentialClass);
+    if (mode === "shadow" && grant.automatic !== false) {
+      errors.push(`shadow mode cannot automatically exercise authority.${key}`);
+    }
   }
   return errors;
 }
@@ -173,6 +205,12 @@ export function validateAutomationPolicy(policy) {
     }
     if (policy.source.ecosystem !== "npm") {
       errors.push("source.ecosystem must be npm");
+    }
+    if (policy.source.actor !== "dependabot[bot]") {
+      errors.push("source.actor must be dependabot[bot]");
+    }
+    if (policy.source.event !== "pull_request") {
+      errors.push("source.event must be pull_request");
     }
     if (policy.source.classification !== "deterministic-diff") {
       errors.push("source.classification must be deterministic-diff");
@@ -206,8 +244,29 @@ export function validateAutomationPolicy(policy) {
     if (policy.identity.headSha !== "required-full-lowercase-sha1") {
       errors.push("identity.headSha must require a full lowercase SHA-1");
     }
-    if (policy.identity.idempotencyKeyTemplate !== "dependabot:{headSha}") {
-      errors.push("identity.idempotencyKeyTemplate must be dependabot:{headSha}");
+    if (policy.identity.failureFingerprint !== "required-lowercase-sha256") {
+      errors.push("identity.failureFingerprint must require a lowercase SHA-256");
+    }
+    const expectedTemplate = "dependabot:{repository}:pr-{pullRequestNumber}:{headSha}:{failureFingerprint}:{policyVersion}";
+    if (policy.identity.idempotencyKeyTemplate !== expectedTemplate) {
+      errors.push(`identity.idempotencyKeyTemplate must be ${expectedTemplate}`);
+    }
+  }
+
+  errors.push(...exactObjectErrors(policy.modelRoute, "modelRoute", modelRouteKeys));
+  if (isExactObject(policy.modelRoute)) {
+    const expectedModelRoute = {
+      selectionAuthority: "deterministic-controller",
+      cheapProfileClass: "low-cost-diagnosis",
+      strongProfileClass: "complex-diagnosis",
+      selfSelection: "forbidden",
+      inputData: "sanitized-evidence",
+      outputMode: "strict-proposal",
+    };
+    for (const [key, expected] of Object.entries(expectedModelRoute)) {
+      if (policy.modelRoute[key] !== expected) {
+        errors.push(`modelRoute.${key} must be ${expected}`);
+      }
     }
   }
 
@@ -227,13 +286,20 @@ export function validateAutomationPolicy(policy) {
 
   errors.push(...validateAuthority(policy.authority, policy.mode));
   if (!exactArray(policy.terminalOutcomes, expectedTerminalOutcomes)) {
-    errors.push("terminalOutcomes must be exactly verified, deferred, escalated, and reverted");
+    errors.push(`terminalOutcomes must be exactly ${expectedTerminalOutcomes.join(", ")}`);
   }
   return errors;
 }
 
-export function dependencyPullRequestIdempotencyKey(headSha) {
-  return `dependabot:${headSha}`;
+export function dependencyPullRequestIdempotencyKey(candidate) {
+  return [
+    "dependabot",
+    candidate.repository,
+    `pr-${candidate.pullRequestNumber}`,
+    candidate.headSha,
+    candidate.failureFingerprint,
+    candidate.policyVersion,
+  ].join(":");
 }
 
 export function isSemverPatchUpdate(currentVersion, proposedVersion) {
@@ -265,8 +331,20 @@ export function classifyDependencyPullRequest(policy, candidate) {
   if (candidate.source !== policy.source?.kind) {
     reasons.push("source is not the allowlisted dependency updater");
   }
+  if (candidate.sourceActor !== policy.source?.actor) {
+    reasons.push("source actor is not the verified Dependabot actor");
+  }
+  if (candidate.sourceEvent !== policy.source?.event) {
+    reasons.push("source event is not an allowlisted pull request event");
+  }
   if (candidate.ecosystem !== policy.source?.ecosystem) {
     reasons.push("ecosystem is not npm");
+  }
+  if (typeof candidate.repository !== "string" || !githubRepository.test(candidate.repository)) {
+    reasons.push("repository must be a canonical lowercase owner/name");
+  }
+  if (!Number.isSafeInteger(candidate.pullRequestNumber) || candidate.pullRequestNumber < 1) {
+    reasons.push("pullRequestNumber must be a positive safe integer");
   }
   if (typeof candidate.dependencyName !== "string" ||
       !npmPackageName.test(candidate.dependencyName)) {
@@ -279,16 +357,19 @@ export function classifyDependencyPullRequest(policy, candidate) {
     reasons.push("dependency update is not a stable semver patch");
   }
 
-  if (!Array.isArray(candidate.changedFiles) || candidate.changedFiles.length === 0 ||
-      new Set(candidate.changedFiles).size !== candidate.changedFiles.length ||
-      candidate.changedFiles.some((file) =>
-        !policy.eligibility?.allowedFiles?.includes(file))) {
-    reasons.push("changedFiles must be a unique non-empty subset of the allowlist");
+  if (!exactArray(candidate.changedFiles, expectedAllowedFiles)) {
+    reasons.push("changedFiles must be exactly package.json and package-lock.json");
   }
   if (!fullLowercaseSha1.test(candidate.headSha ?? "")) {
     reasons.push("headSha must be an exact full lowercase SHA-1");
   }
-  const expectedIdempotencyKey = dependencyPullRequestIdempotencyKey(candidate.headSha);
+  if (!fullLowercaseSha256.test(candidate.failureFingerprint ?? "")) {
+    reasons.push("failureFingerprint must be an exact lowercase SHA-256");
+  }
+  if (candidate.policyVersion !== policy.policyVersion) {
+    reasons.push("policyVersion must match the active automation policy");
+  }
+  const expectedIdempotencyKey = dependencyPullRequestIdempotencyKey(candidate);
   if (candidate.idempotencyKey !== expectedIdempotencyKey) {
     reasons.push(`idempotencyKey must be exactly ${expectedIdempotencyKey}`);
   }

@@ -45,15 +45,23 @@ model or agent cannot place them in its own result and thereby acquire them.
 
 `WorkResultV1.status` is one of:
 
+- `verified`
 - `completed`
 - `deferred`
 - `stale`
 - `awaiting-approval`
 - `escalated`
 - `failed-terminal`
+- `reverted`
 
 Retryable internal execution states never cross as an open-ended instruction. The workflow either
 continues within its declared attempt budget or emits a terminal/approval-required result.
+
+The initial exact policy is [`config/automation-policy.json`](../../config/automation-policy.json).
+Its dedupe identity binds repository, pull request, exact head SHA, normalized failure fingerprint,
+and policy version. Patch publication, merge, release promotion, production deployment, and
+production rollback each require a distinct grant and credential class; possession of one can
+never satisfy another.
 
 ## Side effects and compare-and-swap
 
