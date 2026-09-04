@@ -4,6 +4,9 @@ This protocol generates independently owned public test material. It is determin
 selection-biased by design; it is not random-sample evidence of Sudoku difficulty, learning, or
 model quality.
 
+The staged implementation and its current claim limits are recorded in
+[fixture tooling](fixture-tools.md). That checkpoint is not an accepted showcase.
+
 ## Seed and bounded search
 
 The generator accepts only `vsc-fixture/v1:<attempt>`, where `attempt` is canonical decimal

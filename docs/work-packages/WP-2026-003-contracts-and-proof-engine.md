@@ -86,6 +86,7 @@ npm run fixtures:check
 npm run proof:hashes
 npm run pack:smoke
 npm run test:domain
+npm run test:fixture-tools
 npm run verify
 ```
 
@@ -180,6 +181,24 @@ Packed-consumer validation on Windows, 2026-09-04:
 - `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
 - `git diff --check`: PASS — no whitespace errors.
 
+The maintainer authorized [PR #8](https://github.com/memorex386/verified-sudoku-coach/pull/8),
+merged at `80340d2e48ff68b9b8cbcf2a85ff2f7a6b54c628`, preserving reviewed head
+`b159d0945a87990e33060f4196072077b88772d2` after Windows, Ubuntu, dependency review and CodeQL passed.
+The [fixture tooling checkpoint](../architecture/fixture-tools.md) implements deterministic seeds,
+complete grids, D4 transforms, an independent exact counting solver and symmetric clue removal.
+Candidates remain explicitly unfiltered; no showcase artifacts or proof capabilities are produced.
+
+Fixture-tooling validation on Windows, 2026-09-04:
+
+- `npm ci --ignore-scripts`: PASS — unchanged dependencies, zero reported vulnerabilities.
+- `npm run test:fixture-tools`: PASS — nine tests, including the independent exact-cover oracle,
+  seed-zero removal replay, seven selected attempts and eight D4 transforms.
+- `npm run architecture:check`: PASS — inward dependencies and core boundaries preserved.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 156 tests, strict
+  compilation, existing API/schema artifacts and matching packed Node/Chromium conformance.
+- `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -192,13 +211,13 @@ verified eliminations remain unimplemented, as do generated showcase fixtures, e
 acceptance and private conformance. Chromium/Angular and packed-consumer checks cover only
 the implemented domain and wire-boundary surfaces.
 Proof/trace/replay codecs check framing and integrity only and return explicit `unverified` data.
-`test:domain`, `test:contracts` and `pack:smoke` are executable; `test:proof`, `fixtures:check`
+`test:domain`, `test:contracts`, `test:fixture-tools` and `pack:smoke` are executable; `test:proof`, `fixtures:check`
 and `proof:hashes` remain required before Done. Packed empty proof-engine/coach-core exports do
 not count as implementation of those services.
 
 ## Next action
 
-- Review the packed-consumer conformance implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
+- Review the fixture-tooling implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
 
 ## Checkpoints
 
@@ -238,3 +257,11 @@ not count as implementation of those services.
 - 2026-09-04 — Packed-consumer verification and the full CI-base-ref verifier passed locally:
   147 tests plus matching Node/Chromium results and reproducible archive evidence. The new gate
   is CI-wired; this implementation stops at its review PR and does not authorize merge or release.
+- 2026-09-04 — Maintainer authorized PR #8 integration and the next unblocked WP-2026-003 slice.
+  Merged the checked head and created a fresh worktree from updated main. Implemented fixture
+  seed/grid/orbit tools, independent capped solution counting and symmetric clue removal, with
+  an independent exact-cover test oracle. No technique code, showcase selection, private data,
+  provider call, live automation, release or deployment was added.
+- 2026-09-04 — Full local CI-base-ref verification passed all 156 tests and existing package
+  conformance. The fixture-tooling slice is ready for its review PR; it does not establish
+  showcase selection, proof soundness, private collision clearance or private corpus parity.
