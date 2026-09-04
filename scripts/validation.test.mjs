@@ -4572,7 +4572,15 @@ test("work-package verifier rejects an all-zero push base", async () => {
   }
 });
 
-test("Ready permits decision-complete commands that implementation will create", async () => {
+test("Ready permits decision-complete commands that implementation will create", async (context) => {
+  // This is a synthetic readiness state, not a proposed transition from the real Git base.
+  // Checkpoint-history tests separately enforce the prohibition on In progress -> Ready.
+  const previousBase = process.env.WORK_PACKAGE_BASE_REF;
+  delete process.env.WORK_PACKAGE_BASE_REF;
+  context.after(() => {
+    if (previousBase === undefined) delete process.env.WORK_PACKAGE_BASE_REF;
+    else process.env.WORK_PACKAGE_BASE_REF = previousBase;
+  });
   const packages = structuredClone(loadWorkPackages());
   const proofPackage = packages.find((item) => item.status === "In progress");
   assert.ok(proofPackage);

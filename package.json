@@ -34,8 +34,9 @@
     "licenses:check": "node scripts/verify-licenses.mjs",
     "skills:check": "node scripts/verify-skills.mjs",
     "typecheck": "tsc -b --pretty false",
-    "test": "node --test scripts/validation.test.mjs",
-    "verify": "npm run doctor && npm run ci:check && npm run automation:check && npm run automation:fixture && npm run lint && npm run docs:check && npm run architecture:check && npm run work-packages:check && npm run runtime-ai:check && npm run eval:replay && npm run security:check && npm run licenses:check && npm run skills:check && npm test && npm run typecheck"
+    "test": "node --test scripts/validation.test.mjs && npm run test:domain",
+    "verify": "npm run doctor && npm run ci:check && npm run automation:check && npm run automation:fixture && npm run lint && npm run docs:check && npm run architecture:check && npm run work-packages:check && npm run runtime-ai:check && npm run eval:replay && npm run security:check && npm run licenses:check && npm run skills:check && npm test && npm run typecheck",
+    "test:domain": "tsc -b packages/domain --pretty false && node scripts/verify-domain-api.mjs && node --test packages/domain/test/domain.test.mjs"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
