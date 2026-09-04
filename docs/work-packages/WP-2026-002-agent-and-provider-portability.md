@@ -108,8 +108,10 @@ reported `Skill is valid!` for `steward-dependency-pr`.
 ## Delivery evidence
 
 Implementation is recorded on `codex/agent-portability`, including audited controller head
-`d486c5236deb4caa2e065a4b6c464f01ed1418ba`. No release exists, and no merge, deployment,
-provider spend, or live automation is authorized.
+[`d486c5236deb4caa2e065a4b6c464f01ed1418ba`](https://github.com/memorex386/verified-sudoku-coach/commit/d486c5236deb4caa2e065a4b6c464f01ed1418ba),
+and is under review in open
+[PR #4](https://github.com/memorex386/verified-sudoku-coach/pull/4). No release exists, and no
+merge, deployment, provider spend, or live automation is authorized.
 
 ## Known limitations and blockers
 
@@ -125,7 +127,7 @@ modules before such a runner is accepted.
 
 ## Next action
 
-- Open the validated foundation-amendment pull request without merging, deploying, spending, or publishing.
+- Await maintainer review and remote CI for PR #4; make only evidence-backed corrections without merging, deploying, spending, or publishing.
 
 ## Checkpoints
 
@@ -135,3 +137,6 @@ modules before such a runner is accepted.
   decoding, work-order renewal, grants, replay storage, lineage caps, exact-SHA mutation, terminal
   paths, and rollback. Findings were converted into regressions; all 112 tests and the full
   credential-free verifier pass with the live runner explicitly out of scope.
+- 2026-09-04 — Public PR #4 opened from the validated branch. The work package remains In progress
+  pending remote CI and maintainer review; no merge, release, deployment, spend, publication, or
+  live automation occurred.

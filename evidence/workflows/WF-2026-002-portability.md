@@ -2,7 +2,7 @@
 
 - Work package: [WP-2026-002](../../docs/work-packages/WP-2026-002-agent-and-provider-portability.md)
 - Date: 2026-09-04
-- State: Implementation under review; no merge, live automation, provider spend, deployment, or release
+- State: Open [PR #4](https://github.com/memorex386/verified-sudoku-coach/pull/4) under review; no merge, live automation, provider spend, deployment, or release
 - Data classification: Public engineering summary; no transcript, private source, credential, or model payload
 
 ## Human-owned intent and decisions
