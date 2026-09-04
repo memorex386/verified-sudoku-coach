@@ -76,6 +76,11 @@ Provider-specific settings remain exact and hashed through the runtime registrat
 still requires minimal packets, bounded output/deadline, request-storage control, no automatic
 retry, semantic validation, and visible pause/stale behavior.
 
+Foundation source/manifest fitness checks derive provider SDK, credential-name, and endpoint bans
+from that policy, including indirect SDKs and statically constructed strings. They are defense in
+depth, not a claim that source pattern matching proves a built artifact safe. WP-2026-005 must also
+inspect the actual browser bundle before release.
+
 OpenAI is the first reference adapter. Anthropic, Google, and local/open-weight adapters must pass
 the same conformance and comparative evaluation before a claim names them. Open-weight profiles
 also bind the model-weight digest, quantization, inference server, prompt template, and relevant

@@ -26,6 +26,13 @@ adapter proves how the neutral storage requirement maps to its native request. F
 OpenAI profile this includes exact `store:false`; another provider must declare and verify its own
 equivalent or remain ineligible for live use.
 
+Profile and policy digests are computed from canonical JSON and checked against the base revision.
+The profile digest excludes only `runtimeAdmission`, so promotion/retirement changes policy
+admission without pretending the evaluated request behavior changed; the containing policy digest
+still changes. Any substantive profile change increments its SemVer and changes the runtime-bound
+digest. Profiles are append-only and follow the accepted boundary-only/candidate/approved/retired
+transition graph.
+
 Registration IDs are lowercase kebab-case. Component and complete behavior versions are SemVer
 strings such as `1.0.0`; booleans, arrays, objects, and bare integers are rejected as versions.
 Artifact paths are normalized repository-relative paths in these canonical locations:
