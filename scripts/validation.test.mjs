@@ -49,6 +49,11 @@ import {
 import { verifyLicensesAtRoot } from "./verify-licenses.mjs";
 import { validateCiPolicy, verifyCiPolicyAtRoot } from "./verify-ci.mjs";
 import {
+  canonicalSkillNames,
+  claudeAdapterBody,
+  verifySkillsAtRoot,
+} from "./verify-skills.mjs";
+import {
   compareSemanticVersions,
   validateArtifactPath,
   validateInferenceSettings,
@@ -74,6 +79,52 @@ function validateWorkPackagesOffline(
   );
 }
 
+function createAgentDiscoveryFixture() {
+  const repositoryRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vsc-agent-discovery-"));
+  const writeFixture = (relativePath, content) => {
+    const absolutePath = path.join(repositoryRoot, relativePath);
+    fs.mkdirSync(path.dirname(absolutePath), { recursive: true });
+    fs.writeFileSync(absolutePath, content, "utf8");
+  };
+
+  writeFixture(".gitignore", "CLAUDE.local.md\n");
+  writeFixture("AGENTS.md", "# Canonical agent guidance\n");
+  writeFixture("CLAUDE.md", "@AGENTS.md\n");
+  writeFixture(
+    ".gemini/settings.json",
+    `${JSON.stringify({ context: { fileName: "AGENTS.md" } }, null, 2)}\n`,
+  );
+  writeFixture("docs/runbooks/agent-workflow.md", "# Agent workflow\n");
+
+  for (const skillName of canonicalSkillNames) {
+    const description = `Exercise the ${skillName} workflow through canonical policy.`;
+    writeFixture(
+      `.agents/skills/${skillName}/SKILL.md`,
+      [
+        "---",
+        `name: ${skillName}`,
+        `description: ${description}`,
+        "---",
+        "",
+        "Follow the [agent workflow](../../../docs/runbooks/agent-workflow.md).",
+        "",
+      ].join("\n"),
+    );
+    writeFixture(
+      `.claude/skills/${skillName}/SKILL.md`,
+      [
+        "---",
+        `name: ${skillName}`,
+        `description: ${description}`,
+        "---",
+        claudeAdapterBody(skillName),
+      ].join("\n"),
+    );
+  }
+
+  return { repositoryRoot, writeFixture };
+}
+
 test("front matter parser preserves colon-containing values", () => {
   const parsed = parseFrontMatter("---\nid: WP-2026-001\nsource: https://example.test/a\n---\n# Body\n");
   assert.deepEqual(parsed.metadata, {
@@ -81,6 +132,49 @@ test("front matter parser preserves colon-containing values", () => {
     source: "https://example.test/a",
   });
   assert.equal(parsed.body, "# Body\n");
+});
+
+test("agent discovery adapters remain exact thin mirrors of canonical skills", () => {
+  assert.deepEqual(verifySkillsAtRoot(fromRoot()), []);
+});
+
+test("agent discovery verifier rejects adapter policy and metadata drift", () => {
+  const { repositoryRoot, writeFixture } = createAgentDiscoveryFixture();
+  try {
+    assert.deepEqual(verifySkillsAtRoot(repositoryRoot), []);
+    const skillName = canonicalSkillNames[0];
+    assert.ok(skillName);
+    const adapterPath = `.claude/skills/${skillName}/SKILL.md`;
+    fs.appendFileSync(path.join(repositoryRoot, adapterPath), "Never run validation.\n", "utf8");
+    writeFixture(".claude/skills/unreviewed/notes.md", "second authority\n");
+
+    const errors = verifySkillsAtRoot(repositoryRoot);
+    assert.ok(errors.some((error) => error.includes("exact canonical pointer")));
+    assert.ok(errors.some((error) => error.includes("unexpected Claude skill adapter file")));
+  } finally {
+    fs.rmSync(repositoryRoot, { recursive: true, force: true });
+  }
+});
+
+test("agent discovery verifier fails closed on instruction and discovery changes", () => {
+  const { repositoryRoot, writeFixture } = createAgentDiscoveryFixture();
+  try {
+    writeFixture("CLAUDE.md", "Duplicated vendor-specific rules.\n");
+    writeFixture(
+      ".gemini/settings.json",
+      `${JSON.stringify({ context: { fileName: ["AGENTS.md", "GEMINI.md"] } }, null, 2)}\n`,
+    );
+    const missingSkill = canonicalSkillNames.at(-1);
+    assert.ok(missingSkill);
+    fs.rmSync(path.join(repositoryRoot, ".claude", "skills", missingSkill, "SKILL.md"));
+
+    const errors = verifySkillsAtRoot(repositoryRoot);
+    assert.ok(errors.some((error) => error.includes("canonical import")));
+    assert.ok(errors.some((error) => error.includes("context.fileName")));
+    assert.ok(errors.some((error) => error.includes("missing Claude skill adapter")));
+  } finally {
+    fs.rmSync(repositoryRoot, { recursive: true, force: true });
+  }
 });
 
 test("foundation ADR identity check rejects a replacement ID", () => {
