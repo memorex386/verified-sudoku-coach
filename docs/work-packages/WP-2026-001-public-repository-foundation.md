@@ -100,11 +100,13 @@ No WP-2026-001 blocker remains. GitHub dependency alerts, the read-only dependen
 vulnerability reporting, and Dependabot security updates are enabled and rechecked. This remains a
 foundation-only delivery: the replay command reports zero cases and `claimsMeasured: false`, so it
 is not evidence of Sudoku correctness, model quality, coaching quality, latency, cost,
-accessibility, or player benefit. WP-2026-002 remains `Draft` and requires its own readiness review.
+accessibility, or player benefit. The 2026-09-04 accepted amendment inserted a portability
+foundation as WP-2026-002; that new package is independently governed and does not change this
+package's accepted evidence.
 
 ## Next action
 
-- Prepare WP-2026-002 for explicit readiness review; do not implement it while its status remains Draft.
+- No action remains in WP-2026-001; follow the generated registry for the current package.
 
 ## Checkpoints
 
@@ -131,3 +133,6 @@ accessibility, or player benefit. WP-2026-002 remains `Draft` and requires its o
 - 2026-09-03 — PR #1 merged through merge commit
   `619277d4d714be49135918abd977192f2abc1d59`, preserving audited delivery head
   `f781b9ae25a1ab45865c3862d230f218862a09f8` as an ancestor of `main`; WP-2026-001 was accepted.
+- 2026-09-04 — Accepted plan amendment VSC-PLAN-2026-09-04.2 inserted a new portability
+  foundation as WP-2026-002 and renumbered the unstarted packages; WP-2026-001 evidence remains
+  governed by its original accepted plan.

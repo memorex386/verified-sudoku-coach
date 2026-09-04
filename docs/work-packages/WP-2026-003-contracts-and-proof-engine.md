@@ -57,7 +57,7 @@ aggregate hashes; no private puzzle or source crosses the boundary.
 Support naked single, hidden single, locked pointing, locked claiming, naked pair, and hidden pair
 with the documented tie-break order. Require unique Classic fixtures, no-op rejection, stale/tamper
 tests, deterministic hashes, path replay, transformations, and no regression below the frozen
-5,147/5,191 private aggregate baseline. Replay and trace schemas require all seven canonical
+5,147/5,191 private aggregate baseline. Replay and trace schemas require all nine canonical
 behavior-identity versions and reject a missing field or mixed event identity hash.
 
 ## Validation

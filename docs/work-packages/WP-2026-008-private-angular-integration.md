@@ -52,7 +52,7 @@ recap/survey, allowlisted analytics, and the information-page replay-link config
 ## Architecture and privacy invariants
 
 Angular owns presentation, optimistic input, accessibility, speech, and local UI state; it cannot
-create proof facts, call OpenAI, or authorize access. Coach sessions never invoke normal completion
+create proof facts, call a model provider, or authorize access. Coach sessions never invoke normal completion
 or persistence. TTS is off by default. Paused coaching leaves the board playable and presents Retry,
 uncoached continuation, and explicit deterministic clue choices. The hosted web client supplies the
 server-issued web capability; Android/iOS bundles contain no Coach entry route, while the backend

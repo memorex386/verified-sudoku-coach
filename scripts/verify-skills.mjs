@@ -16,6 +16,7 @@ export const canonicalSkillNames = Object.freeze([
   "change-proof-technique",
   "release-coach",
   "run-coach-evals",
+  "steward-dependency-pr",
   "work-on-coach",
 ]);
 

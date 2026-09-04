@@ -122,8 +122,8 @@ referenced only by safe PR/release identifiers and aggregate compatibility resul
 
 ## Known limitations and blockers
 
-WP-2026-006 and Sudoku World's accepted core business-foundation gate are incomplete. A billed OpenAI
-project/service credential and deployment authorization are intentionally absent.
+WP-2026-006 and Sudoku World's accepted core business-foundation gate are incomplete. A billed
+approved-provider project/service credential and deployment authorization are intentionally absent.
 
 ## Next action
 
