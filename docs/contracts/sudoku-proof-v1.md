@@ -39,6 +39,11 @@ valid Gregorian dates, and seconds 00–59; offsets and leap seconds are rejecte
 Before JSON parsing, adapters enforce these UTF-8 byte/depth ceilings: identity 4 KiB/3, action
 4 KiB/5, puzzle 16 KiB/6, board 32 KiB/6, proof step 32 KiB/8, proof path 2 MiB/10, and trace or
 replay 8 MiB/12. Structural schemas also enforce the collection bounds below.
+Depth counts the root as zero. The V1 text reader accepts ASCII JSON transport, including legal
+escapes and insignificant whitespace, and rejects duplicate keys even when escaped. Integer tokens
+use safe integral decimal spelling without exponent, fraction, leading zeros, or negative zero;
+this prevents JavaScript rounding from changing an inbound value before validation.
+The [codec checkpoint](boundary-codecs.md) distinguishes wire checks from proof authority.
 
 ### Canonical bytes and hashes
 
@@ -58,8 +63,8 @@ A typed fingerprint is lowercase SHA-256 over:
 vsc/<projection-name>/v1\0<canonical-json-bytes>
 ```
 
-The dependency-free runtime implementation is pure TypeScript and is checked against published
-SHA-256 vectors in Node and Chromium. Artifact tooling may use Node crypto only as an independent
+The dependency-free runtime implementation is pure TypeScript and must pass published SHA-256
+vectors in Node and Chromium before package Done. Artifact tooling may use Node crypto only as an independent
 cross-check. SHA-256 supplies integrity and stable identity, not authentication or privacy.
 
 ## Shared nested values

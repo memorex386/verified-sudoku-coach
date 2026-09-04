@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "string",
+      "const": "vsc.puzzle-definition"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "puzzleId": {
+      "type": "string",
+      "pattern": "^puz_[a-z0-9]{16,64}(?![\\s\\S])"
+    },
+    "topology": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "classic"
+            },
+            "size": {
+              "type": "number",
+              "const": 6
+            },
+            "boxRows": {
+              "type": "number",
+              "const": 2
+            },
+            "boxColumns": {
+              "type": "number",
+              "const": 3
+            }
+          },
+          "required": [
+            "type",
+            "size",
+            "boxRows",
+            "boxColumns"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "classic"
+            },
+            "size": {
+              "type": "number",
+              "const": 9
+            },
+            "boxRows": {
+              "type": "number",
+              "const": 3
+            },
+            "boxColumns": {
+              "type": "number",
+              "const": 3
+            }
+          },
+          "required": [
+            "type",
+            "size",
+            "boxRows",
+            "boxColumns"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "givens": {
+      "maxItems": 81,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema0"
+      }
+    },
+    "provenance": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "generated"
+            },
+            "generatorId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?![\\s\\S])"
+            },
+            "generatorVersion": {
+              "$ref": "#/$defs/__schema1"
+            },
+            "seed": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[\\x20-\\x7e]+(?![\\s\\S])"
+            }
+          },
+          "required": [
+            "kind",
+            "generatorId",
+            "generatorVersion",
+            "seed"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "const": "host-catalog"
+            },
+            "catalogVersion": {
+              "$ref": "#/$defs/__schema1"
+            },
+            "sourceFingerprint": {
+              "$ref": "#/$defs/__schema2"
+            }
+          },
+          "required": [
+            "kind",
+            "catalogVersion",
+            "sourceFingerprint"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "puzzleFingerprint": {
+      "$ref": "#/$defs/__schema2"
+    }
+  },
+  "required": [
+    "schemaId",
+    "version",
+    "puzzleId",
+    "topology",
+    "givens",
+    "provenance",
+    "puzzleFingerprint"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "object",
+      "properties": {
+        "cellId": {
+          "type": "string",
+          "pattern": "^r[1-9]c[1-9](?![\\s\\S])"
+        },
+        "digit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9
+        }
+      },
+      "required": [
+        "cellId",
+        "digit"
+      ],
+      "additionalProperties": false
+    },
+    "__schema1": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?![\\s\\S])"
+    },
+    "__schema2": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+    }
+  }
+}

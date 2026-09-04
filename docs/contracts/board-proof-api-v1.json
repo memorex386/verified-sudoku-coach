@@ -1,0 +1,43 @@
+{
+  "schemaId": "vsc.board-proof-api",
+  "version": 1,
+  "declarations": {
+    "contracts": {
+      "board.d.ts": "5f9b580752e668360525e5ceded08d65a8624d451cddbee51e093232be0298a6",
+      "index.d.ts": "cebc1b8f641abe9aa2690cf2b83043ed3808702aaa1192f1ae2c0c283ae3124e",
+      "proof.d.ts": "9970d4c047d13a436882b8cf6f22f125d129b560dc33bdf014fb4231b1ec9ef8",
+      "trace.d.ts": "0addd2210da7981f1cbea7facbeb2eb08c02609b2a14beccee4284735b14b19d"
+    },
+    "boundary-codecs": {
+      "board.d.ts": "70776120fe508ace8234e9aad3b3dbadedf3403da9405a918f77d6eafb2f269a",
+      "index.d.ts": "ca6ae906309ba5c259b64a00c48483aec781b7a57cd57c918431a84086ca35d3",
+      "json.d.ts": "69a5d2784175c972ee6304b62438fb5f17f6ef28dbcfb9b1fd8ccb43919df58b",
+      "proof.d.ts": "8e2228eb7caf76791b671207efc1dc95bb1716752c5ee8eeabac7aae88e8d14f",
+      "trace.d.ts": "214202bbfcf4cd47983cbfc019a2ea509fb6f6b54f427899fbd87be67dcde359"
+    }
+  },
+  "schemaExports": [
+    "behaviorIdentityV1Schema",
+    "boardActionV1Schema",
+    "boardStateV1Schema",
+    "proofPathV1Schema",
+    "proofStepV1Schema",
+    "puzzleDefinitionV1Schema",
+    "replayArtifactV1Schema",
+    "topologyV1Schema",
+    "traceEnvelopeV1Schema",
+    "unitRefV1Schema"
+  ],
+  "codecExports": [
+    "decodeBehaviorIdentity",
+    "decodeBoard",
+    "decodeBoardAction",
+    "decodePuzzle",
+    "decodeUnverifiedProofPath",
+    "decodeUnverifiedProofStep",
+    "decodeUnverifiedReplay",
+    "decodeUnverifiedTrace",
+    "encodeBoard",
+    "encodePuzzle"
+  ]
+}

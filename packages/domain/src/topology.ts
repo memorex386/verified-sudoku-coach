@@ -27,7 +27,7 @@ export function requireTopology(topology: Topology): void {
 
 export function cellId(topology: Topology, value: string): CellId {
   requireTopology(topology);
-  if (typeof value !== "string" || !/^r[1-9]c[1-9]$/.test(value) ||
+  if (typeof value !== "string" || !/^r[1-9]c[1-9](?![\s\S])/.test(value) ||
       Number(value[1]) > topology.size || Number(value[3]) > topology.size) throw new Error("cell-id");
   return value as CellId;
 }

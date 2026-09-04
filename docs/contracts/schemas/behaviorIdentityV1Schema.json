@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "string",
+      "const": "vsc.behavior-identity"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "rulesetVersion": {
+      "type": "string",
+      "const": "classic-six/v1"
+    },
+    "schemaVersion": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "promptVersion": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "modelProfileVersion": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "runtimeRegistrationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?![\\s\\S])"
+    },
+    "runtimeBehaviorVersion": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "rendererVersion": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "fixtureVersion": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "evaluationSuiteVersion": {
+      "$ref": "#/$defs/__schema0"
+    }
+  },
+  "required": [
+    "schemaId",
+    "version",
+    "rulesetVersion",
+    "schemaVersion",
+    "promptVersion",
+    "modelProfileVersion",
+    "runtimeRegistrationId",
+    "runtimeBehaviorVersion",
+    "rendererVersion",
+    "fixtureVersion",
+    "evaluationSuiteVersion"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?![\\s\\S])"
+    }
+  }
+}
