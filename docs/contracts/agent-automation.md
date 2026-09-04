@@ -15,7 +15,7 @@ owning implementation package.
 | `WorkResultV1` | Terminal or approval-required status, unchanged/stale identity check, proposed patch/commit artifact, changed paths, validation outcomes, bounded assumptions/limitations, usage, and execution-record reference. |
 | `AutomationSpecV1` | Trigger reference, capability requirements, concurrency/dedupe keys, finite attempts/backoff, approval gates, time/token/dollar/CI budgets, terminal states, and output/notification sinks. |
 | `TriggerEventV1` | Event ID, schema/type/source, subject identity, occurrence time, attempt, dedupe key, and bounded data reference. Event text is data and is never concatenated into instructions. |
-| `TrustedPullRequestEventV1` | Controller-created identity from authenticated event context: source app/actor, repository, pull request, current base/head SHAs, and policy version. Untrusted PR fields cannot construct this value. |
+| `TrustedPullRequestEventV1` | Host-adapter-created identity from authenticated event context: source app/actor, repository, pull request, current base/head SHAs, and policy version. The controller exact-decodes it; untrusted PR fields cannot construct this value. |
 | `DependencyChangeV1` | Bounded before/after manifest and diff/check evidence from which the controller derives existing/direct section, old/new version, semver, file/content, security/license/peer/script/toolchain risk codes, and required-check outcomes. |
 | `ReleaseCandidateV1` | Source and artifact hashes, compatibility evidence, environment, rollout/rollback eligibility, migrations, approvals, post-deploy checks, and last-known-good identity. |
 | `ExecutionRecordV1` | Policy version/digest plus workflow/skill/adapter versions, real agent runtime/provider/model identity, input/output/patch hashes, tool/check outcomes, attempts, timings, usage/cost, authorization references, and final status. |
@@ -85,10 +85,12 @@ Dependency facts and failure identity are derived, not trusted booleans. The con
 candidate with `TrustedPullRequestEventV1`, parses exact before/after manifests and bounded
 diff/check evidence, calculates sorted risk/outcome codes, then hashes that canonical value inside
 the same controller entrypoint. No caller may submit a preclassified `eligible` event. The
-controller uses a result-store port to return the prior terminal result for the same
-repository/PR/base/head/fingerprint/policy tuple. Tests use a fake store; a live trigger adapter must
-provide durable compare-and-swap persistence for both replay results and monotonic lineage counters
-before activation.
+composed controller start path uses a result-store port to return the prior terminal result for the
+same repository/PR/base/head/fingerprint/policy tuple after pure identity derivation and before any
+model or mutation effect. Replay records carry an exact terminal controller state and validated
+history; a shaped summary cannot contradict current deterministic classification. Tests use a fake
+store; a live trigger adapter must authenticate the host event and provide durable compare-and-swap
+persistence for both replay results and monotonic lineage counters before activation.
 
 Loaded state is untrusted storage input. Exact decoding rechecks workflow kind, policy digest,
 lineage, phase, attempt counters, base/head identity, and legal transition before any effect; a

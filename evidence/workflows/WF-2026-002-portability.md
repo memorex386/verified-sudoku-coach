@@ -31,8 +31,9 @@ work package.
   routing, attempt limits, mutation grants, terminal states, and staged rollout.
 - Independent architecture and threat reviewers challenged the initial provider and automation
   implementations. Their findings produced new adversarial tests and controller requirements.
-- A controller implementer converted authenticated pull-request evidence into derived dependency,
-  risk, check, fingerprint, lineage, and finite-state outcomes without network access or mutation.
+- A controller implementer converted an exact synthetic trusted-event envelope and pull-request
+  evidence into derived dependency, risk, check, fingerprint, lineage, and finite-state outcomes
+  without network access or mutation.
 - The root integrator retained or rejected proposals, reconciled the documentation and executable
   policy, ran the reported checks, and owns the delivery pull request.
 
@@ -72,8 +73,9 @@ for this workflow record; that absence is explicit rather than replaced with a g
   incomplete open-weight profile and blocks mutable/unverified hosted routes from approval.
 - Review found that the first dependency classifier accepted self-asserted actor, SHA, failure,
   and risk facts and described attempt caps without an executable state machine. Those findings
-  blocked acceptance and drove the authenticated event, raw-evidence normalizer, persistent
-  lineage ledger, compare-and-swap result store, and terminal-state implementation.
+  blocked acceptance and drove the trusted-event contract, raw-evidence normalizer, persistent
+  lineage ledger, compare-and-swap result-store port, and terminal-state implementation. A real
+  host-authentication adapter remains explicitly unimplemented.
 - Controller review then found a remaining preclassified-eligibility path, missing assessment and
   repair capability checks, persisted-state phase forgery, malformed-equal CAS acceptance, and no
   explicit renewal after a repair-created head. Integration remained blocked until classification
@@ -104,7 +106,8 @@ Operating evidence: [adapter runbook](../../docs/runbooks/add-agent-or-provider-
 
 This work proves repository discovery and credential-free policy/controller conformance only. It
 does not prove Claude, Gemini, open-weight, or OpenAI model quality; named alternate-provider
-compatibility; a safe live GitHub runner; browser production-bundle absence; model cost/latency;
+compatibility; a live host-authentication adapter or safe GitHub runner; browser production-bundle
+absence; model cost/latency;
 automated repair quality; deployment safety; or release readiness. Anthropic and Google entries are
 boundary descriptors, not usable or approved runtime registrations. OpenAI remains a candidate,
 not an approved production profile: its current provider-managed model routes are mutable and its

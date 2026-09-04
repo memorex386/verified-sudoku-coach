@@ -67,12 +67,13 @@ candidate adapter without becoming the application contract.
 Owner: `WP-2026-002`
 
 A machine-readable policy and pure finite-state controller separate analysis, patch publication,
-merge, release, and production credentials. Dependency handling compares an authenticated event
-envelope with current base/head SHAs, derives manifest/diff/check risks, computes a canonical
-failure identity inside the controller, and returns any prior terminal result through a result-store
-port before it classifies deterministically. Preclassified eligibility is not an input. Fake-store
-conformance proves replay behavior; a host must provide
-durable compare-and-swap persistence before live use. Controller-owned, monotonic lineage counters
+merge, release, and production credentials. Dependency handling exact-decodes a host-authenticated
+event envelope, compares its current base/head SHAs, derives manifest/diff/check risks, and computes
+a canonical failure identity inside the controller. The composed start path consults the result-store
+port after that pure identity derivation and before any model or mutation effect. Preclassified
+eligibility is not an input. Fake-store conformance proves replay behavior; a live host adapter must
+authenticate the source and provide durable compare-and-swap persistence before use.
+Controller-owned, monotonic lineage counters
 survive repair-created SHAs and changed failure fingerprints. The controller permits at most one
 inexpensive diagnosis, one stronger escalation, one repair, and one recognized-infrastructure rerun
 before a terminal result. Every error, timeout, and attempt-exhaustion path terminates. Shadow mode

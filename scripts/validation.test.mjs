@@ -149,10 +149,12 @@ import {
 import {
   createAutomationState as createControllerAutomationState,
   createAutomationStateFromLedger as createControllerAutomationStateFromLedger,
+  readAutomationResult,
   readLineageAttempts,
   readLineageSnapshot,
   recordAutomationResult,
   recordLineageAttempts,
+  startDependencyAutomationWithStores as startControllerDependencyAutomationWithStores,
   transitionAutomationWithLedger as transitionControllerAutomationWithLedger,
 } from "./lib/automation-controller.mjs";
 import { runAutomationFixture } from "./run-automation-fixture.mjs";
@@ -365,6 +367,35 @@ function policyRegistryFor(policy) {
   ]]);
 }
 
+function replayIdentityFor(candidate) {
+  return {
+    repository: candidate.repository,
+    pullRequestNumber: candidate.pullRequestNumber,
+    baseSha: candidate.baseSha,
+    headSha: candidate.headSha,
+    failureFingerprint: candidate.failureFingerprint,
+    policyVersion: candidate.policyVersion,
+  };
+}
+
+function replayResultFor(policy, terminalOutcome, reasonCodes = []) {
+  return {
+    schemaVersion: 1,
+    terminalOutcome,
+    attempts: Object.fromEntries(Object.keys(policy.attemptCaps).map((name) => [name, 0])),
+    reasonCodes,
+  };
+}
+
+function replayResultFromState(state) {
+  return {
+    schemaVersion: 1,
+    terminalOutcome: state.outcome,
+    attempts: structuredClone(state.attempts),
+    reasonCodes: structuredClone(state.reasonCodes),
+  };
+}
+
 function createAutomationState(policy, workOrder) {
   return createControllerAutomationState(policy, workOrder, policyRegistryFor(policy));
 }
@@ -385,6 +416,23 @@ function transitionAutomationWithLedger(policy, workOrder, state, event, lineage
     state,
     event,
     lineageStore,
+    policyRegistryFor(policy),
+  );
+}
+
+function startDependencyAutomationWithStores(
+  policy,
+  workOrder,
+  event,
+  lineageStore,
+  resultStore,
+) {
+  return startControllerDependencyAutomationWithStores(
+    policy,
+    workOrder,
+    event,
+    lineageStore,
+    resultStore,
     policyRegistryFor(policy),
   );
 }
@@ -1025,6 +1073,7 @@ test("malformed policy, event, evidence, and self-asserted trust never throw", (
   const unclonableDedupe = recordAutomationResult(new Map(), {
     idempotencyKey: fixture.workOrder.idempotencyKey,
     inputEvidenceSha256: fixture.workOrder.inputEvidenceSha256,
+    replayIdentity: replayIdentityFor(fixture.workOrder),
     result: { value: () => "hostile" },
   });
   assert.equal(unclonableDedupe.conflict, true);
@@ -1163,30 +1212,196 @@ test("fingerprints are canonical, order-invariant, caller-verified, and replay-s
     "failureFingerprint does not match deterministic evidence",
   ));
 
+  const verifiedState = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    startCleanDependencyAutomation(policy, fixture),
+    simpleAutomationEvent("assessment-no-repair", "model-adapter"),
+  ).state;
+  const verifiedResult = replayResultFromState(verifiedState);
+
   const first = recordAutomationResult(new Map(), {
     idempotencyKey: normalized.candidate.idempotencyKey,
     inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
-    result: { terminalOutcome: "verified" },
+    replayIdentity: replayIdentityFor(normalized.candidate),
+    result: verifiedResult,
+    terminalState: verifiedState,
   });
   const replay = recordAutomationResult(first.store, {
     idempotencyKey: normalized.candidate.idempotencyKey,
     inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
-    result: { terminalOutcome: "must-not-overwrite" },
+    replayIdentity: replayIdentityFor(normalized.candidate),
+    result: verifiedResult,
+    terminalState: verifiedState,
   });
   assert.equal(replay.replayed, true);
-  assert.deepEqual(replay.result, { terminalOutcome: "verified" });
+  assert.deepEqual(replay.result, verifiedResult);
   const conflict = recordAutomationResult(first.store, {
     idempotencyKey: normalized.candidate.idempotencyKey,
     inputEvidenceSha256: "0".repeat(64),
-    result: { terminalOutcome: "verified" },
+    replayIdentity: replayIdentityFor(normalized.candidate),
+    result: verifiedResult,
+    terminalState: verifiedState,
   });
   assert.equal(conflict.conflict, true);
   assert.equal(conflict.result.terminalOutcome, "failed-terminal");
+
+  const invalidOutcome = recordAutomationResult(new Map(), {
+    idempotencyKey: normalized.candidate.idempotencyKey,
+    inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+    replayIdentity: replayIdentityFor(normalized.candidate),
+    result: replayResultFor(policy, "not-a-terminal"),
+    terminalState: verifiedState,
+  });
+  assert.equal(invalidOutcome.conflict, true);
+  assert.equal(invalidOutcome.store.size, 0);
+
+  const poisonedResult = {
+    ...replayResultFor(policy, "completed"),
+    unknown: "poison",
+  };
+  const poisonedStore = new Map([[
+    normalized.candidate.idempotencyKey,
+    {
+      idempotencyKey: "different-key",
+      inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+      replayIdentity: replayIdentityFor(normalized.candidate),
+      result: poisonedResult,
+      terminalState: verifiedState,
+    },
+  ]]);
+  const rejectedPoison = recordAutomationResult(poisonedStore, {
+    idempotencyKey: normalized.candidate.idempotencyKey,
+    inputEvidenceSha256: normalized.candidate.inputEvidenceSha256,
+    replayIdentity: replayIdentityFor(normalized.candidate),
+    result: verifiedResult,
+    terminalState: verifiedState,
+  });
+  assert.equal(rejectedPoison.replayed, false);
+  assert.equal(rejectedPoison.conflict, true);
+  assert.equal(rejectedPoison.result.terminalOutcome, "failed-terminal");
+  assert.equal(readAutomationResult(
+    poisonedStore,
+    normalized.candidate.idempotencyKey,
+  ), undefined);
+});
+
+test("composed dependency start replays after identity derivation and before effects", () => {
+  const { policy, fixture } = cleanAutomationFixture();
+  const candidate = classifyDependencyPullRequest(
+    policy,
+    fixture.trustedEvent,
+    fixture.evidence,
+  ).candidate;
+  const verifiedState = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    startCleanDependencyAutomation(policy, fixture),
+    simpleAutomationEvent("assessment-no-repair", "model-adapter"),
+  ).state;
+  const priorResult = replayResultFromState(verifiedState);
+  const priorStore = recordAutomationResult(new Map(), {
+    idempotencyKey: candidate.idempotencyKey,
+    inputEvidenceSha256: candidate.inputEvidenceSha256,
+    replayIdentity: replayIdentityFor(candidate),
+    result: priorResult,
+    terminalState: verifiedState,
+  }).store;
+  const event = classificationAutomationEvent(fixture);
+
+  const replay = startDependencyAutomationWithStores(
+    policy,
+    fixture.workOrder,
+    event,
+    new Map(),
+    priorStore,
+  );
+  assert.equal(replay.replayed, true);
+  assert.equal(replay.state, null);
+  assert.deepEqual(replay.effects, []);
+  assert.deepEqual(replay.result, priorResult);
+
+  const attempts = replayResultFor(policy, "verified").attempts;
+  const lineageStore = recordLineageAttempts(
+    new Map(),
+    fixture.workOrder.lineageKey,
+    attempts,
+  );
+  const started = startDependencyAutomationWithStores(
+    policy,
+    fixture.workOrder,
+    event,
+    lineageStore,
+    new Map(),
+  );
+  assert.equal(started.replayed, false);
+  assert.equal(started.state.phase, "cheap-model-assessment");
+  assert.equal(started.effects.length, 1);
+  assert.equal(started.effects[0].type, "invoke-model");
+
+  const poisonedStore = new Map(priorStore);
+  poisonedStore.get(candidate.idempotencyKey).result.unknown = "poison";
+  const rejected = startDependencyAutomationWithStores(
+    policy,
+    fixture.workOrder,
+    event,
+    lineageStore,
+    poisonedStore,
+  );
+  assert.equal(rejected.conflict, true);
+  assert.equal(rejected.result.terminalOutcome, "failed-terminal");
+  assert.deepEqual(rejected.effects, []);
+
+  const majorFixture = loadAutomationFixture();
+  const majorLineageStore = recordLineageAttempts(
+    new Map(),
+    majorFixture.workOrder.lineageKey,
+    attempts,
+  );
+  const majorFirst = startDependencyAutomationWithStores(
+    policy,
+    majorFixture.workOrder,
+    classificationAutomationEvent(majorFixture),
+    majorLineageStore,
+    new Map(),
+  );
+  const forgedStore = new Map(majorFirst.resultStore);
+  const forgedRecord = forgedStore.get(majorFixture.workOrder.idempotencyKey);
+  forgedRecord.result.terminalOutcome = "completed";
+  forgedRecord.terminalState.phase = "completed";
+  forgedRecord.terminalState.outcome = "completed";
+  const contradicted = startDependencyAutomationWithStores(
+    policy,
+    majorFixture.workOrder,
+    classificationAutomationEvent(majorFixture),
+    new Map(),
+    forgedStore,
+  );
+  assert.equal(contradicted.replayed, false);
+  assert.equal(contradicted.conflict, true);
+  assert.equal(contradicted.result.terminalOutcome, "failed-terminal");
+  assert.deepEqual(contradicted.effects, []);
 });
 
 test("work orders separate workflow authority and controller forbids model self-escalation", () => {
   const { policy, fixture } = cleanAutomationFixture();
   assert.deepEqual(validateAutomationWorkOrder(policy, fixture.workOrder), []);
+  const releaseWorkOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-release-identity-v1",
+    workflow: "release",
+    idempotencyKey: "release:fixture:identity-v1",
+    lineageKey: "release-lineage:fixture:identity-v1",
+    capabilities: ["repo-read"],
+    authorizedGrantIds: [],
+  };
+  assert.deepEqual(validateAutomationWorkOrder(policy, releaseWorkOrder), []);
+  for (const key of ["idempotencyKey", "lineageKey"]) {
+    const emptyIdentity = { ...releaseWorkOrder, [key]: "" };
+    assert.ok(validateAutomationWorkOrder(policy, emptyIdentity).some(
+      (error) => error.includes(`${key} must be a non-empty canonical bounded string`),
+    ));
+  }
   const overprivileged = structuredClone(fixture.workOrder);
   overprivileged.authorizedGrantIds = ["production-deploy"];
   assert.ok(validateAutomationWorkOrder(policy, overprivileged).includes(
@@ -1264,7 +1479,7 @@ test("controller cannot bypass normalization or work-order capabilities", () => 
       cheap,
       simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
     );
-    assert.equal(missingRepairCapability.state.outcome, "failed-terminal", missing);
+    assert.equal(missingRepairCapability.state.outcome, "stale", missing);
     assert.equal(missingRepairCapability.effects.length, 0, missing);
   }
 });
@@ -1402,6 +1617,216 @@ test("controller rejects cross-workflow and prerequisite-free persisted phases",
   );
   assert.equal(wrongAuthorityRejected.state.outcome, "failed-terminal");
   assert.equal(wrongAuthorityRejected.effects.length, 0);
+});
+
+test("awaiting approval resumes dependency and release work with one persistent ledger", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  const dependencyWorkOrder = {
+    ...fixture.workOrder,
+    authorizedGrantIds: ["dependency-patch-publish"],
+  };
+  let dependencyState = createAutomationState(policy, dependencyWorkOrder);
+  let dependencyLedger = recordLineageAttempts(
+    new Map(),
+    dependencyWorkOrder.lineageKey,
+    dependencyState.attempts,
+  );
+  const stepDependency = (event) => {
+    const result = transitionAutomationWithLedger(
+      policy,
+      dependencyWorkOrder,
+      dependencyState,
+      event,
+      dependencyLedger,
+    );
+    dependencyState = result.state;
+    dependencyLedger = result.lineageStore;
+    return result;
+  };
+  stepDependency(classificationAutomationEvent(fixture));
+  stepDependency(simpleAutomationEvent("assessment-repair-proposed", "model-adapter"));
+  stepDependency(simpleAutomationEvent("repair-produced", "repair-worker"));
+  const dependencyWaiting = stepDependency(
+    simpleAutomationEvent("authorization-missing", "deterministic-controller"),
+  );
+  assert.equal(dependencyWaiting.state.outcome, "awaiting-approval");
+  assert.equal(dependencyWaiting.state.resumePhase, "patch-authorization");
+  const dependencyResumed = stepDependency(authorizationEvent(
+    policy,
+    dependencyWorkOrder,
+    "patchPublication",
+    "resume-dependency-patch",
+  ));
+  assert.equal(dependencyResumed.state.phase, "patch-publication");
+  assert.equal(dependencyResumed.state.outcome, null);
+  assert.deepEqual(dependencyResumed.effects, [{
+    type: "publish-patch",
+    grantRef: "resume-dependency-patch",
+  }]);
+
+  const releaseWorkOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-release-resume-v2",
+    workflow: "release",
+    idempotencyKey: "release:fixture:resume-v2",
+    lineageKey: "release-lineage:fixture:resume-v2",
+    capabilities: ["repo-read"],
+    authorizedGrantIds: ["release-promotion"],
+  };
+  let releaseState = createAutomationState(policy, releaseWorkOrder);
+  let releaseLedger = recordLineageAttempts(
+    new Map(),
+    releaseWorkOrder.lineageKey,
+    releaseState.attempts,
+  );
+  const stepRelease = (event) => {
+    const result = transitionAutomationWithLedger(
+      policy,
+      releaseWorkOrder,
+      releaseState,
+      event,
+      releaseLedger,
+    );
+    releaseState = result.state;
+    releaseLedger = result.lineageStore;
+    return result;
+  };
+  const releaseWaiting = stepRelease(
+    simpleAutomationEvent("authorization-missing", "deterministic-controller"),
+  );
+  assert.equal(releaseWaiting.state.outcome, "awaiting-approval");
+  assert.equal(releaseWaiting.state.resumePhase, "release-promotion-authorization");
+  const releaseResumed = stepRelease(authorizationEvent(
+    policy,
+    releaseWorkOrder,
+    "releasePromotion",
+    "resume-release-promotion",
+  ));
+  assert.equal(releaseResumed.state.phase, "release-promotion");
+  assert.equal(releaseResumed.state.outcome, null);
+  assert.deepEqual(releaseResumed.effects, [{
+    type: "promote-release",
+    grantRef: "resume-release-promotion",
+  }]);
+});
+
+test("persisted state schema drift fails before an authorization effect", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  const releaseWorkOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-release-schema-v2",
+    workflow: "release",
+    idempotencyKey: "release:fixture:schema-v2",
+    lineageKey: "release-lineage:fixture:schema-v2",
+    capabilities: ["repo-read"],
+    authorizedGrantIds: ["release-promotion"],
+  };
+  const state = {
+    ...createAutomationState(policy, releaseWorkOrder),
+    schemaVersion: 999,
+  };
+  const lineageStore = recordLineageAttempts(
+    new Map(),
+    releaseWorkOrder.lineageKey,
+    state.attempts,
+  );
+  const result = transitionAutomationWithLedger(
+    policy,
+    releaseWorkOrder,
+    state,
+    authorizationEvent(
+      policy,
+      releaseWorkOrder,
+      "releasePromotion",
+      "schema-drift-release",
+    ),
+    lineageStore,
+  );
+  assert.equal(result.accepted, false);
+  assert.equal(result.state.outcome, "failed-terminal");
+  assert.deepEqual(result.effects, []);
+  assert.ok(result.errors.includes("automation state schemaVersion must be 1"));
+});
+
+test("a replacement work order cannot add grants or capabilities mid-run", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  const releaseWorkOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-release-no-grants-v2",
+    workflow: "release",
+    idempotencyKey: "release:fixture:no-grants-v2",
+    lineageKey: "release-lineage:fixture:no-grants-v2",
+    capabilities: ["repo-read"],
+    authorizedGrantIds: [],
+  };
+  const releaseState = createAutomationState(policy, releaseWorkOrder);
+  const releaseLedger = recordLineageAttempts(
+    new Map(),
+    releaseWorkOrder.lineageKey,
+    releaseState.attempts,
+  );
+  const grantEscalation = {
+    ...releaseWorkOrder,
+    workOrderId: "fixture-release-added-grant-v2",
+    authorizedGrantIds: ["release-promotion"],
+  };
+  const grantResult = transitionAutomationWithLedger(
+    policy,
+    grantEscalation,
+    releaseState,
+    authorizationEvent(
+      policy,
+      grantEscalation,
+      "releasePromotion",
+      "replacement-work-order-grant",
+    ),
+    releaseLedger,
+  );
+  assert.equal(grantResult.accepted, false);
+  assert.equal(grantResult.state.outcome, "stale");
+  assert.deepEqual(grantResult.effects, []);
+
+  const restrictedWorkOrder = {
+    ...fixture.workOrder,
+    workOrderId: "fixture-dependency-no-repair-v2",
+    capabilities: ["model-assessment", "repo-read", "sanitized-evidence-read"],
+  };
+  let restrictedState = createAutomationState(policy, restrictedWorkOrder);
+  let restrictedLedger = recordLineageAttempts(
+    new Map(),
+    restrictedWorkOrder.lineageKey,
+    restrictedState.attempts,
+  );
+  const classified = transitionAutomationWithLedger(
+    policy,
+    restrictedWorkOrder,
+    restrictedState,
+    classificationAutomationEvent(fixture),
+    restrictedLedger,
+  );
+  restrictedState = classified.state;
+  restrictedLedger = classified.lineageStore;
+  assert.equal(restrictedState.phase, "cheap-model-assessment");
+  const capabilityEscalation = {
+    ...restrictedWorkOrder,
+    workOrderId: "fixture-dependency-added-repair-v2",
+    capabilities: [
+      "model-assessment",
+      "repair-proposal",
+      "repo-read",
+      "sanitized-evidence-read",
+    ],
+  };
+  const capabilityResult = transitionAutomationWithLedger(
+    policy,
+    capabilityEscalation,
+    restrictedState,
+    simpleAutomationEvent("assessment-repair-proposed", "model-adapter"),
+    restrictedLedger,
+  );
+  assert.equal(capabilityResult.accepted, false);
+  assert.equal(capabilityResult.state.outcome, "stale");
+  assert.deepEqual(capabilityResult.effects, []);
 });
 
 test("lineage ledger is authoritative and survives AI-authored head changes", () => {
@@ -1990,6 +2415,64 @@ test("published repair renews its work order and completes a legal merge path", 
   assert.equal(completed.state.attempts.repairAttempts, 1);
   assert.equal(completed.state.attempts.patchPublications, 1);
   assert.equal(completed.state.attempts.mergeAttempts, 1);
+});
+
+test("work-order renewal requires a new authority id and new evidence before verification", () => {
+  const { policy, fixture } = assistedAutomationFixture();
+  fixture.workOrder.authorizedGrantIds = ["dependency-patch-publish"];
+  let state = reachPatchAuthorization(policy, fixture);
+  state = transitionAutomation(
+    policy,
+    fixture.workOrder,
+    state,
+    authorizationEvent(policy, fixture.workOrder, "patchPublication", "grant-patch"),
+  ).state;
+  const publishedHeadSha = "e".repeat(40);
+  const publishedState = transitionAutomation(policy, fixture.workOrder, state, {
+    schemaVersion: 1,
+    type: "patch-publication-succeeded",
+    source: "source-control-broker",
+    expectedBaseSha: fixture.workOrder.baseSha,
+    expectedHeadSha: fixture.workOrder.headSha,
+    currentBaseSha: fixture.workOrder.baseSha,
+    currentHeadSha: fixture.workOrder.headSha,
+    publishedHeadSha,
+  }).state;
+  assert.equal(publishedState.phase, "work-order-renewal");
+  const renewedFixture = rebindAutomationFixtureHead(
+    policy,
+    fixture,
+    publishedHeadSha,
+    "fresh-renewal",
+  );
+
+  const invalidRenewals = [
+    {
+      expectedOutcome: "failed-terminal",
+      workOrder: {
+        ...renewedFixture.workOrder,
+        workOrderId: publishedState.identity.workOrderId,
+      },
+    },
+    {
+      expectedOutcome: "stale",
+      workOrder: {
+        ...renewedFixture.workOrder,
+        inputEvidenceSha256: publishedState.identity.inputEvidenceSha256,
+      },
+    },
+  ];
+  for (const { expectedOutcome, workOrder } of invalidRenewals) {
+    const rejected = transitionAutomation(
+      policy,
+      workOrder,
+      publishedState,
+      renewalAutomationEvent(renewedFixture),
+      policyRegistryFor(policy),
+    );
+    assert.equal(rejected.state.outcome, expectedOutcome);
+    assert.equal(rejected.effects.length, 0);
+  }
 });
 
 test("credential-free TypeScript fixture is deferred before model or repair work", () => {

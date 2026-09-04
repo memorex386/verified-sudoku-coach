@@ -1,4 +1,5 @@
 import {
+  automationIdentityKey,
   automationAttemptNames,
   automationTerminalOutcomes,
   canonicalSha256,
@@ -38,6 +39,8 @@ const stateKeys = [
   "revision",
 ];
 const identityKeys = [
+  "workOrderId",
+  "workOrderAuthoritySha256",
   "repository",
   "pullRequestNumber",
   "baseSha",
@@ -115,6 +118,25 @@ const historyRecordKeys = [
   "identityAfter",
 ];
 const grantProofKeys = ["authorityName", ...grantKeys];
+const replayRecordKeys = [
+  "idempotencyKey",
+  "inputEvidenceSha256",
+  "replayIdentity",
+  "result",
+  "terminalState",
+];
+const replayIdentityKeys = [
+  "repository",
+  "pullRequestNumber",
+  "baseSha",
+  "headSha",
+  "failureFingerprint",
+  "policyVersion",
+];
+const replayResultKeys = ["schemaVersion", "terminalOutcome", "attempts", "reasonCodes"];
+const persistedTerminalOutcomes = new Set(
+  automationTerminalOutcomes.filter((outcome) => outcome !== "awaiting-approval"),
+);
 
 const dependencyPhases = new Set([
   "deterministic-classification",
@@ -217,6 +239,20 @@ function safeProperty(value, key) {
   }
 }
 
+function workOrderAuthorityDigest(workOrder) {
+  try {
+    return canonicalSha256({
+      schemaVersion: 1,
+      workflow: workOrder?.workflow,
+      capabilities: workOrder?.capabilities,
+      authorizedGrantIds: workOrder?.authorizedGrantIds,
+      modelEscalationAuthority: workOrder?.modelEscalationAuthority,
+    });
+  } catch {
+    return "invalid";
+  }
+}
+
 function failedCreation(policy, workOrder, errors) {
   const attempts = emptyAttempts();
   const repository = safeProperty(workOrder, "repository");
@@ -226,7 +262,10 @@ function failedCreation(policy, workOrder, errors) {
   const failureFingerprint = safeProperty(workOrder, "failureFingerprint");
   const inputEvidenceSha256 = safeProperty(workOrder, "inputEvidenceSha256");
   const dependencyIntentSha256 = safeProperty(workOrder, "dependencyIntentSha256");
+  const workOrderId = safeProperty(workOrder, "workOrderId");
   const identity = {
+    workOrderId: typeof workOrderId === "string" ? workOrderId : "invalid",
+    workOrderAuthoritySha256: workOrderAuthorityDigest(workOrder),
     repository: typeof repository === "string" ? repository : "invalid/invalid",
     pullRequestNumber: Number.isSafeInteger(pullRequestNumber)
       ? pullRequestNumber
@@ -286,6 +325,8 @@ function createAutomationStateWithAttempts(
       return failedCreation(policy, workOrder, errors);
     }
     const identity = {
+      workOrderId: workOrder.workOrderId,
+      workOrderAuthoritySha256: workOrderAuthorityDigest(workOrder),
       repository: workOrder.repository,
       pullRequestNumber: workOrder.pullRequestNumber,
       baseSha: workOrder.baseSha,
@@ -555,6 +596,10 @@ function validateHistoryGrant(policy, workOrder, proof, record, seenGrantRefs, a
 function validateHistoryIdentity(identity, label) {
   const errors = exactObjectErrors(identity, label, identityKeys);
   if (!isExactObject(identity)) return errors;
+  if (typeof identity.workOrderId !== "string" ||
+      !/^[a-z0-9][a-z0-9._:-]{0,127}$/.test(identity.workOrderId)) {
+    errors.push(`${label}.workOrderId must be a bounded canonical ID`);
+  }
   if (typeof identity.repository !== "string" || !githubRepository.test(identity.repository)) {
     errors.push(`${label}.repository must be canonical`);
   }
@@ -566,7 +611,12 @@ function validateHistoryIdentity(identity, label) {
       errors.push(`${label}.${key} must be an exact SHA-1`);
     }
   }
-  for (const key of ["failureFingerprint", "inputEvidenceSha256", "dependencyIntentSha256"]) {
+  for (const key of [
+    "workOrderAuthoritySha256",
+    "failureFingerprint",
+    "inputEvidenceSha256",
+    "dependencyIntentSha256",
+  ]) {
     if (!fullLowercaseSha256.test(identity[key] ?? "")) {
       errors.push(`${label}.${key} must be an exact SHA-256`);
     }
@@ -589,9 +639,13 @@ function validateHistoryIdentityChange(record, rule) {
     }
   }
   if (rule.identityChange === "renewed-evidence") {
-    if (changed.some((key) => !["failureFingerprint", "inputEvidenceSha256"].includes(key)) ||
+    if (changed.some((key) => ![
+      "workOrderId",
+      "failureFingerprint",
+      "inputEvidenceSha256",
+    ].includes(key)) || before.workOrderId === after.workOrderId ||
         before.inputEvidenceSha256 === after.inputEvidenceSha256) {
-      errors.push("work-order renewal may change only freshly derived fingerprint/evidence identity");
+      errors.push("work-order renewal requires a new ID and may change only freshly derived evidence identity");
     }
   }
   return errors;
@@ -736,6 +790,9 @@ function validateState(policy, workOrder, state, options = {}) {
   ];
   if (!isExactObject(state)) {
     return errors;
+  }
+  if (state.schemaVersion !== 1) {
+    errors.push("automation state schemaVersion must be 1");
   }
   errors.push(...exactObjectErrors(state.identity, "automation state identity", identityKeys));
   const attempts = normalizeAttempts(policy, state.attempts);
@@ -900,8 +957,10 @@ function validateState(policy, workOrder, state, options = {}) {
     state.identity?.pullRequestNumber === workOrder?.pullRequestNumber &&
     state.identity?.baseSha === workOrder?.baseSha &&
     state.identity?.headSha === workOrder?.headSha &&
-    state.identity?.dependencyIntentSha256 === workOrder?.dependencyIntentSha256;
+    state.identity?.dependencyIntentSha256 === workOrder?.dependencyIntentSha256 &&
+    state.identity?.workOrderAuthoritySha256 === workOrderAuthorityDigest(workOrder);
   const exactWorkOrderMatch = stableWorkOrderMatch &&
+    state.identity?.workOrderId === workOrder?.workOrderId &&
     state.idempotencyKey === workOrder?.idempotencyKey &&
     state.identity?.failureFingerprint === workOrder?.failureFingerprint &&
     state.identity?.inputEvidenceSha256 === workOrder?.inputEvidenceSha256;
@@ -1197,11 +1256,16 @@ function applyWorkOrderRenewal(policy, workOrder, state, event, policyRegistry) 
       workOrder.lineageKey !== state.lineageKey) {
     return transitionResult(terminalize(state, "stale", "work-order-renewal-identity-stale"));
   }
+  if (workOrder.workOrderId === state.identity.workOrderId ||
+      workOrder.inputEvidenceSha256 === state.identity.inputEvidenceSha256) {
+    return transitionResult(terminalize(state, "failed-terminal", "invalid-work-order-renewal"));
+  }
   const renewed = {
     ...state,
     idempotencyKey: workOrder.idempotencyKey,
     identity: {
       ...state.identity,
+      workOrderId: workOrder.workOrderId,
       failureFingerprint: workOrder.failureFingerprint,
       inputEvidenceSha256: workOrder.inputEvidenceSha256,
     },
@@ -1226,6 +1290,9 @@ function applyPatchPublicationReceipt(activeState, event) {
   );
   if (!fullLowercaseSha1.test(event.publishedHeadSha ?? "")) {
     errors.push("mutation receipt publishedHeadSha must be an exact SHA-1");
+  }
+  if (event.publishedHeadSha === activeState.identity.headSha) {
+    errors.push("mutation receipt publishedHeadSha must identify a changed head");
   }
   if (errors.some((error) => error.includes("changed"))) {
     return transitionResult(terminalize(activeState, "stale", "publication-cas-stale"), [], false, errors);
@@ -1326,15 +1393,6 @@ function transitionAutomationCore(policy, workOrder, state, event, policyRegistr
         return transitionResult(state, [], false, ["awaiting approval accepts only a new grant"]);
       }
       activeState = { ...state, phase: state.resumePhase, outcome: null, resumePhase: null };
-      const resumedErrors = validateState(policy, workOrder, activeState, { policyRegistry });
-      if (resumedErrors.length > 0) {
-        return transitionResult(
-          terminalize(activeState, "failed-terminal", "invalid-approval-resume-state"),
-          [],
-          false,
-          resumedErrors,
-        );
-      }
     }
 
     if (activeState.phase === "deterministic-classification") {
@@ -1623,6 +1681,118 @@ function copyMap(store) {
   }
 }
 
+function replayRecordErrors(record, expectedMapKey = null) {
+  const errors = exactObjectErrors(record, "automation replay record", replayRecordKeys);
+  if (!isExactObject(record)) return errors;
+  errors.push(...exactObjectErrors(
+    record.replayIdentity,
+    "automation replay identity",
+    replayIdentityKeys,
+  ));
+  const identity = record.replayIdentity;
+  if (isExactObject(identity)) {
+    if (typeof identity.repository !== "string" || !githubRepository.test(identity.repository)) {
+      errors.push("automation replay identity repository must be canonical");
+    }
+    if (!Number.isSafeInteger(identity.pullRequestNumber) || identity.pullRequestNumber < 1) {
+      errors.push("automation replay identity pullRequestNumber must be positive");
+    }
+    for (const key of ["baseSha", "headSha"]) {
+      if (!fullLowercaseSha1.test(identity[key] ?? "")) {
+        errors.push(`automation replay identity ${key} must be an exact SHA-1`);
+      }
+    }
+    if (!fullLowercaseSha256.test(identity.failureFingerprint ?? "")) {
+      errors.push("automation replay identity failureFingerprint must be an exact SHA-256");
+    }
+    if (typeof identity.policyVersion !== "string" ||
+        !/^VSC-AUTOMATION-(?:[1-9]\d*)$/.test(identity.policyVersion)) {
+      errors.push("automation replay identity policyVersion must be canonical");
+    }
+    if (record.idempotencyKey !== dependencyPullRequestIdempotencyKey(identity)) {
+      errors.push("automation replay idempotencyKey must match its canonical identity");
+    }
+  }
+  if (expectedMapKey !== null && record.idempotencyKey !== expectedMapKey) {
+    errors.push("stored automation replay idempotencyKey must equal its Map key");
+  }
+  if (!fullLowercaseSha256.test(record.inputEvidenceSha256 ?? "")) {
+    errors.push("automation replay inputEvidenceSha256 must be an exact SHA-256");
+  }
+  errors.push(...exactObjectErrors(record.result, "automation replay result", replayResultKeys));
+  const result = record.result;
+  if (isExactObject(result)) {
+    if (result.schemaVersion !== 1) {
+      errors.push("automation replay result schemaVersion must be 1");
+    }
+    if (!persistedTerminalOutcomes.has(result.terminalOutcome)) {
+      errors.push("automation replay result must contain a persistable terminal outcome");
+    }
+    const normalizedAttempts = exactObjectErrors(
+      result.attempts,
+      "automation replay result attempts",
+      automationAttemptNames,
+    );
+    errors.push(...normalizedAttempts);
+    if (isExactObject(result.attempts)) {
+      for (const name of automationAttemptNames) {
+        if (!Number.isSafeInteger(result.attempts[name]) || result.attempts[name] < 0) {
+          errors.push(`automation replay result attempts.${name} must be non-negative`);
+        }
+      }
+    }
+    if (!Array.isArray(result.reasonCodes) || result.reasonCodes.length > 32 ||
+        result.reasonCodes.some((code) => typeof code !== "string" || code.length > 128) ||
+        new Set(result.reasonCodes).size !== result.reasonCodes.length) {
+      errors.push("automation replay result reasonCodes must be bounded unique strings");
+    }
+  }
+  errors.push(...exactObjectErrors(
+    record.terminalState,
+    "automation replay terminal state",
+    stateKeys,
+  ));
+  const terminalState = record.terminalState;
+  if (isExactObject(terminalState)) {
+    errors.push(...validateHistoryIdentity(
+      terminalState.identity,
+      "automation replay terminal state identity",
+    ));
+    if (terminalState.workflow !== "dependency-pr") {
+      errors.push("automation replay terminal state must belong to dependency-pr");
+    }
+    if (!persistedTerminalOutcomes.has(terminalState.outcome) ||
+        terminalState.phase !== terminalState.outcome) {
+      errors.push("automation replay terminal state must carry a persistable terminal outcome");
+    }
+    if (terminalState.idempotencyKey !== record.idempotencyKey ||
+        terminalState.identity?.inputEvidenceSha256 !== record.inputEvidenceSha256) {
+      errors.push("automation replay terminal state must match the record identity");
+    }
+    if (isExactObject(identity) && (
+      terminalState.identity?.repository !== identity.repository ||
+      terminalState.identity?.pullRequestNumber !== identity.pullRequestNumber ||
+      terminalState.identity?.baseSha !== identity.baseSha ||
+      terminalState.identity?.headSha !== identity.headSha ||
+      terminalState.identity?.failureFingerprint !== identity.failureFingerprint
+    )) {
+      errors.push("automation replay terminal state must match the replay identity");
+    }
+    if (!Array.isArray(terminalState.history) ||
+        terminalState.historySha256 !== canonicalSha256(terminalState.history)) {
+      errors.push("automation replay terminal state history digest must be canonical");
+    }
+    if (isExactObject(result) && (
+      result.terminalOutcome !== terminalState.outcome ||
+      JSON.stringify(result.attempts) !== JSON.stringify(terminalState.attempts) ||
+      JSON.stringify(result.reasonCodes) !== JSON.stringify(terminalState.reasonCodes)
+    )) {
+      errors.push("automation replay result must be an exact projection of terminal state");
+    }
+  }
+  return errors;
+}
+
 export function recordAutomationResult(store, record) {
   const nextStore = copyMap(store);
   if (nextStore === null) {
@@ -1634,9 +1804,7 @@ export function recordAutomationResult(store, record) {
     };
   }
   try {
-    if (!isExactObject(record) || typeof record.idempotencyKey !== "string" ||
-        !fullLowercaseSha256.test(record.inputEvidenceSha256 ?? "") ||
-        !Object.hasOwn(record, "result")) {
+    if (replayRecordErrors(record).length > 0) {
       return {
         store: nextStore,
         replayed: false,
@@ -1647,7 +1815,8 @@ export function recordAutomationResult(store, record) {
     const existing = nextStore.get(record.idempotencyKey);
     if (existing !== undefined) {
       const existingResult = cloneRecord(existing?.result);
-      if (!isExactObject(existing) || existingResult === undefined) {
+      if (replayRecordErrors(existing, record.idempotencyKey).length > 0 ||
+          existingResult === undefined) {
         return {
           store: nextStore,
           replayed: false,
@@ -1699,14 +1868,219 @@ export function recordAutomationResult(store, record) {
 
 export function readAutomationResult(store, idempotencyKey) {
   try {
-    return cloneRecord(store instanceof Map ? store.get(idempotencyKey) : undefined);
+    if (!(store instanceof Map)) return undefined;
+    const record = store.get(idempotencyKey);
+    return replayRecordErrors(record, idempotencyKey).length === 0
+      ? cloneRecord(record)
+      : undefined;
   } catch {
     return undefined;
   }
 }
 
+function replayIdentityFromCandidate(candidate) {
+  return {
+    repository: candidate.repository,
+    pullRequestNumber: candidate.pullRequestNumber,
+    baseSha: candidate.baseSha,
+    headSha: candidate.headSha,
+    failureFingerprint: candidate.failureFingerprint,
+    policyVersion: candidate.policyVersion,
+  };
+}
+
+function replayResultFromState(state) {
+  return {
+    schemaVersion: 1,
+    terminalOutcome: state.outcome,
+    attempts: cloneRecord(state.attempts),
+    reasonCodes: cloneRecord(state.reasonCodes),
+  };
+}
+
+function failedStartResult(policy, workOrder, lineageStore, resultStore, reason) {
+  const state = failedCreation(policy, workOrder, [reason]);
+  return {
+    accepted: false,
+    replayed: false,
+    conflict: true,
+    state,
+    effects: [],
+    errors: [reason],
+    result: replayResultFromState(state),
+    lineageStore: copyMap(lineageStore),
+    resultStore: copyMap(resultStore),
+  };
+}
+
+export function startDependencyAutomationWithStores(
+  policy,
+  workOrder,
+  event,
+  lineageStore,
+  resultStore,
+  policyRegistry = checkedInAutomationPolicyRegistry(),
+) {
+  try {
+    const safeResultStore = copyMap(resultStore);
+    if (safeResultStore === null) {
+      return failedStartResult(
+        policy,
+        workOrder,
+        lineageStore,
+        resultStore,
+        "result store must be an explicit Map",
+      );
+    }
+
+    const wrapperErrors = exactObjectErrors(
+      event,
+      "classification event",
+      classificationEventKeys,
+    );
+    const validWrapper = isExactObject(event) && wrapperErrors.length === 0 &&
+      event.schemaVersion === 1 && event.type === "classification-evaluated" &&
+      event.source === "deterministic-controller";
+    const classification = validWrapper
+      ? classifyDependencyPullRequest(
+        policy,
+        event.trustedEvent,
+        event.evidence,
+        policyRegistry,
+      )
+      : null;
+    const candidate = classification?.candidate ?? null;
+    const workOrderErrors = validateAutomationWorkOrder(policy, workOrder, policyRegistry);
+    const boundCandidate = workOrderErrors.length === 0 &&
+      candidateMatchesWorkOrder(candidate, workOrder);
+
+    if (boundCandidate && safeResultStore.has(workOrder.idempotencyKey)) {
+      const existing = readAutomationResult(safeResultStore, workOrder.idempotencyKey);
+      if (existing === undefined) {
+        return failedStartResult(
+          policy,
+          workOrder,
+          lineageStore,
+          safeResultStore,
+          "stored automation replay record is malformed",
+        );
+      }
+      if (existing.inputEvidenceSha256 !== candidate.inputEvidenceSha256) {
+        return failedStartResult(
+          policy,
+          workOrder,
+          lineageStore,
+          safeResultStore,
+          "stored automation replay evidence does not match the derived identity",
+        );
+      }
+      const semanticErrors = validateState(policy, workOrder, existing.terminalState, {
+        policyRegistry,
+      });
+      if (classification.terminalOutcome !== null &&
+          existing.terminalState.outcome !== classification.terminalOutcome) {
+        semanticErrors.push(
+          "stored automation replay outcome contradicts deterministic classification",
+        );
+      }
+      if (classification.terminalOutcome === null &&
+          existing.terminalState.outcome === "reverted") {
+        semanticErrors.push("dependency automation replay cannot contain a release rollback");
+      }
+      const expectedInitialPhase = classification.terminalOutcome ?? classification.nextStage;
+      const initialHistory = existing.terminalState.history?.[0];
+      if (initialHistory?.fromPhase !== "deterministic-classification" ||
+          initialHistory?.toPhase !== expectedInitialPhase) {
+        semanticErrors.push(
+          "stored automation replay history contradicts deterministic classification",
+        );
+      }
+      if (semanticErrors.length > 0) {
+        return failedStartResult(
+          policy,
+          workOrder,
+          lineageStore,
+          safeResultStore,
+          "stored automation replay state is not a valid terminal controller history",
+        );
+      }
+      return {
+        accepted: true,
+        replayed: true,
+        conflict: false,
+        state: null,
+        effects: [],
+        errors: [],
+        result: cloneRecord(existing.result),
+        lineageStore: copyMap(lineageStore),
+        resultStore: safeResultStore,
+      };
+    }
+
+    const initialState = createAutomationStateFromLedger(
+      policy,
+      workOrder,
+      lineageStore,
+      policyRegistry,
+    );
+    const transition = transitionAutomationWithLedger(
+      policy,
+      workOrder,
+      initialState,
+      event,
+      lineageStore,
+      policyRegistry,
+    );
+    const terminalResult = persistedTerminalOutcomes.has(transition.state.outcome)
+      ? replayResultFromState(transition.state)
+      : null;
+    if (!boundCandidate || terminalResult === null) {
+      return {
+        ...transition,
+        replayed: false,
+        conflict: false,
+        result: terminalResult,
+        resultStore: safeResultStore,
+      };
+    }
+
+    const recorded = recordAutomationResult(safeResultStore, {
+      idempotencyKey: workOrder.idempotencyKey,
+      inputEvidenceSha256: candidate.inputEvidenceSha256,
+      replayIdentity: replayIdentityFromCandidate(candidate),
+      result: terminalResult,
+      terminalState: transition.state,
+    });
+    if (recorded.conflict || !(recorded.store instanceof Map)) {
+      return failedStartResult(
+        policy,
+        workOrder,
+        transition.lineageStore,
+        recorded.store,
+        "automation replay result could not be persisted safely",
+      );
+    }
+    return {
+      ...transition,
+      replayed: recorded.replayed,
+      conflict: false,
+      result: recorded.result,
+      resultStore: recorded.store,
+    };
+  } catch {
+    return failedStartResult(
+      policy,
+      workOrder,
+      lineageStore,
+      resultStore,
+      "dependency automation start failed closed",
+    );
+  }
+}
+
 function inspectLineageSnapshot(store, lineageKey) {
-  if (!(store instanceof Map)) {
+  if (!(store instanceof Map) || typeof lineageKey !== "string" ||
+      !automationIdentityKey.test(lineageKey)) {
     return { valid: false, snapshot: null };
   }
   try {
@@ -1743,7 +2117,7 @@ function inspectLineageSnapshot(store, lineageKey) {
 export function recordLineageAttempts(store, lineageKey, attempts) {
   const nextStore = copyMap(store);
   if (nextStore === null || typeof lineageKey !== "string" ||
-      lineageKey.length === 0 || lineageKey.length > 512) {
+      !automationIdentityKey.test(lineageKey)) {
     return null;
   }
   try {

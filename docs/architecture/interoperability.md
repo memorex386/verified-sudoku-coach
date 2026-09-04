@@ -47,10 +47,13 @@ flowchart LR
     Controller --> Evidence
 ```
 
-The controller owns authenticated event normalization, derived risk/failure identity, state
-transitions, idempotency, attempt/time/cost limits, capability grants, approval checks, and terminal
-outcomes. An adapter translates one external protocol and reports a normalized result. It cannot
-expand its own authority or call another adapter outside the current work order.
+A trusted trigger adapter owns host signature/app authentication and creates the exact event
+envelope. The controller owns envelope decoding, derived risk/failure identity, state transitions,
+idempotency, attempt limits, capability grants, approval checks, and terminal outcomes. Time, token,
+cost, and CI budgets remain fields of the planned `AutomationSpecV1`; a future accepted live host
+must enforce them before any corresponding public claim.
+An adapter translates one external protocol and reports a normalized result. It cannot expand its
+own authority or call another adapter outside the current work order.
 
 Effective capability is always the intersection of:
 

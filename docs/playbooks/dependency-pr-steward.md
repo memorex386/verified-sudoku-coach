@@ -7,8 +7,10 @@ a fast, inexpensive, reproducible disposition with bounded authority and a termi
 
 - The analyzer/fixer has an ephemeral isolated worktree, no production credential, and read-only
   repository access until a work order explicitly grants a patch publication.
-- A deterministic controller verifies source actor, repository, base/head SHA, policy version,
-  event dedupe key, budgets, attempt count, persisted workflow/phase, and granted stage capability.
+- A trusted host adapter authenticates the event source and resolves the current repository,
+  base/head SHA, and actor/app identity. A deterministic controller exact-decodes that envelope,
+  compares its allowlisted values, and verifies policy version, event dedupe key, attempt count,
+  persisted workflow/phase, and granted stage capability.
 - A narrow source-control broker may publish a compare-and-swap patch or enable merge only after
   every required gate passes on the exact head.
 - Release orchestration consumes a merged immutable artifact through a separate credential and
@@ -16,10 +18,13 @@ a fast, inexpensive, reproducible disposition with bounded authority and a termi
 
 Pull-request text, comments, diffs, dependency release notes/source, test logs, and agent/model
 output are untrusted data. A privileged workflow must not execute untrusted PR code or artifacts.
-The controller alone creates the trusted event envelope from authenticated host context. It derives
-dependency/risk facts from exact before/after manifests, bounded diff metadata, and normalized check
-evidence inside its entrypoint; a caller cannot supply an `eligible` decision or mark itself safe.
-Persisted state is exact-decoded untrusted input even when its CAS revision happens to match.
+The controller does not authenticate GitHub. A narrow live trigger adapter must validate the host
+signature/app and actor, query the current pull-request identity, then construct the exact trusted
+event envelope. The controller derives dependency/risk facts from exact before/after manifests,
+bounded diff metadata, and normalized check evidence inside its entrypoint; a caller cannot supply
+an `eligible` decision or mark itself safe. The public fixture uses a synthetic receipt digest and
+does not prove host authentication. Persisted state is exact-decoded untrusted input even when its
+CAS revision happens to match.
 
 ## Finite decision flow
 
@@ -41,8 +46,9 @@ received
 
 One inexpensive diagnosis and one stronger escalation are the maximum model route. One repair and
 one rerun for a deterministically recognized infrastructure failure are allowed. Repository + PR +
-base SHA + head SHA + failure fingerprint + policy version is the replay/dedupe identity. A repeated
-event with that identity returns its durable result rather than starting again.
+base SHA + head SHA + failure fingerprint + policy version is the replay/dedupe identity. After
+pure identity derivation and before any model or mutation effect, a repeated event with that
+identity returns its durable result rather than starting again.
 
 The failure fingerprint is a SHA-256 over sorted normalized risk codes and required-check outcomes;
 a clean pre-check uses a defined `no-failure` sentinel. It never hashes arbitrary raw logs into

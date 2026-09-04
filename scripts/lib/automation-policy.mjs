@@ -5,6 +5,7 @@ export const fullLowercaseSha256 = /^[0-9a-f]{64}$/;
 export const stableSemver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 export const npmPackageName = /^(?:@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*|[a-z0-9][a-z0-9._-]*)$/;
 export const githubRepository = /^[a-z0-9][a-z0-9_.-]{0,99}\/[a-z0-9][a-z0-9_.-]{0,99}$/;
+export const automationIdentityKey = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$/;
 
 export const automationTerminalOutcomes = Object.freeze([
   "verified",
@@ -532,8 +533,9 @@ export function validateAutomationWorkOrder(policy, workOrder, policyRegistry) {
       workOrder.policySha256 !== policy.policySha256) {
     errors.push("automation work order policy identity must match the active policy");
   }
-  if (typeof workOrder.idempotencyKey !== "string" || workOrder.idempotencyKey.length > 512) {
-    errors.push("automation work order idempotencyKey must be a bounded string");
+  if (typeof workOrder.idempotencyKey !== "string" ||
+      !automationIdentityKey.test(workOrder.idempotencyKey)) {
+    errors.push("automation work order idempotencyKey must be a non-empty canonical bounded string");
   } else if (workOrder.workflow === "dependency-pr" &&
       workOrder.idempotencyKey !== dependencyPullRequestIdempotencyKey(workOrder)) {
     errors.push("automation work order idempotencyKey must bind repository, PR, base, head, fingerprint, and policy");
@@ -542,8 +544,9 @@ export function validateAutomationWorkOrder(policy, workOrder, policyRegistry) {
   if (workOrder.workflow === "dependency-pr" && workOrder.lineageKey !== expectedLineage) {
     errors.push(`automation work order lineageKey must be exactly ${expectedLineage}`);
   }
-  if (typeof workOrder.lineageKey !== "string" || workOrder.lineageKey.length > 512) {
-    errors.push("automation work order lineageKey must be a bounded string");
+  if (typeof workOrder.lineageKey !== "string" ||
+      !automationIdentityKey.test(workOrder.lineageKey)) {
+    errors.push("automation work order lineageKey must be a non-empty canonical bounded string");
   }
   const allowedCapabilities = [
     "model-assessment",

@@ -2,10 +2,8 @@
 
 import fs from "node:fs";
 import {
-  createAutomationStateFromLedger,
-  recordAutomationResult,
   recordLineageAttempts,
-  transitionAutomationWithLedger,
+  startDependencyAutomationWithStores,
 } from "./lib/automation-controller.mjs";
 import { classifyDependencyPullRequest } from "./lib/dependency-pr-normalizer.mjs";
 import { fromRoot, isEntrypoint } from "./lib/project.mjs";
@@ -29,30 +27,31 @@ export function runAutomationFixture() {
     fixture.workOrder.lineageKey,
     Object.fromEntries(Object.keys(policy.attemptCaps).map((name) => [name, 0])),
   );
-  const initialState = createAutomationStateFromLedger(policy, fixture.workOrder, lineageStore);
-  const transition = transitionAutomationWithLedger(policy, fixture.workOrder, initialState, {
+  const event = {
     schemaVersion: 1,
     type: "classification-evaluated",
     source: "deterministic-controller",
     trustedEvent: fixture.trustedEvent,
     evidence: fixture.evidence,
-  }, lineageStore);
-  const recorded = recordAutomationResult(new Map(), {
-    idempotencyKey: fixture.workOrder.idempotencyKey,
-    inputEvidenceSha256: classification.candidate?.inputEvidenceSha256 ??
-      "0".repeat(64),
-    result: {
-      terminalOutcome: transition.state.outcome,
-      attempts: transition.state.attempts,
-    },
-  });
-  const replay = recordAutomationResult(recorded.store, {
-    idempotencyKey: fixture.workOrder.idempotencyKey,
-    inputEvidenceSha256: classification.candidate?.inputEvidenceSha256 ??
-      "0".repeat(64),
-    result: { terminalOutcome: "must-not-replace-recorded-result" },
-  });
+  };
+  const first = startDependencyAutomationWithStores(
+    policy,
+    fixture.workOrder,
+    event,
+    lineageStore,
+    new Map(),
+  );
   const candidate = classification.candidate;
+  if (candidate === null) {
+    throw new Error("automation fixture did not produce a normalized replay identity");
+  }
+  const replay = startDependencyAutomationWithStores(
+    policy,
+    fixture.workOrder,
+    event,
+    first.lineageStore,
+    first.resultStore,
+  );
   const aggregate = {
     schemaVersion: 1,
     fixtureId: fixture.fixtureId,
@@ -73,14 +72,14 @@ export function runAutomationFixture() {
     lineageKey: candidate?.lineageKey ?? null,
     eligible: classification.eligible,
     nextStage: classification.nextStage,
-    terminalOutcome: transition.state.outcome,
+    terminalOutcome: first.result?.terminalOutcome ?? null,
     modelAttempts:
-      transition.state.attempts.cheapAssessments +
-      transition.state.attempts.strongEscalations,
-    repairAttempts: transition.state.attempts.repairAttempts,
+      first.result?.attempts.cheapAssessments +
+      first.result?.attempts.strongEscalations,
+    repairAttempts: first.result?.attempts.repairAttempts ?? null,
     mutationAttempts:
-      transition.state.attempts.patchPublications +
-      transition.state.attempts.mergeAttempts,
+      first.result?.attempts.patchPublications +
+      first.result?.attempts.mergeAttempts,
     replayed: replay.replayed,
     networkCalls: 0,
   };
