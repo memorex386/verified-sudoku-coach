@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "string",
+      "const": "vsc.board-state"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "puzzleId": {
+      "type": "string",
+      "pattern": "^puz_[a-z0-9]{16,64}(?![\\s\\S])"
+    },
+    "puzzleFingerprint": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "entries": {
+      "maxItems": 81,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema1"
+      }
+    },
+    "notes": {
+      "maxItems": 81,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema4"
+      }
+    },
+    "boardFingerprint": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "stateFingerprint": {
+      "$ref": "#/$defs/__schema0"
+    }
+  },
+  "required": [
+    "schemaId",
+    "version",
+    "puzzleId",
+    "puzzleFingerprint",
+    "revision",
+    "entries",
+    "notes",
+    "boardFingerprint",
+    "stateFingerprint"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+    },
+    "__schema1": {
+      "type": "object",
+      "properties": {
+        "cellId": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "digit": {
+          "$ref": "#/$defs/__schema3"
+        }
+      },
+      "required": [
+        "cellId",
+        "digit"
+      ],
+      "additionalProperties": false
+    },
+    "__schema2": {
+      "type": "string",
+      "pattern": "^r[1-9]c[1-9](?![\\s\\S])"
+    },
+    "__schema3": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9
+    },
+    "__schema4": {
+      "type": "object",
+      "properties": {
+        "cellId": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "digits": {
+          "minItems": 1,
+          "maxItems": 9,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema3"
+          }
+        }
+      },
+      "required": [
+        "cellId",
+        "digits"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

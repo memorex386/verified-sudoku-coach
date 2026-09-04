@@ -8,6 +8,11 @@ includes `minimatch` under the permissive
 [Blue Oak Model License 1.0.0](https://blueoakcouncil.org/license/1.0.0.html), whose notice link is
 preserved here.
 
+WP-2026-003 uses Zod 4.5.4 for exact runtime wire schemas and generated JSON Schema.
+It is MIT-licensed, copyright (c) 2025 Colin McDonnell; its installed LICENSE is preserved by npm.
+The lockfile pins package integrity. The contract checkpoint ran npm audit and the repository's
+license verification; no provider dependency was introduced.
+
 Future dependency additions must include automated dependency/license review, update this notice or
 the generated release notice, and record any bundled assets, fonts, puzzles, model responses, or
 code with their source and license. Generated project puzzles and synthetic recordings are governed

@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "string",
+      "const": "vsc.board-action"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "commandId": {
+      "type": "string",
+      "pattern": "^cmd_[a-z0-9]{16,64}(?![\\s\\S])"
+    },
+    "puzzleId": {
+      "type": "string",
+      "pattern": "^puz_[a-z0-9]{16,64}(?![\\s\\S])"
+    },
+    "puzzleFingerprint": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "expectedRevision": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "expectedStateFingerprint": {
+      "$ref": "#/$defs/__schema0"
+    },
+    "action": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "place-value"
+            },
+            "cellId": {
+              "$ref": "#/$defs/__schema1"
+            },
+            "digit": {
+              "$ref": "#/$defs/__schema2"
+            }
+          },
+          "required": [
+            "type",
+            "cellId",
+            "digit"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "clear-value"
+            },
+            "cellId": {
+              "$ref": "#/$defs/__schema1"
+            }
+          },
+          "required": [
+            "type",
+            "cellId"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "replace-notes"
+            },
+            "cellId": {
+              "$ref": "#/$defs/__schema1"
+            },
+            "digits": {
+              "maxItems": 9,
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/__schema2"
+              }
+            }
+          },
+          "required": [
+            "type",
+            "cellId",
+            "digits"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "required": [
+    "schemaId",
+    "version",
+    "commandId",
+    "puzzleId",
+    "puzzleFingerprint",
+    "expectedRevision",
+    "expectedStateFingerprint",
+    "action"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+    },
+    "__schema1": {
+      "type": "string",
+      "pattern": "^r[1-9]c[1-9](?![\\s\\S])"
+    },
+    "__schema2": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9
+    }
+  }
+}

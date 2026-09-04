@@ -136,6 +136,29 @@ The doctor now locks the expanded test command and `test:domain` command exactly
 all existing gates and disallowing lifecycle hooks around the new command. Public SHA-256 vectors
 and independently calculated empty-6x6 puzzle/logical hashes provide fixed compatibility evidence.
 
+The maintainer authorized the next step, and reviewed
+[PR #6](https://github.com/memorex386/verified-sudoku-coach/pull/6) merged at
+`ee8aec101bae522ad393d92f3705c71df00f653c`, preserving head
+`3e747c96e3ff3ab44081ae1dbc26501f15422083` after Windows, Ubuntu, dependency review and CodeQL passed.
+The [boundary codec checkpoint](../contracts/boundary-codecs.md) implements all eight top-level
+V1 wire schemas, board/identity/action semantics, and explicitly unverified proof/trace/replay
+framing. Generated schema/API/compatibility artifacts are checked by `npm run test:contracts`.
+
+Contract-slice validation on Windows, 2026-09-04:
+
+- `npm run test:contracts`: PASS — 19 tests, ten JSON Schema snapshots, API hashes, synthetic
+  compatibility examples, ESM/CommonJS workspace roots and deep-import rejection.
+- `npm run test:domain`: PASS — 14 tests, including trailing-newline token regressions.
+- `npm run architecture:check`: PASS — inward imports and provider/core boundaries preserved.
+- `npm run licenses:check`: PASS — Zod 4.5.4 MIT license and installed dependency tree reviewed.
+- `npm audit --omit=dev --audit-level=low`: PASS — zero reported vulnerabilities.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 145 tests and strict compilation.
+- `npm run work-packages:generate`: PASS — registry regenerated with one active package/next action.
+- `git diff --check`: PASS — no whitespace errors.
+
+Package versions remain `0.0.0`. The wire reader requires exact safe decimal integer spelling;
+snapshot/consumer notes distinguish JSON Schema structure from semantic and proof authority.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -144,13 +167,15 @@ duration. The private aggregate conformance command does not yet exist in Sudoku
 schema, and codec work may proceed, but the proof-technique runbook blocks detector/verifier changes
 until the private counterpart and its linked evidence package are executable.
 The domain slice is only an initial-state API. Technique application and replay retention of
-verified eliminations remain unimplemented, as do DTO schemas/codecs, generated fixtures,
-Chromium/Angular checks and packed distribution. Only `test:domain` among the new package commands
-is executable in this slice; the other commands remain required before package Done.
+verified eliminations remain unimplemented, as do generated showcase fixtures, executable replay
+acceptance, private conformance, Chromium/Angular checks and packed-consumer conformance.
+Proof/trace/replay codecs check framing and integrity only and return explicit `unverified` data.
+`test:domain` and `test:contracts` are executable; the other package commands remain required before
+Done. Root-entrypoint workspace checks do not replace pack or browser acceptance.
 
 ## Next action
 
-- Review [PR #6](https://github.com/memorex386/verified-sudoku-coach/pull/6); preserve the private conformance gate and obtain explicit merge authorization before integrating this domain slice.
+- Review the V1 contract/codecs implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
 
 ## Checkpoints
 
@@ -172,3 +197,13 @@ is executable in this slice; the other commands remain required before package D
   production history checks remain intact. `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main`
   then passed all 112 foundation and 14 domain tests locally. PR #6 remains open, not authorized
   for merge.
+- 2026-09-04 — Maintainer authorized PR #6 integration and the next implementation slice; merged
+  its checked head and created a fresh worktree from updated main. Implemented exact V1 schemas,
+  bounded JSON preflight, immutable board/identity/action codec results and explicitly unverified
+  proof/trace/replay framing. Added schema/API snapshots and synthetic compatibility cases,
+  Zod license/integrity review, and strict trailing-newline token regressions. No technique
+  detector/verifier, provider call, private corpus operation, live automation or deployment occurred.
+- 2026-09-04 — Contract-slice full verification passed all 145 tests with the CI base-ref setting,
+  including artifact drift, workspace entrypoint and malformed-wire checks. The implementation is
+  ready for review; this checkpoint does not claim packed/browser conformance, proof soundness,
+  uniqueness, executable replay acceptance or private corpus parity.

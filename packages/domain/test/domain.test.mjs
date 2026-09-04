@@ -59,7 +59,7 @@ test("canonical decoding rejects lossy and executable representations without ca
 test("typed fingerprints use the exact zero-byte domain separator", () => {
   assert.equal(fingerprint("board", { b: 2, a: 1 }), independentFingerprint("board", '{"a":1,"b":2}'));
   assert.notEqual(fingerprint("board", {}), fingerprint("board-state", {}));
-  for (const invalid of ["", "Board", "board/v1", "board\0", "a--b"]) assert.throws(() => fingerprint(invalid, {}));
+  for (const invalid of ["", "Board", "board/v1", "board\0", "a--b", "board\n"]) assert.throws(() => fingerprint(invalid, {}));
 });
 
 test("empty 6x6 puzzle and logical projection match independently calculated fixed hashes", () => {
@@ -94,7 +94,7 @@ for (const size of [6, 9]) {
     assert.throws(() => { topology.size = 4; });
     assert.throws(() => { allUnits[0].cells.push("r1c1"); });
     for (const value of [0, -0, size + 1, 1.5, "1", NaN]) assert.throws(() => digit(topology, value));
-    for (const value of ["r0c1", "r1c0", "r01c1", "R1C1", "r1c10", null]) assert.throws(() => cellId(topology, value));
+    for (const value of ["r0c1", "r1c0", "r01c1", "R1C1", "r1c10", "r1c1\n", null]) assert.throws(() => cellId(topology, value));
     if (size === 6) assert.throws(() => cellId(topology, "r7c1"));
   });
 

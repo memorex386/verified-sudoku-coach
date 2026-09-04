@@ -53,7 +53,7 @@ export function sha256(bytes: Uint8Array): string {
 export type Fingerprint = `sha256:${string}`;
 
 export function fingerprint(projection: string, value: unknown): Fingerprint {
-  if (typeof projection !== "string" || !/^[a-z]+(?:-[a-z]+)*$/.test(projection)) throw new Error("hash-projection");
+  if (typeof projection !== "string" || !/^[a-z]+(?:-[a-z]+)*(?![\s\S])/.test(projection)) throw new Error("hash-projection");
   const prefix = Uint8Array.from(`vsc/${projection}/v1\0`, (character) => character.charCodeAt(0));
   const payload = canonicalBytes(value);
   const bytes = new Uint8Array(prefix.length + payload.length);
