@@ -111,7 +111,9 @@ Implementation is recorded on `codex/agent-portability`, including audited contr
 [`d486c5236deb4caa2e065a4b6c464f01ed1418ba`](https://github.com/memorex386/verified-sudoku-coach/commit/d486c5236deb4caa2e065a4b6c464f01ed1418ba),
 and is under review in open
 [PR #4](https://github.com/memorex386/verified-sudoku-coach/pull/4). No release exists, and no
-merge, deployment, provider spend, or live automation is authorized.
+merge, deployment, provider spend, or live automation is authorized. Its
+[checks](https://github.com/memorex386/verified-sudoku-coach/pull/4/checks) pass on Windows, Ubuntu,
+CodeQL, and dependency review.
 
 ## Known limitations and blockers
 
@@ -124,6 +126,9 @@ and lineage stores are conformance fakes, not production persistence; host authe
 compare-and-swap storage, and time/token/cost budget enforcement remain live-runner work. The
 credential-free reference controller should be split into focused codec, state/history, and store
 modules before such a runner is accepted.
+Until PR #4 is merged, the amended WP-2026-002 exists only on its review branch; a fresh agent must
+discover the open PR rather than relying on the older default-branch ID mapping. A feature-only
+single-branch clone must fetch `origin/main` before the work-package verifier can compare its base.
 
 ## Next action
 
@@ -140,3 +145,7 @@ modules before such a runner is accepted.
 - 2026-09-04 — Public PR #4 opened from the validated branch. The work package remains In progress
   pending remote CI and maintainer review; no merge, release, deployment, spend, publication, or
   live automation occurred.
+- 2026-09-04 — A fresh agent given only the public repository URL and WP-2026-002 found PR #4 and
+  governing authorities, explained the trust/authority split, passed a clean credential-free
+  verifier with 112/112 tests, and chose the exact review-only next action (4/4 checklist PASS).
+  It recorded the pre-merge default-branch ID mapping and shallow-feature-clone base-ref caveats.
