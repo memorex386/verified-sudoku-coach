@@ -4574,20 +4574,8 @@ test("work-package verifier rejects an all-zero push base", async () => {
 
 test("Ready permits decision-complete commands that implementation will create", async () => {
   const packages = structuredClone(loadWorkPackages());
-  const foundation = packages[0];
-  const proofPackage = packages[1];
-  assert.ok(foundation && proofPackage);
-  foundation.status = "Done";
-  foundation.metadata.status = "Done";
-  foundation.body = foundation.body
-    .replace(
-      /## Validation\n[\s\S]*?(?=\n## Delivery evidence)/,
-      "## Validation\n\n```powershell\nnpm run verify\n```\n\n- `npm run verify`: PASS — fixture.\n",
-    )
-    .replace(
-      /## Delivery evidence\n[\s\S]*?(?=\n## Known limitations and blockers)/,
-      "## Delivery evidence\n\n[PR](https://github.com/memorex386/verified-sudoku-coach/pull/1); commit `6afaeca0857b067b481e011bfa71d8d20f26fd39`.\n",
-    );
+  const proofPackage = packages.find((item) => item.status === "In progress");
+  assert.ok(proofPackage);
   proofPackage.status = "Ready";
   proofPackage.metadata.status = "Ready";
   assert.deepEqual(await validateWorkPackagesOffline(

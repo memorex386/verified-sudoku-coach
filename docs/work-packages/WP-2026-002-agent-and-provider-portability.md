@@ -1,7 +1,7 @@
 ---
 id: WP-2026-002
 title: Agent and provider portability foundation
-status: In progress
+status: Done
 depends_on: WP-2026-001
 owner: Maintainer
 base_branch: main
@@ -107,13 +107,11 @@ reported `Skill is valid!` for `steward-dependency-pr`.
 
 ## Delivery evidence
 
-Implementation is recorded on `codex/agent-portability`, including audited controller head
-[`d486c5236deb4caa2e065a4b6c464f01ed1418ba`](https://github.com/memorex386/verified-sudoku-coach/commit/d486c5236deb4caa2e065a4b6c464f01ed1418ba),
-and is under review in open
-[PR #4](https://github.com/memorex386/verified-sudoku-coach/pull/4). No release exists, and no
-merge, deployment, provider spend, or live automation is authorized. Its
-[checks](https://github.com/memorex386/verified-sudoku-coach/pull/4/checks) pass on Windows, Ubuntu,
-CodeQL, and dependency review.
+Implementation was accepted and integrated through merged
+[PR #4](https://github.com/memorex386/verified-sudoku-coach/pull/4) at reviewed head
+`fe2a713a818bc73be465acfa93f271cb9c7b691f`. Its
+[checks](https://github.com/memorex386/verified-sudoku-coach/pull/4/checks) passed on Windows, Ubuntu,
+CodeQL, and dependency review. No release, deployment, provider spend, or live automation occurred.
 
 ## Known limitations and blockers
 
@@ -126,13 +124,12 @@ and lineage stores are conformance fakes, not production persistence; host authe
 compare-and-swap storage, and time/token/cost budget enforcement remain live-runner work. The
 credential-free reference controller should be split into focused codec, state/history, and store
 modules before such a runner is accepted.
-Until PR #4 is merged, the amended WP-2026-002 exists only on its review branch; a fresh agent must
-discover the open PR rather than relying on the older default-branch ID mapping. A feature-only
-single-branch clone must fetch `origin/main` before the work-package verifier can compare its base.
+A feature-only single-branch clone must fetch `origin/main` before the work-package verifier can
+compare its base.
 
 ## Next action
 
-- Await maintainer review and remote CI for PR #4; make only evidence-backed corrections without merging, deploying, spending, or publishing.
+- No action remains in WP-2026-002; follow the generated registry for the current package.
 
 ## Checkpoints
 
@@ -149,3 +146,7 @@ single-branch clone must fetch `origin/main` before the work-package verifier ca
   governing authorities, explained the trust/authority split, passed a clean credential-free
   verifier with 112/112 tests, and chose the exact review-only next action (4/4 checklist PASS).
   It recorded the pre-merge default-branch ID mapping and shallow-feature-clone base-ref caveats.
+- 2026-09-04 — Maintainer-authorized merge commit
+  `dada4e53cd3c4310df3f0c12dcc87717f543a555` integrated reviewed PR #4 head
+  `fe2a713a818bc73be465acfa93f271cb9c7b691f` into `main`; the package closed without a release,
+  deployment, provider spend, or live automation.

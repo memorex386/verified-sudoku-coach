@@ -4,8 +4,9 @@
 
 The first implementation will define runtime schemas for puzzle definitions, board snapshots,
 proof steps/paths, board actions, coach observations, observer decisions, teacher plans, validator
-results, replay records, and aggregate evaluation reports. Names and fields become authoritative
-only when WP-2026-003 lands.
+results, replay records, and aggregate evaluation reports. The board/proof V1 decisions are fixed by
+[the V1 contract](sudoku-proof-v1.md); executable schemas and compatibility artifacts land in
+WP-2026-003 before it is Done. Coach/model interfaces remain owned by later packages.
 
 Every serialized value must:
 

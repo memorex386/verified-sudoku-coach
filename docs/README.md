@@ -48,6 +48,7 @@ Gemini, and open-weight names identify adapters or provenance; none is a core au
 | Review candidate model choices | [Model profiles](architecture/model-profiles.md) |
 | Change an interface | [Contract versioning](contracts/versioning.md) and [change matrix](change-matrix.md) |
 | Find a public interface owner | [Contract catalog](contracts/catalog.md) |
+| Implement board/proof V1 | [Sudoku and proof contracts V1](contracts/sudoku-proof-v1.md) and [fixture generation](architecture/fixture-generation.md) |
 | Inspect runtime AI registration | [Runtime manifest contract](contracts/runtime-manifest.md) |
 | Change a proof technique | [Proof-technique runbook](runbooks/change-proof-technique.md) |
 | Select or continue work | [Work package registry](work-packages/) |

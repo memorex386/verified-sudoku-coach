@@ -2,7 +2,7 @@
 
 - Work package: [WP-2026-002](../../docs/work-packages/WP-2026-002-agent-and-provider-portability.md)
 - Date: 2026-09-04
-- State: Open [PR #4](https://github.com/memorex386/verified-sudoku-coach/pull/4) under review; no merge, live automation, provider spend, deployment, or release
+- State: Completed in merged [PR #4](https://github.com/memorex386/verified-sudoku-coach/pull/4); no live automation, provider spend, deployment, or release
 - Data classification: Public engineering summary; no transcript, private source, credential, or model payload
 
 ## Human-owned intent and decisions
@@ -138,7 +138,6 @@ provider evaluation remain future work. The in-memory result and lineage stores 
 adapters, not durable production persistence; a live host requires authenticated, transactional
 compare-and-swap adapters. The finite controller is intentionally a credential-free reference and
 should be split into codec, state/history, and store modules before a live runner is accepted.
-Before merge, a default-branch-only reader sees the earlier WP-2026-002 mapping and must discover
-open PR #4 to resolve the amendment. A feature-only single-branch clone must fetch `origin/main`
-before the work-package base comparison can pass; both discoverability caveats were observed in the
-fresh-agent exercise.
+Before merge, the fresh-agent exercise observed that a default-branch-only reader had to discover
+PR #4 to resolve the amended package mapping. That caveat ended when PR #4 merged. A feature-only
+single-branch clone must still fetch `origin/main` before the work-package base comparison can pass.
