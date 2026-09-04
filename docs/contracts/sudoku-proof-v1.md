@@ -49,6 +49,8 @@ no BOM or trailing newline. Floats, negative zero, non-ASCII strings, and unsupp
 Objects must have Object.prototype or null as their prototype and only enumerable own string data
 properties; symbols, accessors, cycles, and custom prototypes fail. Escaping follows JSON.stringify
 for ASCII strings. The separator `\0` below is one zero byte, not two printable characters.
+The generic encoder permits depth 0–64, with the root at zero; boundary adapters enforce the
+tighter DTO limits above. See the [domain checkpoint](domain-primitives.md) for implementation scope.
 
 A typed fingerprint is lowercase SHA-256 over:
 

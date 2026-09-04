@@ -83,6 +83,7 @@ npm run test:proof
 npm run fixtures:check
 npm run proof:hashes
 npm run pack:smoke
+npm run test:domain
 npm run verify
 ```
 
@@ -114,6 +115,27 @@ reproduced. These checks validate readiness and foundation behavior, not impleme
 The Ready-command regression now selects the active package instead of assuming a fixed array
 position; the production verifier's dependency and lifecycle rules are unchanged.
 
+The transition was accepted in merged
+[PR #5](https://github.com/memorex386/verified-sudoku-coach/pull/5), merge commit
+`8708fa24ae528c3ddeab24c4dd1302724f9af774`. The first implementation slice is documented in
+[domain primitives](../contracts/domain-primitives.md), with a checked declaration snapshot.
+It implements topology, consistent puzzles, player snapshots, initial logical-state projections,
+and canonical SHA-256. It does not construct or apply a verified proof.
+
+Domain-slice validation on Windows, 2026-09-04:
+
+- `npm ci --ignore-scripts`: PASS — no new dependencies, zero reported vulnerabilities.
+- `npm run test:domain`: PASS — 14 synthetic domain tests and declaration snapshot check.
+- `npm run architecture:check`: PASS — domain remains dependency-free and pure.
+- `npm run typecheck`: PASS — strict project references compile.
+- `npm run verify`: PASS — 112 foundation tests plus 14 domain tests and every existing gate.
+- `npm run work-packages:generate`: PASS — one active package and one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
+The doctor now locks the expanded test command and `test:domain` command exactly, preserving
+all existing gates and disallowing lifecycle hooks around the new command. Public SHA-256 vectors
+and independently calculated empty-6x6 puzzle/logical hashes provide fixed compatibility evidence.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -121,10 +143,14 @@ an experience measurement; generation labels it curated rather than claiming dif
 duration. The private aggregate conformance command does not yet exist in Sudoku World; domain,
 schema, and codec work may proceed, but the proof-technique runbook blocks detector/verifier changes
 until the private counterpart and its linked evidence package are executable.
+The domain slice is only an initial-state API. Technique application and replay retention of
+verified eliminations remain unimplemented, as do DTO schemas/codecs, generated fixtures,
+Chromium/Angular checks and packed distribution. Only `test:domain` among the new package commands
+is executable in this slice; the other commands remain required before package Done.
 
 ## Next action
 
-- Implement dependency-free topology, board, initial logical-state, canonical-JSON, and SHA-256 primitives with fixed vectors; stop that slice at an implementation PR and keep technique work gated on private conformance command and linked evidence availability.
+- Review the domain-primitives implementation PR; preserve the private conformance gate and obtain explicit merge authorization before integrating this slice.
 
 ## Checkpoints
 
@@ -133,3 +159,11 @@ until the private counterpart and its linked evidence package are executable.
   forms, package exports, deterministic fixture generation, and claim limitations are recorded for
   acceptance through the authorized transition PR;
   the first implementation slice is dependency-free domain/hash behavior.
+- 2026-09-04 — After transition PR #5 merged, implemented the dependency-free domain slice in a
+  fresh worktree from updated main: strict copied/frozen values, initial candidates independent of
+  notes, exact hash projections, pure SHA-256, declaration drift checking and synthetic adversarial
+  tests wired into the root verifier. No detector, verifier, proof-application rule, private data,
+  provider call, release, or deployment was added.
+- 2026-09-04 — Full local verification passed 112 foundation and 14 domain tests, strict compilation,
+  API snapshot and architecture checks. The domain implementation is ready for PR review; merge
+  requires new explicit maintainer authorization and remaining WP-2026-003 gates stay unfinished.
