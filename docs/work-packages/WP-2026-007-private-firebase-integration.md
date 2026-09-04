@@ -1,14 +1,14 @@
 ---
-id: WP-2026-006
+id: WP-2026-007
 title: Private Firebase integration
 status: Draft
-depends_on: WP-2026-005
+depends_on: WP-2026-006
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public metadata only
 acceptance: VSC-ARCH-005, VSC-PRIV-002, VSC-PRIV-003, VSC-OPS-001, VSC-OPS-002, VSC-UX-003
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Private Firebase integration
@@ -122,8 +122,8 @@ referenced only by safe PR/release identifiers and aggregate compatibility resul
 
 ## Known limitations and blockers
 
-WP-2026-005 and Sudoku World's accepted core business-foundation gate are incomplete. A billed OpenAI
-project/service credential and deployment authorization are intentionally absent.
+WP-2026-006 and Sudoku World's accepted core business-foundation gate are incomplete. A billed
+approved-provider project/service credential and deployment authorization are intentionally absent.
 
 ## Next action
 

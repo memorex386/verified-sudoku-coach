@@ -115,3 +115,7 @@ Delivery evidence: [foundation commit](https://github.com/memorex386/verified-su
 This workflow proves only that the repository foundation is internally checked, reviewable,
 accepted, and integrated. It does not prove Sudoku correctness, model quality, latency, cost,
 accessibility, player benefit, or release readiness; those remain explicitly unmeasured work.
+
+Sequence note: accepted plan amendment `VSC-PLAN-2026-09-04.2` later inserted a new portability
+foundation as WP-2026-002 and renumbered the unstarted packages. References above record the IDs and
+next action as they existed when WP-2026-001 was accepted.

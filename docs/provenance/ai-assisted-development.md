@@ -10,6 +10,8 @@ A pull request records:
 - The accepted work package and objective.
 - Whether AI assisted discovery, implementation, tests, documentation, or review.
 - Concise agent roles and durable outputs for meaningful multi-agent work.
+- The real runner, provider, model, and adapter identity when available; a portable contract does
+  not erase which implementation actually ran.
 - The architecture/product/privacy choices made by the human maintainer.
 - Exact commands and results used to verify the change.
 - Failures found, material revisions, remaining uncertainty, and evidence links.
@@ -31,8 +33,10 @@ code and may be public under the runtime manifest policy.
 ## Accountability
 
 AI output receives the same review as any untrusted contribution. Passing assistant review is not
-a quality gate. The human maintainer owns scope, accepted architecture, privacy decisions, claim
-language, merge, provider spend, beta exposure, and publication.
+a quality gate. Capability claims require conformance evidence; live quality, cost, latency, and
+data-handling claims require an authorized measured run. The human maintainer owns scope, accepted
+architecture, privacy decisions, claim language, merge, provider spend, beta exposure, and
+publication, except for a future narrow action explicitly delegated by accepted machine policy.
 
 Use an `ai-assisted` PR label rather than authorship trailers that overstate who owns a commit.
 Never imply that generated code was independently validated unless the reported checks actually ran.

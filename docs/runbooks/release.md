@@ -1,7 +1,7 @@
 # Release
 
 No package, hosted demo, or model behavior is releasable during WP-2026-001. The first release path
-is implemented in WP-2026-005 and must preserve these gates.
+is implemented in WP-2026-006 and must preserve these gates.
 
 ## Required evidence
 

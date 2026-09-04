@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "1.0.0",
+  "policySha256": "dde18769669b1a71ca5a5e2e2b46c258c34025c9d23f80a17946855d2fb514b1",
+  "profiles": [
+    {
+      "id": "openai-boundary-v1",
+      "profileVersion": "1.0.0",
+      "profileSha256": "d5f8fe515b0dbf7d1a540df66c69b49a92b05969e9f2ee6cff97e42a4c28202c",
+      "provider": "openai",
+      "providerKind": "hosted-api",
+      "runtimeAdmission": "boundary-only",
+      "adapter": null,
+      "artifactIdentity": null,
+      "capabilities": [],
+      "modelsByRole": {},
+      "inferenceSettingsByRole": {},
+      "dataHandling": null,
+      "browserBoundary": {
+        "dependencyPatterns": [
+          "@ai-sdk/openai",
+          "@langchain/openai",
+          "@openai/",
+          "openai"
+        ],
+        "credentialNamePatterns": [
+          "(?:^|[^A-Z0-9])OPENAI_(?:API_|SECRET_|PRIVATE_)?KEY\\b"
+        ],
+        "endpointPatterns": [
+          "\\bapi\\.openai\\.com(?=[/:]|$)"
+        ]
+      }
+    }
+  ]
+}

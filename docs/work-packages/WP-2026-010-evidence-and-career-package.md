@@ -1,14 +1,14 @@
 ---
-id: WP-2026-009
+id: WP-2026-010
 title: Evidence seal and career package
 status: Draft
-depends_on: WP-2026-008
+depends_on: WP-2026-009
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-PRIV-004, VSC-EVID-002
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Evidence seal and career package
@@ -94,7 +94,7 @@ No result or career artifact evidence exists because this package has not starte
 
 ## Known limitations and blockers
 
-WP-2026-008 and cohort close are incomplete. Publication of aggregates, case study, video, LinkedIn text,
+WP-2026-009 and cohort close are incomplete. Publication of aggregates, case study, video, LinkedIn text,
 or resume claim requires explicit human review and authorization after privacy checks.
 
 ## Next action

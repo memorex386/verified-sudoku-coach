@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "1.0.0",
+  "policySha256": "2e002dba994bf44ff76361dfda8fe09c4e1d70686fb6c5dc9e06d4318e071c69",
+  "profiles": [
+    {
+      "id": "openai-responses-v1",
+      "profileVersion": "1.0.0",
+      "profileSha256": "5ad233b6fb62179788ea4335a64054f7af5c915795cf6965fb35f4ed5f56617b",
+      "provider": "openai",
+      "providerKind": "hosted-api",
+      "runtimeAdmission": "candidate",
+      "adapter": {
+        "package": "@verified-sudoku/adapter-openai",
+        "protocol": "responses-api",
+        "protocolVersion": "1.0.0"
+      },
+      "artifactIdentity": {
+        "kind": "hosted-route",
+        "revisionPolicy": "mutable-provider-route",
+        "requestedRevisionsByRole": null,
+        "resolvedIdentityEvidence": "required-per-call"
+      },
+      "capabilities": [
+        "no-tools",
+        "response-storage-control",
+        "strict-json-schema"
+      ],
+      "modelsByRole": {
+        "observer": "gpt-5.6-luna",
+        "teacher": "gpt-5.6-terra"
+      },
+      "inferenceSettingsByRole": {
+        "observer": {
+          "outputMode": "strict-json-schema",
+          "providerSettings": {
+            "reasoning": {
+              "effort": "low"
+            },
+            "service_tier": "auto",
+            "store": false
+          },
+          "samplingPolicy": "provider-default-no-parameters",
+          "toolPolicy": "none"
+        },
+        "teacher": {
+          "outputMode": "strict-json-schema",
+          "providerSettings": {
+            "reasoning": {
+              "effort": "medium"
+            },
+            "service_tier": "auto",
+            "store": false
+          },
+          "samplingPolicy": "provider-default-no-parameters",
+          "toolPolicy": "none"
+        }
+      },
+      "dataHandling": {
+        "responseStoragePolicy": "request-not-to-store",
+        "abuseMonitoringPolicy": "provider-default",
+        "retentionControl": "not-verified"
+      },
+      "browserBoundary": {
+        "dependencyPatterns": [
+          "@ai-sdk/openai",
+          "@langchain/openai",
+          "@openai/",
+          "openai"
+        ],
+        "credentialNamePatterns": [
+          "(?:^|[^A-Z0-9])OPENAI_(?:API_|SECRET_|PRIVATE_)?KEY\\b"
+        ],
+        "endpointPatterns": [
+          "\\bapi\\.openai\\.com(?=[/:]|$)"
+        ]
+      }
+    },
+    {
+      "id": "anthropic-boundary-v1",
+      "profileVersion": "1.0.0",
+      "profileSha256": "bc29875a011bc6d6ca06bf41d9f754ca3be475e8bf2f106b16198477454f8495",
+      "provider": "anthropic",
+      "providerKind": "hosted-api",
+      "runtimeAdmission": "boundary-only",
+      "adapter": null,
+      "artifactIdentity": null,
+      "capabilities": [],
+      "modelsByRole": {},
+      "inferenceSettingsByRole": {},
+      "dataHandling": null,
+      "browserBoundary": {
+        "dependencyPatterns": [
+          "@ai-sdk/anthropic",
+          "@anthropic-ai/",
+          "@langchain/anthropic"
+        ],
+        "credentialNamePatterns": [
+          "(?:^|[^A-Z0-9])ANTHROPIC_(?:API_|SECRET_|PRIVATE_)?KEY\\b"
+        ],
+        "endpointPatterns": [
+          "\\bapi\\.anthropic\\.com(?=[/:]|$)"
+        ]
+      }
+    },
+    {
+      "id": "google-boundary-v1",
+      "profileVersion": "1.0.0",
+      "profileSha256": "d26f3ff5a406139c8ebca472879ddcc2f9bbf2125cd9726a1cba0716fbde9377",
+      "provider": "google",
+      "providerKind": "hosted-api",
+      "runtimeAdmission": "boundary-only",
+      "adapter": null,
+      "artifactIdentity": null,
+      "capabilities": [],
+      "modelsByRole": {},
+      "inferenceSettingsByRole": {},
+      "dataHandling": null,
+      "browserBoundary": {
+        "dependencyPatterns": [
+          "@ai-sdk/google",
+          "@google-cloud/vertexai",
+          "@google/genai",
+          "@google/generative-ai",
+          "@langchain/google-genai",
+          "@langchain/google-vertexai"
+        ],
+        "credentialNamePatterns": [
+          "(?:^|[^A-Z0-9])(?:GOOGLE|GEMINI)_(?:GENAI_)?(?:API_|SECRET_|PRIVATE_)?KEY\\b",
+          "(?:^|[^A-Z0-9])GOOGLE_APPLICATION_CREDENTIALS\\b"
+        ],
+        "endpointPatterns": [
+          "\\b(?:[a-z0-9-]+-)?aiplatform\\.googleapis\\.com(?=[/:]|$)",
+          "\\bgenerativelanguage\\.googleapis\\.com(?=[/:]|$)"
+        ]
+      }
+    }
+  ]
+}

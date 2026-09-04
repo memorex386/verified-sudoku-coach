@@ -14,7 +14,7 @@ Domain, proof, and coaching policy do not depend on contracts, providers, networ
 frameworks, or the host product. Wire contracts do not import domain values; boundary codecs are
 the explicit anti-corruption layer. The allowed package graph is machine-readable in
 [`config/architecture.json`](../../config/architecture.json) and verified in CI.
-Its `VSC-ARCH-1` policy digest locks the accepted workspace graph and enforcement categories;
+Its `VSC-ARCH-2` policy digest locks the accepted workspace/provider graph and enforcement categories;
 changing it requires the governing ADR and verifier to change together.
 The AST and manifest fitness checks are defense-in-depth drift guards, not a JavaScript sandbox or
 a substitute for review. Release work must also inspect built artifacts and exercise consumer
@@ -53,7 +53,7 @@ cross into this repository or model request.
 
 Code commit, ruleset, schema/contract, prompt, requested and returned model/model-profile, inference
 settings, renderer, fixture, and evaluation-suite versions belong in evidence. Every replay and
-trace carries the canonical seven-field behavior identity defined by the contract catalog. Live
+trace carries the canonical nine-field behavior identity defined by the contract catalog. Live
 model runs are reproducible protocols, not promised bit-for-bit deterministic outputs.
 
 ## 9. Documentation is operating state
@@ -65,7 +65,18 @@ copying them.
 ## 10. Humans remain accountable
 
 AI may accelerate discovery, code, tests, review, and documentation. A human owns product intent,
-architecture acceptance, privacy decisions, claims, merge, release, and publication.
+architecture acceptance, privacy decisions, claims, automation policy, release, and publication.
+During the evidence phase, AI-authored repairs and production deployments require human review.
+A later accepted, revocable policy may authorize a narrowly defined merge class after its required
+checks and evidence pass; a model response never supplies that authorization.
+
+## 11. Capability before brand
+
+Core policy depends on typed roles, capabilities, and versioned contracts. Model providers, coding
+agents, tool transports, trigger hosts, notifiers, and deployment systems enter through narrow leaf
+adapters. Their real identities remain in provenance. Missing capability, incompatible semantics,
+or an unapproved registration fails explicitly; no adapter silently substitutes behavior or weakens
+proof, privacy, budget, evaluation, or authorization gates.
 
 ## Enforcement map
 
@@ -81,3 +92,4 @@ architecture acceptance, privacy decisions, claims, merge, release, and publicat
 | Version behavior | Runtime manifest and eval/release manifests |
 | Documentation is state | Docs/work-package/skill checks |
 | Humans remain accountable | PR and release authorization gates |
+| Capability before brand | Provider policy, adapter conformance, thin-entrypoint checks, and ADR-0007 |

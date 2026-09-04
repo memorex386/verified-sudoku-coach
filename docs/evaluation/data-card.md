@@ -6,7 +6,7 @@
 
 ## Intended contents
 
-WP-2026-002 will define a reproducible generator and commit only independently generated fixtures.
+WP-2026-003 will define a reproducible generator and commit only independently generated fixtures.
 Each released fixture set will document its seed, generator commit, puzzle hash, uniqueness check,
 supported-technique coverage, transformations, partitions, limitations, and license.
 

@@ -1,14 +1,14 @@
 ---
-id: WP-2026-007
+id: WP-2026-008
 title: Private Angular integration
 status: Draft
-depends_on: WP-2026-006
+depends_on: WP-2026-007
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public metadata only
 acceptance: VSC-ARCH-006, VSC-UX-004
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Private Angular integration
@@ -52,7 +52,7 @@ recap/survey, allowlisted analytics, and the information-page replay-link config
 ## Architecture and privacy invariants
 
 Angular owns presentation, optimistic input, accessibility, speech, and local UI state; it cannot
-create proof facts, call OpenAI, or authorize access. Coach sessions never invoke normal completion
+create proof facts, call a model provider, or authorize access. Coach sessions never invoke normal completion
 or persistence. TTS is off by default. Paused coaching leaves the board playable and presents Retry,
 uncoached continuation, and explicit deterministic clue choices. The hosted web client supplies the
 server-issued web capability; Android/iOS bundles contain no Coach entry route, while the backend
@@ -122,7 +122,7 @@ compatibility identifiers will be referenced publicly.
 
 ## Known limitations and blockers
 
-WP-2026-006 is incomplete. Native shells host the web bundle but Coach v1 remains web-only; store releases
+WP-2026-007 is incomplete. Native shells host the web bundle but Coach v1 remains web-only; store releases
 and normal-game feature changes are outside this package.
 
 ## Next action

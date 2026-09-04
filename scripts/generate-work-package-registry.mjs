@@ -61,6 +61,7 @@ const acceptedSeedDependencies = new Map([
   ["WP-2026-007", ["WP-2026-006"]],
   ["WP-2026-008", ["WP-2026-007"]],
   ["WP-2026-009", ["WP-2026-008"]],
+  ["WP-2026-010", ["WP-2026-009"]],
 ]);
 
 function sectionBody(body, heading) {
@@ -373,7 +374,7 @@ export function validateCheckpointHistory(packages, basePackages) {
   const errors = [];
   const currentById = new Map(packages.map((item) => [item.id, item]));
   const allowedTransitions = new Map([
-    ["Draft", new Set(["Draft", "Ready"])],
+    ["Draft", new Set(["Draft", "Ready", "In progress"])],
     ["Ready", new Set(["Draft", "Ready", "In progress"])],
     ["In progress", new Set(["In progress", "Blocked", "Done"])],
     ["Blocked", new Set(["In progress", "Blocked", "Done"])],
@@ -488,7 +489,7 @@ export async function validateWorkPackages(
 ) {
   const errors = [...validateAcceptedPlans(acceptedPlans)];
   const requiredSeedIds = Array.from(
-    { length: 9 },
+    { length: 10 },
     (_, index) => `WP-2026-${String(index + 1).padStart(3, "0")}`,
   );
   const ids = new Set(packages.map((item) => item.id));
@@ -577,9 +578,9 @@ export async function validateWorkPackages(
         errors.push(`${item.file}: checkpoint must start with an ISO date and em dash`);
       }
     }
-    if (item.status === "Ready" &&
+    if ((item.status === "Ready" || item.status === "In progress") &&
         /\b(?:TBD|TODO|PLACEHOLDER|UNRESOLVED)\b/i.test(item.body)) {
-      errors.push(`${item.file}: Ready work may not contain unfinished decisions or commands`);
+      errors.push(`${item.file}: ${item.status} work may not contain unfinished decisions or commands`);
     }
     if (item.status === "Done") {
       const evidence = sectionBody(item.body, "Delivery evidence");
@@ -714,6 +715,8 @@ export function renderRegistry(packages) {
     "",
     "The enforced lifecycle is `Draft -> Ready -> In progress -> Done`, with `Ready -> Draft` for",
     "refinement, `In progress -> Blocked`, and `Blocked -> In progress` or `Done` as the only side paths.",
+    "A decision-complete Draft may move directly to `In progress` only when one reviewed change also",
+    "records its accepted plan and first checkpoint; the same readiness and dependency gates apply.",
     "Active work cannot be demoted to a planning state, `Done` is terminal, and checkpoints become exact",
     "append-only history once implementation starts.",
     "",

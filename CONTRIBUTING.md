@@ -4,7 +4,8 @@ Start with the [documentation index](docs/README.md) and select a `Ready` work p
 dependencies are complete. Discuss changes that alter an accepted architecture decision, public
 contract, privacy boundary, or evaluation gate before implementation.
 
-Use a dedicated branch and worktree, keep changes scoped, and run `npm run verify`. Pull requests
+Use a dedicated `work/<work-package-id>-<short-topic>` branch and worktree, keep changes scoped,
+and run `npm run verify`. Pull requests
 must link their work package, describe AI assistance without exposing private reasoning, report
 exact validation results, and identify remaining limitations. See the
 [agent workflow](docs/runbooks/agent-workflow.md) and the repository pull-request template.

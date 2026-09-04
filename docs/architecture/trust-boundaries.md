@@ -19,7 +19,7 @@ flowchart LR
     Decode["Public boundary codecs\nexact schema + size bounds"]
     Core["Public deterministic core\nstate, candidates, proofs"]
     Packet["Minimal verified packet\nno identity/unrelated trace"]
-    Model["OpenAI\nuntrusted observer/teacher"]
+    Model["Registered model provider\nuntrusted observer/teacher"]
     Validate["Schema + semantic validator\nreferences, proof, revision, policy"]
     Render["Deterministic lesson renderer"]
     Pause["Typed paused result\nexplicit recovery"]
@@ -45,7 +45,7 @@ flowchart LR
 
 The trust boundary is crossed twice: inbound host data is decoded before domain construction, and
 model output is decoded and semantically rechecked against current deterministic authority before
-rendering. Neither OpenAI nor the browser owns application state. Provider, validation, policy, or
+rendering. Neither a provider nor the browser owns application state. Provider, validation, policy, or
 operational rejection returns a visible typed `paused` outcome. An obsolete revision returns a
 typed `stale` outcome that is discarded without display. Neither path substitutes model prose or
 mutates the board.
@@ -72,6 +72,10 @@ complete action history, or a retained conversation.
 
 Provider storage must be disabled when supported. Provider-side safety/abuse retention and policy
 remain external facts that the private host must disclose and reassess before live use.
+
+The reviewer cohort freezes one approved provider registration for each model role. Candidate
+adapters may run only in authorized evaluation. There is no automatic failover: an outage or
+incompatible response visibly pauses Coach Mode rather than changing provider or behavior identity.
 
 ## Evidence and logging
 

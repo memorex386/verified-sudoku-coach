@@ -21,6 +21,8 @@
   "scripts": {
     "doctor": "node scripts/doctor.mjs",
     "ci:check": "node scripts/verify-ci.mjs",
+    "automation:check": "node scripts/verify-automation-policy.mjs",
+    "automation:fixture": "node scripts/run-automation-fixture.mjs",
     "lint": "eslint . --max-warnings 0",
     "docs:check": "node scripts/verify-docs.mjs",
     "architecture:check": "node scripts/verify-architecture.mjs",
@@ -33,7 +35,7 @@
     "skills:check": "node scripts/verify-skills.mjs",
     "typecheck": "tsc -b --pretty false",
     "test": "node --test scripts/validation.test.mjs",
-    "verify": "npm run doctor && npm run ci:check && npm run lint && npm run docs:check && npm run architecture:check && npm run work-packages:check && npm run runtime-ai:check && npm run eval:replay && npm run security:check && npm run licenses:check && npm run skills:check && npm test && npm run typecheck"
+    "verify": "npm run doctor && npm run ci:check && npm run automation:check && npm run automation:fixture && npm run lint && npm run docs:check && npm run architecture:check && npm run work-packages:check && npm run runtime-ai:check && npm run eval:replay && npm run security:check && npm run licenses:check && npm run skills:check && npm test && npm run typecheck"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

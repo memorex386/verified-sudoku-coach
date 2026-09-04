@@ -1,36 +1,61 @@
 # Candidate model profiles
 
-These are design inputs for WP-2026-004, not approved runtime registrations. The authoritative
-runtime registry remains `ai/runtime-manifest.json`, which is empty during foundation work.
+These are design inputs for WP-2026-005, not approved runtime registrations. The authoritative
+runtime registry remains `ai/runtime-manifest.json`, which is empty during foundation work, and
+`config/provider-policy.json` owns provider capability and security boundaries.
 
-| Role | Candidate request | Reasoning effort | Purpose | Output ceiling | Host deadline |
+## Provider-neutral requirements
+
+Every profile binds a registered provider-profile ID and digest, a Node-only adapter, requested
+model, role, exact native settings, prompt/schema/renderer/proof/evaluation identities, positive
+output and host-deadline bounds, `responseStoragePolicy:"request-not-to-store"`,
+`automaticRetry:false`, and `failurePolicy:"visible-pause"`. The adapter must expose structured
+output, cancellation/deadline, usage, refusal, quota, and redacted failure behavior through the
+stable observer/teacher ports. Response-object storage, abuse monitoring, verified retention
+control, and artifact revision are separate fields. Unknown fields, unsupported capabilities,
+missing controls, or unregistered substitutions fail before inference.
+
+These are application requirements, not a promise that provider APIs use the same field names.
+Provider-native settings stay exact and digest-bound inside a registration. The adapter conformance
+suite proves their mapping; it never asks one provider to imitate another provider's wire format.
+
+## Initial OpenAI reference profiles
+
+| Role | Candidate request | Native reasoning | Purpose | Output ceiling | Host deadline |
 | --- | --- | --- | --- | --- | --- |
 | Observer | `gpt-5.6-luna` | `low` | Inexpensive frequent choice among silence or registered opportunities | 256 tokens | 5,000 ms |
 | Teacher | `gpt-5.6-terra` | `medium` | Arrange one selected verified proof into a bounded teaching plan | 768 tokens | 10,000 ms |
 
-Both profiles use the Responses API with strict structured output, `store:false`, no automatic
-retry, and a finite host deadline. The adapter records the requested and returned model identifiers,
-requested and returned service tiers, versions, latency, token usage, outcome, and estimated cost
-without logging payload content. Model
-selection becomes `approved` only after frozen, adversarial, comparative, and separately authorized
-live evaluation meets the accepted gates.
+The planned initial adapter must use the OpenAI Responses API with strict structured output, exact
+`store:false`, no tools, no automatic retry, and a finite host deadline. Its native settings also
+bind service-tier and deliberate sampling-parameter policy. The adapter records the requested and
+returned model identifiers, relevant requested/returned provider metadata, versions, latency,
+token usage, outcome, and estimated cost without logging payload content.
 
-Each registration carries an exact `inferenceSettings` object. Its five required keys are
-`reasoningEffort`, `structuredOutputMode: strict-json-schema`, `serviceTier: auto`,
-`toolPolicy: none`, and `samplingPolicy: provider-default-no-parameters`; unknown keys fail
-validation. The sampling value means temperature and top-p are deliberately omitted, not silently
-accepted from an ad hoc caller. Changing any value is a model-profile change and requires a new
-version plus comparative evaluation.
+`store:false` disables storage of the generated response for later API retrieval. It does not by
+itself provide Zero Data Retention; default abuse-monitoring and prompt-cache behavior remain
+separate provider facts. The candidate profile therefore records provider-default abuse monitoring
+and unverified host retention control and cannot be promoted in that state.
+
+OpenAI is the first planned reference implementation, not the application contract. Anthropic, Google, or
+local/open-weight profiles remain candidate/evaluation-only until a separately reviewed adapter
+passes conformance, adversarial, comparative, data-handling, and live gates. An open-weight profile
+must use the enforced artifact variant that binds model-weight digest, quantization, inference
+server artifact/version, prompt-template digest, and relevant hardware/runtime identity. API-shape
+compatibility alone is insufficient.
 
 Player-visible facts render deterministically. Model-written transition prose is a separate
 owner-alpha candidate: it cannot contain digits, cells, candidates, technique names, or factual
 claims, and it cannot reach reviewers until it clears the same correctness and comparative gates.
 
 Registry status is exactly `candidate`, `approved`, or `retired`; runtime composition accepts only
-`approved`. A model alias or provider response never silently substitutes for the requested bundle.
+`approved`. The reviewer cohort freezes one approved registration for each role and requires an
+immutable provider revision or open-weight artifact identity. The current GPT-5.6 Luna/Terra routes
+are recorded as mutable candidates because OpenAI does not document a dated snapshot for them. A
+provider outage, alias, or returned model never silently substitutes another bundle.
 
 Model capabilities and data handling are external dependencies that must be rechecked before a live
-run. Current design sources are the official [GPT model catalog](https://developers.openai.com/api/docs/models/gpt),
+run. Current OpenAI design sources are the official [GPT model catalog](https://developers.openai.com/api/docs/models/gpt),
 [GPT-5.6 Luna model page](https://developers.openai.com/api/docs/models/gpt-5.6-luna),
 [GPT-5.6 Terra model page](https://developers.openai.com/api/docs/models/gpt-5.6-terra),
 [Responses API create reference](https://developers.openai.com/api/reference/cli/resources/responses/methods/create),

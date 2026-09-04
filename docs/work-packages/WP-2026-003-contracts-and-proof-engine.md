@@ -1,14 +1,14 @@
 ---
-id: WP-2026-002
+id: WP-2026-003
 title: Contracts and deterministic proof engine
 status: Draft
-depends_on: WP-2026-001
+depends_on: WP-2026-002
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-ARCH-002, VSC-ARCH-003, VSC-PROOF-001, VSC-PROOF-002
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Contracts and deterministic proof engine
@@ -57,7 +57,7 @@ aggregate hashes; no private puzzle or source crosses the boundary.
 Support naked single, hidden single, locked pointing, locked claiming, naked pair, and hidden pair
 with the documented tie-break order. Require unique Classic fixtures, no-op rejection, stale/tamper
 tests, deterministic hashes, path replay, transformations, and no regression below the frozen
-5,147/5,191 private aggregate baseline. Replay and trace schemas require all seven canonical
+5,147/5,191 private aggregate baseline. Replay and trace schemas require all nine canonical
 behavior-identity versions and reject a missing field or mixed event identity hash.
 
 ## Validation
@@ -82,7 +82,7 @@ node scripts/ops/verify-coach-proof-conformance.mjs
 ```
 
 The root `npm run verify` may still report the explicit zero-case `eval:replay` bootstrap in this
-package. Proof commands and conformance evidence—not that bootstrap—measure WP-2026-002 behavior.
+package. Proof commands and conformance evidence—not that bootstrap—measure WP-2026-003 behavior.
 
 Its publishable output is aggregate-only: corpus count, supported-technique solved count, invalid
 application count, ruleset version, public artifact hash, and result hash. It must prove no

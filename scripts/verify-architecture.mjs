@@ -10,6 +10,10 @@ import {
   isEntrypoint,
   reportErrors,
 } from "./lib/project.mjs";
+import {
+  browserBoundaryFromProviderPolicy,
+  validateProviderPolicy,
+} from "./lib/provider-policy.mjs";
 
 function projectReader(rootDirectory) {
   const resolve = (...segments) => path.join(rootDirectory, ...segments);
@@ -41,8 +45,8 @@ function projectReader(rootDirectory) {
   return { readJson, readText, resolve, walkFiles };
 }
 
-const acceptedArchitecturePolicyVersion = "VSC-ARCH-1";
-const acceptedArchitecturePolicySha256 = "9d4607321f7116beecde1ad7f4a177b0766054494a5d388000f7593ef40e1132";
+const acceptedArchitecturePolicyVersion = "VSC-ARCH-2";
+const acceptedArchitecturePolicySha256 = "4e72f41c021216fa5a35e67979dd1494ecf253721c6861db29f975f93ed08fb1";
 
 function canonicalPolicyValue(value) {
   if (Array.isArray(value)) {
@@ -73,7 +77,7 @@ export function validateAcceptedArchitecturePolicy(config) {
   }
   if (architecturePolicyDigest(config) !== acceptedArchitecturePolicySha256) {
     errors.push(
-      "config/architecture.json: policy differs from the accepted VSC-ARCH-1 workspace graph; update the governing ADR and verifier together",
+      "config/architecture.json: policy differs from the accepted VSC-ARCH-2 workspace graph; update the governing ADR and verifier together",
     );
   }
   return errors;
@@ -470,6 +474,20 @@ function staticStringValue(node, aliases = new Map()) {
     return value;
   }
   if (ts.isCallExpression(expression) && ts.isPropertyAccessExpression(expression.expression) &&
+      ts.isIdentifier(expression.expression.expression) &&
+      expression.expression.expression.text === "String" &&
+      ["fromCharCode", "fromCodePoint"].includes(expression.expression.name.text) &&
+      expression.arguments.every((argument) => ts.isNumericLiteral(unwrapExpression(argument)))) {
+    const values = expression.arguments.map((argument) => Number(unwrapExpression(argument).text));
+    try {
+      return expression.expression.name.text === "fromCharCode"
+        ? String.fromCharCode(...values)
+        : String.fromCodePoint(...values);
+    } catch {
+      return null;
+    }
+  }
+  if (ts.isCallExpression(expression) && ts.isPropertyAccessExpression(expression.expression) &&
       expression.expression.name.text === "join" &&
       ts.isArrayLiteralExpression(unwrapExpression(expression.expression.expression))) {
     const values = unwrapExpression(expression.expression.expression).elements
@@ -743,9 +761,12 @@ export function dependencySpecViolation(dependency, specifier, isWorkspaceDepend
 
 export function classifyBrowserSource(
   content,
-  forbiddenDependencies = ["openai", "@openai/"],
+  browserBoundary = {},
 ) {
   const errors = [];
+  const forbiddenDependencies = browserBoundary.dependencyPatterns ?? [];
+  const credentialNamePatterns = browserBoundary.credentialNamePatterns ?? [];
+  const endpointPatterns = browserBoundary.endpointPatterns ?? [];
   const { specifiers: imports, hasOpaqueSpecifier } = moduleReferences(content);
   if (hasOpaqueSpecifier) {
     errors.push("non-literal module specifier");
@@ -767,13 +788,46 @@ export function classifyBrowserSource(
   if (sourceUsesStaticConstructorAccess(content) && !errors.includes("dynamic code access")) {
     errors.push("dynamic code access");
   }
-  if (/OPENAI_(?:API_|SECRET_|PRIVATE_)?KEY/i.test(content) || sourceContainsStaticString(
-    content,
-    (value) => /OPENAI_(?:API_|SECRET_|PRIVATE_)?KEY/i.test(value),
-  )) {
+  if (sourceMatchesConfiguredPattern(content, credentialNamePatterns)) {
     errors.push("provider credential name");
   }
-  if (sourceContainsStaticString(content, (value) => /\bapi\.openai\.com(?=[/:]|$)/i.test(value))) {
+  if (sourceMatchesConfiguredPattern(content, endpointPatterns)) {
+    errors.push("direct provider endpoint");
+  }
+  return errors;
+}
+
+function matchesConfiguredPattern(value, patterns) {
+  return patterns.some((pattern) => {
+    try {
+      return new RegExp(pattern, "i").test(value);
+    } catch {
+      return false;
+    }
+  });
+}
+
+function sourceMatchesConfiguredPattern(content, patterns) {
+  return matchesConfiguredPattern(content, patterns) || sourceContainsStaticString(
+    content,
+    (value) => matchesConfiguredPattern(value, patterns),
+  );
+}
+
+export function classifyProviderBoundarySource(content, browserBoundary = {}) {
+  const errors = [];
+  const dependencyPatterns = browserBoundary.dependencyPatterns ?? [];
+  const { specifiers: imports } = moduleReferences(content);
+  for (const imported of imports) {
+    if (dependencyPatterns.some((dependency) =>
+      matchesDependencyPattern(imported, dependency))) {
+      errors.push(`Node-only import ${imported}`);
+    }
+  }
+  if (sourceMatchesConfiguredPattern(content, browserBoundary.credentialNamePatterns ?? [])) {
+    errors.push("provider credential name");
+  }
+  if (sourceMatchesConfiguredPattern(content, browserBoundary.endpointPatterns ?? [])) {
     errors.push("direct provider endpoint");
   }
   return errors;
@@ -807,6 +861,22 @@ export function verifyArchitectureAtRoot(rootDirectory) {
     return ["config/architecture.json: unsupported or invalid schema"];
   }
   errors.push(...validateAcceptedArchitecturePolicy(config));
+  let providerPolicy = { profiles: [] };
+  if (config.providerPolicyPath !== "config/provider-policy.json") {
+    errors.push(
+      "config/architecture.json: providerPolicyPath must be config/provider-policy.json",
+    );
+  } else if (!fs.existsSync(project.resolve(config.providerPolicyPath))) {
+    errors.push(`${config.providerPolicyPath}: provider policy file is missing`);
+  } else {
+    try {
+      providerPolicy = project.readJson(config.providerPolicyPath);
+      errors.push(...validateProviderPolicy(providerPolicy));
+    } catch {
+      errors.push(`${config.providerPolicyPath}: provider policy must be valid JSON`);
+    }
+  }
+  const providerBrowserBoundary = browserBoundaryFromProviderPolicy(providerPolicy);
 
   const strictCompilerOptions = [
     "strict",
@@ -922,6 +992,30 @@ export function verifyArchitectureAtRoot(rootDirectory) {
       if (!configuredNames.has(name)) {
         errors.push(`config/architecture.json: ${category} contains unknown workspace ${name}`);
       }
+    }
+  }
+  const providerAdapterPackages = new Set(
+    (Array.isArray(providerPolicy?.profiles) ? providerPolicy.profiles : [])
+      .filter((profile) => profile?.runtimeAdmission !== "boundary-only")
+      .map((profile) => profile?.adapter?.package)
+      .filter((name) => typeof name === "string"),
+  );
+  const configuredProviderPackages = new Set(config.providerPackages ?? []);
+  const configuredNodeOnlyPackages = new Set(config.nodeOnlyPackages ?? []);
+  for (const name of providerAdapterPackages) {
+    if (!configuredNames.has(name)) {
+      errors.push(`config/provider-policy.json: adapter package ${name} is not a configured workspace`);
+    }
+    if (!configuredProviderPackages.has(name)) {
+      errors.push(`config/architecture.json: providerPackages must include ${name}`);
+    }
+    if (!configuredNodeOnlyPackages.has(name)) {
+      errors.push(`config/architecture.json: nodeOnlyPackages must include provider adapter ${name}`);
+    }
+  }
+  for (const name of configuredProviderPackages) {
+    if (!providerAdapterPackages.has(name)) {
+      errors.push(`config/architecture.json: providerPackages contains undescribed adapter ${name}`);
     }
   }
 
@@ -1271,7 +1365,6 @@ export function verifyArchitectureAtRoot(rootDirectory) {
 
   const browserPackages = browserPackageNames;
   const nodeOnlyPackages = new Set(config.nodeOnlyPackages ?? config.providerPackages ?? []);
-  const browserForbiddenDependencies = config.browserForbiddenDependencies ?? [];
   for (const browserPackage of browserPackages) {
     const reachable = new Set();
     const queue = [browserPackage];
@@ -1296,17 +1389,23 @@ export function verifyArchitectureAtRoot(rootDirectory) {
       const manifest = project.readJson(`${reachablePath}/package.json`);
       for (const field of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"]) {
         for (const dependency of Object.keys(manifest[field] ?? {})) {
-          if (browserForbiddenDependencies.some((pattern) =>
+          if (providerBrowserBoundary.dependencyPatterns.some((pattern) =>
             matchesDependencyPattern(dependency, pattern))) {
             errors.push(`${reachablePath}/package.json: browser-safe graph forbids dependency ${dependency}`);
           }
         }
       }
-      for (const sourceFile of workspaceSourceFiles(`${reachablePath}/src`, project.walkFiles)) {
-        for (const violation of classifyBrowserSource(
-          project.readText(sourceFile),
-          browserForbiddenDependencies,
-        )) {
+      for (const violation of classifyProviderBoundarySource(
+        project.readText(`${reachablePath}/package.json`),
+        providerBrowserBoundary,
+      )) {
+        errors.push(`${reachablePath}/package.json: browser build boundary forbids ${violation}`);
+      }
+      for (const sourceFile of workspaceSourceFiles(reachablePath, project.walkFiles)) {
+        const classifier = sourceFile.startsWith(`${reachablePath}/src/`)
+          ? classifyBrowserSource
+          : classifyProviderBoundarySource;
+        for (const violation of classifier(project.readText(sourceFile), providerBrowserBoundary)) {
           errors.push(`${sourceFile}: browser-safe graph forbids ${violation}`);
         }
       }

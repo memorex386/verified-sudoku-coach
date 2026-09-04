@@ -1,14 +1,14 @@
 ---
-id: WP-2026-005
+id: WP-2026-006
 title: Public replay and pre-results case study
 status: Draft
-depends_on: WP-2026-004
+depends_on: WP-2026-005
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-03.1
+accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-UX-002, VSC-EVID-001
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Public replay and pre-results case study
@@ -90,7 +90,7 @@ No implementation evidence exists because this package has not started.
 
 ## Known limitations and blockers
 
-WP-2026-004 is incomplete. Publication remains a separate human authorization even after a release
+WP-2026-005 is incomplete. Publication remains a separate human authorization even after a release
 candidate passes; the case study must remain pre-results until cohort evidence is sealed. The
 private information-page change cannot activate its demo link before that authorization and URL
 verification.

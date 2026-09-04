@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "fixtureId": "synthetic-dependabot-typescript-7-pr-2-v1",
+  "classification": "synthetic-public-fixture",
+  "trustedEvent": {
+    "schemaVersion": 1,
+    "eventId": "fixture-pr-2",
+    "authenticationReceiptSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "sourceKind": "dependabot",
+    "sourceEvent": "pull_request",
+    "authenticatedActor": "dependabot[bot]",
+    "authenticatedSourceApp": "dependabot",
+    "repository": "memorex386/verified-sudoku-coach",
+    "pullRequestNumber": 2,
+    "eventBaseSha": "619277d4d714be49135918abd977192f2abc1d59",
+    "eventHeadSha": "ad0e828b5a128b1f193a2870a196ef57d1bb4a47",
+    "currentBaseSha": "619277d4d714be49135918abd977192f2abc1d59",
+    "currentHeadSha": "ad0e828b5a128b1f193a2870a196ef57d1bb4a47",
+    "policyVersion": "VSC-AUTOMATION-1",
+    "policySha256": "c71116495cef31a2d75323eb66fe95cb8e3e92a582563c43aa9e0b34caaa5024",
+    "payloadSha256": "2222222222222222222222222222222222222222222222222222222222222222"
+  },
+  "evidence": {
+    "schemaVersion": 1,
+    "repository": "memorex386/verified-sudoku-coach",
+    "pullRequestNumber": 2,
+    "policyVersion": "VSC-AUTOMATION-1",
+    "policySha256": "c71116495cef31a2d75323eb66fe95cb8e3e92a582563c43aa9e0b34caaa5024",
+    "baseSha": "619277d4d714be49135918abd977192f2abc1d59",
+    "headSha": "ad0e828b5a128b1f193a2870a196ef57d1bb4a47",
+    "ecosystem": "npm",
+    "dependencyName": "typescript",
+    "manifestBefore": {
+      "content": "{\"name\":\"verified-sudoku-coach\",\"version\":\"0.0.0\",\"private\":true,\"license\":\"Apache-2.0\",\"type\":\"module\",\"scripts\":{\"verify\":\"npm run doctor && npm test\"},\"devDependencies\":{\"typescript\":\"5.9.2\",\"typescript-eslint\":\"8.69.0\"}}",
+      "byteLength": 224,
+      "sha256": "d6106abd3e4e1bcb40a0d8e5225c2c9c2b60ce6e3611004e829c27b4f5a80d26"
+    },
+    "manifestAfter": {
+      "content": "{\"name\":\"verified-sudoku-coach\",\"version\":\"0.0.0\",\"private\":true,\"license\":\"Apache-2.0\",\"type\":\"module\",\"scripts\":{\"verify\":\"npm run doctor && npm test\"},\"devDependencies\":{\"typescript\":\"7.0.2\",\"typescript-eslint\":\"8.69.0\"}}",
+      "byteLength": 224,
+      "sha256": "0dc925922e7444048c486b33cb7e4fbef0ce49209c5ccb764f854e93c779883a"
+    },
+    "diff": {
+      "baseSha": "619277d4d714be49135918abd977192f2abc1d59",
+      "headSha": "ad0e828b5a128b1f193a2870a196ef57d1bb4a47",
+      "complete": true,
+      "files": [
+        {
+          "path": "package.json",
+          "status": "modified",
+          "beforeSha256": "d6106abd3e4e1bcb40a0d8e5225c2c9c2b60ce6e3611004e829c27b4f5a80d26",
+          "afterSha256": "0dc925922e7444048c486b33cb7e4fbef0ce49209c5ccb764f854e93c779883a"
+        },
+        {
+          "path": "package-lock.json",
+          "status": "modified",
+          "beforeSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "afterSha256": "4444444444444444444444444444444444444444444444444444444444444444"
+        }
+      ]
+    },
+    "checks": {
+      "headSha": "ad0e828b5a128b1f193a2870a196ef57d1bb4a47",
+      "complete": true,
+      "items": [
+        { "name": "install", "outcome": "failure", "findingCodes": ["peer-conflict"] },
+        { "name": "verify", "outcome": "failure", "findingCodes": ["peer-conflict"] },
+        { "name": "ubuntu-ci", "outcome": "failure", "findingCodes": ["peer-conflict"] },
+        { "name": "windows-ci", "outcome": "failure", "findingCodes": ["peer-conflict"] },
+        { "name": "dependency-review", "outcome": "success", "findingCodes": [] },
+        { "name": "codeql", "outcome": "success", "findingCodes": [] }
+      ]
+    },
+    "failureFingerprint": "bc0448e1326209b8ea150afe1b876285e5070190400924c1885762f9f30b0337",
+    "statefulChange": false,
+    "irreversibleChange": false
+  },
+  "workOrder": {
+    "schemaVersion": 1,
+    "workOrderId": "fixture-pr-2-v1",
+    "workflow": "dependency-pr",
+    "repository": "memorex386/verified-sudoku-coach",
+    "pullRequestNumber": 2,
+    "baseSha": "619277d4d714be49135918abd977192f2abc1d59",
+    "headSha": "ad0e828b5a128b1f193a2870a196ef57d1bb4a47",
+    "failureFingerprint": "bc0448e1326209b8ea150afe1b876285e5070190400924c1885762f9f30b0337",
+    "inputEvidenceSha256": "619deae4de545f0ac81a53543e2ac95dfe10c9ca55d563c4d26da41a379fea4e",
+    "dependencyIntentSha256": "c0d1221d49f4a460f8af8e8b559c54ef4fd40f352e9be3d39e844fe0bd806e39",
+    "policyVersion": "VSC-AUTOMATION-1",
+    "policySha256": "c71116495cef31a2d75323eb66fe95cb8e3e92a582563c43aa9e0b34caaa5024",
+    "idempotencyKey": "dependabot:memorex386/verified-sudoku-coach:pr-2:619277d4d714be49135918abd977192f2abc1d59:ad0e828b5a128b1f193a2870a196ef57d1bb4a47:bc0448e1326209b8ea150afe1b876285e5070190400924c1885762f9f30b0337:VSC-AUTOMATION-1",
+    "lineageKey": "dependabot-lineage:memorex386/verified-sudoku-coach:pr-2:VSC-AUTOMATION-1",
+    "capabilities": ["repo-read", "sanitized-evidence-read"],
+    "authorizedGrantIds": [],
+    "modelEscalationAuthority": "deterministic-controller"
+  },
+  "expected": {
+    "terminalOutcome": "deferred",
+    "nextStage": null,
+    "modelAttempts": 0,
+    "repairAttempts": 0,
+    "riskCodes": ["compiler-or-build-tool", "peer-conflict"]
+  }
+}

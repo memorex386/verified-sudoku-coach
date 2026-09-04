@@ -16,11 +16,18 @@ read authority -> select ready work package -> isolated branch/worktree -> focus
    guessing.
 3. Read the [change matrix](../change-matrix.md) and identify companion work.
 4. From the read-only primary checkout, fetch and create a dedicated sibling worktree on a
-   `codex/<short-topic>` branch. Never share a writing worktree between agents.
+   `work/<work-package-id>-<short-topic>` branch. Never share a writing worktree between agents.
+   Older `codex/*` branches remain historical evidence; an already-active branch need not be
+   renamed solely to adopt this convention.
 
 `Ready` means command names, arguments, and evidence expectations are decided; a planned command
 does not need to exist before its implementing package starts. Implementation makes those commands
 executable and CI-wired before `Done`.
+
+A human may accept and start a decision-complete `Draft` in one reviewed change when that change
+also records its accepted-plan version and first checkpoint. The verifier applies the same
+unfinished-decision ban as `Ready`, requires completed dependencies, and permits only one active
+package. Otherwise, use the ordinary `Draft` → `Ready` → `In progress` progression.
 
 Repository bootstrap is the sole exception: the empty repository received a minimal `main` commit,
 then the initial clone became the isolated `codex/coach-foundation` checkout. Before the foundation

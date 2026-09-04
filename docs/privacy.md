@@ -9,7 +9,15 @@ trace content.
 The model receives one bounded packet containing only coarse struggle/progress signals and opaque
 references to currently verified opportunities or the selected proof. It receives no Firebase UID,
 name, email, phone, employer, IP address, unrelated game history, full conversation, or private
-puzzle-library identifier. Provider request storage is disabled where supported.
+puzzle-library identifier. Provider response-object storage is requested off where supported.
+
+For the planned OpenAI Responses adapter, exact `store:false` means the generated response is not
+stored for later API retrieval; it is not a Zero Data Retention claim. OpenAI documents separate
+application-state, prompt-cache, and abuse-monitoring behavior, with default abuse-monitoring logs
+potentially retained for up to 30 days. The provider profile records those controls separately,
+and no profile can become approved until the private host verifies the selected retention control.
+See the official [Responses create reference](https://developers.openai.com/api/reference/cli/resources/responses/methods/create)
+and [API data controls](https://developers.openai.com/api/docs/guides/your-data).
 
 ## Private pilot data
 

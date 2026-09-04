@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "policyVersion": "VSC-AUTOMATION-1",
+  "policySha256": "c71116495cef31a2d75323eb66fe95cb8e3e92a582563c43aa9e0b34caaa5024",
+  "mode": "shadow",
+  "source": {
+    "kind": "dependabot",
+    "ecosystem": "npm",
+    "actor": "dependabot[bot]",
+    "app": "dependabot",
+    "event": "pull_request",
+    "classification": "deterministic-diff"
+  },
+  "eligibility": {
+    "dependencySection": "devDependencies",
+    "directDependency": "required",
+    "existingDependency": "required",
+    "updateType": "semver-patch",
+    "allowedFiles": ["package.json", "package-lock.json"],
+    "compilerBuildTools": [
+      "@typescript-eslint/eslint-plugin",
+      "@typescript-eslint/parser",
+      "@typescript-eslint/utils",
+      "esbuild",
+      "eslint",
+      "rollup",
+      "typescript",
+      "typescript-eslint",
+      "vite",
+      "vitest",
+      "webpack"
+    ],
+    "requiredChecks": [
+      "install",
+      "verify",
+      "ubuntu-ci",
+      "windows-ci",
+      "dependency-review",
+      "codeql"
+    ],
+    "forbiddenRiskCodes": [
+      "compiler-or-build-tool",
+      "license-change",
+      "lifecycle-script",
+      "missing-telemetry",
+      "native-dependency",
+      "new-direct-package",
+      "peer-conflict",
+      "security-sensitive-surface",
+      "source-change",
+      "vulnerability-increase",
+      "workflow-change"
+    ],
+    "statefulChanges": "ineligible",
+    "irreversibleChanges": "ineligible",
+    "ineligibleOutcome": "deferred"
+  },
+  "identity": {
+    "baseSha": "required-full-lowercase-sha1",
+    "headSha": "required-full-lowercase-sha1",
+    "failureFingerprint": "required-lowercase-sha256",
+    "idempotencyKeyTemplate": "dependabot:{repository}:pr-{pullRequestNumber}:{baseSha}:{headSha}:{failureFingerprint}:{policyVersion}"
+  },
+  "evidenceLimits": {
+    "maxFileChanges": 16,
+    "maxManifestBytes": 262144,
+    "maxManifestEntriesPerSection": 512,
+    "maxRequiredChecks": 32,
+    "maxScripts": 128,
+    "maxStringLength": 512
+  },
+  "modelRoute": {
+    "selectionAuthority": "deterministic-controller",
+    "cheapProfileClass": "low-cost-diagnosis",
+    "strongProfileClass": "complex-diagnosis",
+    "selfSelection": "forbidden",
+    "inputData": "sanitized-evidence",
+    "outputMode": "strict-proposal"
+  },
+  "decisionOrder": [
+    "deterministic-classification",
+    "cheap-model-assessment",
+    "strong-model-escalation",
+    "repair",
+    "patch-publication-grant",
+    "ci-flake-rerun",
+    "merge-grant",
+    "release-promotion-grant",
+    "deploy-grant",
+    "rollback-grant",
+    "terminal-outcome"
+  ],
+  "attemptCaps": {
+    "cheapAssessments": 1,
+    "strongEscalations": 1,
+    "repairAttempts": 1,
+    "patchPublications": 1,
+    "ciFlakeReruns": 1,
+    "mergeAttempts": 1,
+    "releasePromotions": 1,
+    "deployAttempts": 1,
+    "rollbackAttempts": 1
+  },
+  "authority": {
+    "patchPublication": {
+      "grantId": "dependency-patch-publish",
+      "credentialClass": "source-control-patch",
+      "required": true,
+      "automatic": false,
+      "humanGatedPhase": "evidence"
+    },
+    "pullRequestMerge": {
+      "grantId": "dependency-pr-merge",
+      "credentialClass": "source-control-merge",
+      "required": true,
+      "automatic": false,
+      "humanGatedPhase": "evidence"
+    },
+    "releasePromotion": {
+      "grantId": "release-promotion",
+      "credentialClass": "release-artifact",
+      "required": true,
+      "automatic": false,
+      "humanGatedPhase": "evidence"
+    },
+    "productionDeploy": {
+      "grantId": "production-deploy",
+      "credentialClass": "production-deploy",
+      "required": true,
+      "automatic": false,
+      "humanGatedPhase": "evidence"
+    },
+    "productionRollback": {
+      "grantId": "production-rollback",
+      "credentialClass": "production-rollback",
+      "required": true,
+      "automatic": false,
+      "humanGatedPhase": "evidence"
+    }
+  },
+  "terminalOutcomes": [
+    "verified",
+    "completed",
+    "deferred",
+    "stale",
+    "awaiting-approval",
+    "escalated",
+    "failed-terminal",
+    "reverted"
+  ]
+}
