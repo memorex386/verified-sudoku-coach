@@ -40,13 +40,15 @@ received
 
 One inexpensive diagnosis and one stronger escalation are the maximum model route. One repair and
 one rerun for a deterministically recognized infrastructure failure are allowed. Repository + PR +
-base SHA + head SHA + failure fingerprint + policy version is the dedupe identity. A repeated event with that
-identity returns its durable result rather than starting again.
+base SHA + head SHA + failure fingerprint + policy version is the replay/dedupe identity. A repeated
+event with that identity returns its durable result rather than starting again.
 
 The failure fingerprint is a SHA-256 over sorted normalized risk codes and required-check outcomes;
 a clean pre-check uses a defined `no-failure` sentinel. It never hashes arbitrary raw logs into
-public evidence. A changed SHA, normalized outcome, or policy version creates a new work order—it
-does not reopen attempts inside the old one.
+public evidence. The controller also owns a stable lineage ID for the originating pull request and
+policy activation. A changed SHA or normalized outcome can create a new work order, but repair-
+created heads and fingerprints inherit the same cumulative attempt ledger. Only an explicitly new
+pull request or human-approved policy activation can begin another lineage.
 
 The analyzer never uses `--force`, `--legacy-peer-deps`, broad version overrides, test deletion,
 gate weakening, or unrelated upgrades to manufacture a green result.

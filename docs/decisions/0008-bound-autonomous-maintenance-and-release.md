@@ -51,6 +51,6 @@ is an expected safe result rather than a workflow failure.
 
 ## Verification
 
-`VSC-OPS-004`, the machine-readable automation policy, adversarial workflow fixtures, exact-SHA and
-dedupe tests, public execution records, protected required checks before activation, and rollback
-rehearsal before any release authority expands.
+`VSC-OPS-004`, the machine-readable automation policy, adversarial workflow fixtures, exact-SHA,
+replay-dedupe, and monotonic lineage-cap tests, public execution records, protected required checks
+before activation, and rollback rehearsal before any release authority expands.

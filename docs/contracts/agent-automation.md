@@ -69,6 +69,12 @@ fingerprint, and policy version. Patch publication, merge, release promotion, pr
 production rollback each require a distinct grant and credential class; possession of one can
 never satisfy another.
 
+A separate controller-owned lineage ID binds the repository, pull request, policy activation, and
+originating Dependabot update. Attempt counters belong to that lineage and only increase. A repair
+commit, new head SHA, or changed failure fingerprint may create a new replay identity but cannot
+reset model, repair, publication, merge, deployment, or rollback caps. A human-approved new policy
+activation or explicitly new pull request is required to begin another lineage.
+
 ## Side effects and compare-and-swap
 
 Every external mutation is performed by a narrow broker after revalidating repository, policy,
@@ -80,7 +86,8 @@ candidate with `TrustedPullRequestEventV1`, parses exact before/after manifests 
 diff/check evidence, calculates sorted risk/outcome codes, then hashes that canonical value. The
 controller uses a result-store port to return the prior terminal result for the same
 repository/PR/base/head/fingerprint/policy tuple. Tests use a fake store; a live trigger adapter must
-provide durable compare-and-swap persistence before activation.
+provide durable compare-and-swap persistence for both replay results and monotonic lineage counters
+before activation.
 
 Extension installation is a human-reviewed supply-chain change. Manifests and entrypoints are
 version/digest pinned, license reviewed, and tested with no credentials before registration.

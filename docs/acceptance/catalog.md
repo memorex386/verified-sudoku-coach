@@ -71,11 +71,12 @@ merge, release, and production credentials. Dependency handling compares an auth
 envelope with current base/head SHAs, derives manifest/diff/check risks, computes a canonical
 failure identity, and returns any prior terminal result through a result-store port before it
 classifies deterministically. Fake-store conformance proves replay behavior; a host must provide
-durable compare-and-swap persistence before live use. The controller permits at most
-one inexpensive diagnosis, one stronger escalation, one repair, and one recognized-infrastructure
-rerun before a terminal result. Every error, timeout, and attempt-exhaustion path terminates. Shadow
-mode cannot merge. Future release execution permits at most one deployment and one rollback, then
-verifies and stops; stateful/irreversible changes are ineligible.
+durable compare-and-swap persistence before live use. Controller-owned, monotonic lineage counters
+survive repair-created SHAs and changed failure fingerprints. The controller permits at most one
+inexpensive diagnosis, one stronger escalation, one repair, and one recognized-infrastructure rerun
+before a terminal result. Every error, timeout, and attempt-exhaustion path terminates. Shadow mode
+cannot merge. Future release execution permits at most one deployment and one rollback, then verifies
+and stops; stateful/irreversible changes are ineligible.
 
 ## VSC-EVID-003 — Portable repository handoff
 
