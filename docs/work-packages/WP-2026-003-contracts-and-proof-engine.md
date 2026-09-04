@@ -150,7 +150,7 @@ is executable in this slice; the other commands remain required before package D
 
 ## Next action
 
-- Review the domain-primitives implementation PR; preserve the private conformance gate and obtain explicit merge authorization before integrating this slice.
+- Review [PR #6](https://github.com/memorex386/verified-sudoku-coach/pull/6); preserve the private conformance gate and obtain explicit merge authorization before integrating this domain slice.
 
 ## Checkpoints
 
@@ -167,3 +167,8 @@ is executable in this slice; the other commands remain required before package D
 - 2026-09-04 — Full local verification passed 112 foundation and 14 domain tests, strict compilation,
   API snapshot and architecture checks. The domain implementation is ready for PR review; merge
   requires new explicit maintainer authorization and remaining WP-2026-003 gates stay unfinished.
+- 2026-09-04 — PR #6 CI exposed Git-base leakage in the synthetic Ready-state test on both OSes.
+  Isolated only that unit fixture from the real base and restored its environment after the test;
+  production history checks remain intact. `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main`
+  then passed all 112 foundation and 14 domain tests locally. PR #6 remains open, not authorized
+  for merge.
