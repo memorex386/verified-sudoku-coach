@@ -19,6 +19,7 @@ import {
   classifyBrowserHtml,
   classifyBrowserSource,
   classifyCoreSource,
+  classifyProviderBoundarySource,
   classifyPureSource,
   dependencySpecViolation,
   findDependencyCycle,
@@ -56,12 +57,77 @@ import {
 import {
   compareSemanticVersions,
   validateArtifactPath,
-  validateInferenceSettings,
   validateOutputTokenBound,
   validateRegistrationIdentity,
+  validateRuntimeRegistrationShape,
   validateRuntimeManifestTransition,
   validateTimeoutBound,
 } from "./lib/runtime-ai.mjs";
+import {
+  browserBoundaryFromProviderPolicy,
+  providerPolicyDigest,
+  providerProfileDigest,
+  validateProviderPolicy,
+  validateProviderPolicyTransition,
+  validateRuntimeProviderSelection,
+} from "./lib/provider-policy.mjs";
+
+function loadProviderPolicy() {
+  return JSON.parse(readText("config/provider-policy.json"));
+}
+
+function signProviderProfile(profile) {
+  profile.profileSha256 = providerProfileDigest(profile);
+  return profile;
+}
+
+function signProviderPolicy(policy) {
+  for (const profile of policy.profiles) {
+    signProviderProfile(profile);
+  }
+  policy.policySha256 = providerPolicyDigest(policy);
+  return policy;
+}
+
+function currentBrowserBoundary() {
+  return browserBoundaryFromProviderPolicy(loadProviderPolicy());
+}
+
+function runtimeRegistrationFixture(profile, role = "observer") {
+  return {
+    id: `${role}-v1`,
+    role,
+    approvalStatus: "candidate",
+    providerProfileId: profile.id,
+    providerProfileSha256: profile.profileSha256,
+    requestedModel: profile.modelsByRole[role],
+    modelProfileVersion: profile.profileVersion,
+    inferenceSettings: structuredClone(profile.inferenceSettingsByRole[role]),
+    runtimeBehaviorVersion: "1.0.0",
+    promptPath: `ai/prompts/${role}-v1.md`,
+    promptVersion: "1.0.0",
+    promptSha256: "a".repeat(64),
+    schemaPath: `packages/contracts/schemas/${role}-v1.json`,
+    schemaVersion: "1.0.0",
+    schemaSha256: "b".repeat(64),
+    rendererManifestPath: "packages/coach-core/renderers/deterministic-v1.json",
+    rendererVersion: "1.0.0",
+    rendererManifestSha256: "c".repeat(64),
+    proofPolicyPath: "packages/proof-engine/policies/classic-v1.json",
+    proofPolicyVersion: "1.0.0",
+    proofPolicySha256: "d".repeat(64),
+    evalSuiteManifestPath: "tools/eval-cli/suites/frozen-v1.json",
+    evalSuiteVersion: "1.0.0",
+    evalSuiteManifestSha256: "e".repeat(64),
+    comparisonReportPath: `docs/evaluation/reports/${role}-v1.json`,
+    comparisonReportSha256: "f".repeat(64),
+    maxOutputTokens: role === "observer" ? 256 : 768,
+    timeoutMs: role === "observer" ? 5_000 : 10_000,
+    requestStorage: "disabled",
+    automaticRetry: false,
+    failurePolicy: "visible-pause",
+  };
+}
 import {
   classifyDependencyPullRequest,
   dependencyPullRequestIdempotencyKey,
@@ -500,26 +566,179 @@ test("eval replay bootstrap is exact machine-readable no-claim output", () => {
   });
 });
 
-test("runtime AI inference settings are exact and behavior-bearing", () => {
-  const registration = {
-    id: "observer-v1",
-    role: "observer",
-    inferenceSettings: {
-      reasoningEffort: "low",
-      structuredOutputMode: "strict-json-schema",
-      serviceTier: "auto",
-      toolPolicy: "none",
-      samplingPolicy: "provider-default-no-parameters",
+test("provider policy is exact, self-digested, and OpenAI-first without admitting fallbacks", () => {
+  const policy = loadProviderPolicy();
+  assert.deepEqual(validateProviderPolicy(policy), []);
+  assert.equal(policy.policySha256, providerPolicyDigest(policy));
+  for (const profile of policy.profiles) {
+    assert.equal(profile.profileSha256, providerProfileDigest(profile));
+  }
+  assert.deepEqual(
+    policy.profiles.map(({ id, runtimeAdmission }) => [id, runtimeAdmission]),
+    [
+      ["openai-responses-v1", "candidate"],
+      ["anthropic-boundary-v1", "boundary-only"],
+      ["google-boundary-v1", "boundary-only"],
+    ],
+  );
+  assert.equal(
+    policy.profiles[0].inferenceSettingsByRole.observer.providerSettings.store,
+    false,
+  );
+});
+
+test("provider policy rejects unknown keys and any unsigned descriptor drift", () => {
+  const policy = loadProviderPolicy();
+  policy.unreviewedPolicy = true;
+  policy.profiles[0].unreviewedProfile = true;
+  policy.profiles[0].dataHandling.telemetry = "raw";
+  policy.profiles[0].inferenceSettingsByRole.observer.providerSettings.temperature = 0;
+  const errors = validateProviderPolicy(policy);
+  assert.ok(errors.includes("config/provider-policy.json: unknown field unreviewedPolicy"));
+  assert.ok(errors.includes(
+    "provider profile openai-responses-v1: unknown field unreviewedProfile",
+  ));
+  assert.ok(errors.includes(
+    "provider profile openai-responses-v1.dataHandling: unknown field telemetry",
+  ));
+  assert.ok(errors.includes(
+    "provider profile openai-responses-v1: profileSha256 does not match the canonical descriptor",
+  ));
+  assert.ok(errors.includes(
+    "config/provider-policy.json: policySha256 does not match the canonical policy",
+  ));
+});
+
+test("provider policy accepts an unfamiliar provider through descriptor data alone", () => {
+  const policy = loadProviderPolicy();
+  const profile = structuredClone(policy.profiles[0]);
+  profile.id = "local-json-v1";
+  profile.provider = "local-model";
+  profile.adapter.package = "@verified-sudoku/adapter-local-model";
+  profile.adapter.protocol = "local-json";
+  profile.modelsByRole = { observer: "fixture-observer" };
+  profile.inferenceSettingsByRole = {
+    observer: {
+      providerSettings: { format: "json", retainRequest: false },
     },
   };
-  assert.deepEqual(validateInferenceSettings(registration), []);
+  profile.browserBoundary = {
+    dependencyPatterns: ["@local-model/sdk"],
+    credentialNamePatterns: ["\\bLOCAL_MODEL_TOKEN\\b"],
+    endpointPatterns: ["\\blocal-model\\.example(?=[/:]|$)"],
+  };
+  policy.profiles.push(profile);
+  signProviderPolicy(policy);
+  assert.deepEqual(validateProviderPolicy(policy), []);
+});
 
-  registration.inferenceSettings.reasoningEffort = "medium";
-  registration.inferenceSettings.temperature = 0;
-  assert.deepEqual(validateInferenceSettings(registration), [
-    "observer-v1: inferenceSettings unknown field temperature",
-    "observer-v1: observer reasoningEffort must be low until the profile policy changes",
+test("runtime-admitted provider profiles retain the neutral safety capabilities", () => {
+  const policy = loadProviderPolicy();
+  policy.profiles[0].capabilities = policy.profiles[0].capabilities.filter(
+    (capability) => capability !== "strict-json-schema",
+  );
+  signProviderPolicy(policy);
+  assert.ok(validateProviderPolicy(policy).includes(
+    "provider profile openai-responses-v1.capabilities: missing required capability strict-json-schema",
+  ));
+});
+
+test("provider policy changes require monotonic policy, profile, and admission transitions", () => {
+  const previous = loadProviderPolicy();
+  const changed = structuredClone(previous);
+  changed.profiles[1].browserBoundary.endpointPatterns = ["\\bnever-matches\\.invalid$"];
+  signProviderPolicy(changed);
+  assert.deepEqual(validateProviderPolicyTransition(changed, previous), [
+    "config/provider-policy.json: policyVersion must increase when provider policy changes",
+    "anthropic-boundary-v1: profileVersion must increase when the provider descriptor changes",
   ]);
+
+  changed.policyVersion = "1.1.0";
+  changed.profiles[1].profileVersion = "1.1.0";
+  signProviderPolicy(changed);
+  assert.deepEqual(validateProviderPolicyTransition(changed, previous), []);
+
+  const weakened = structuredClone(previous);
+  weakened.policyVersion = "2.0.0";
+  weakened.profiles[0].profileVersion = "2.0.0";
+  weakened.profiles[0].runtimeAdmission = "boundary-only";
+  weakened.profiles[0].adapter = null;
+  weakened.profiles[0].capabilities = [];
+  weakened.profiles[0].modelsByRole = {};
+  weakened.profiles[0].inferenceSettingsByRole = {};
+  signProviderPolicy(weakened);
+  assert.ok(validateProviderPolicyTransition(weakened, previous).includes(
+    "openai-responses-v1: invalid runtimeAdmission transition candidate -> boundary-only",
+  ));
+
+  const removed = structuredClone(previous);
+  removed.policyVersion = "2.0.0";
+  removed.profiles.shift();
+  signProviderPolicy(removed);
+  assert.ok(validateProviderPolicyTransition(removed, previous).includes(
+    "openai-responses-v1: provider profiles are append-only; retire instead of removing",
+  ));
+});
+
+test("runtime provider selection is exact, role-bound, and provider-neutral", () => {
+  const policy = loadProviderPolicy();
+  const profile = policy.profiles[0];
+  const registration = runtimeRegistrationFixture(profile);
+  assert.deepEqual(validateRuntimeRegistrationShape(registration), []);
+  assert.deepEqual(validateRuntimeProviderSelection(registration, policy), []);
+
+  const malformed = structuredClone(registration);
+  delete malformed.providerProfileId;
+  malformed.provider = "openai";
+  malformed.store = false;
+  assert.deepEqual(validateRuntimeRegistrationShape(malformed), [
+    "observer-v1: missing providerProfileId",
+    "observer-v1: unknown field provider",
+    "observer-v1: unknown field store",
+  ]);
+
+  const drifted = structuredClone(registration);
+  drifted.providerProfileSha256 = "0".repeat(64);
+  drifted.modelProfileVersion = "2.0.0";
+  drifted.requestedModel = "unregistered-model";
+  drifted.requestStorage = "enabled";
+  delete drifted.inferenceSettings.providerSettings.store;
+  drifted.inferenceSettings.providerSettings.temperature = 0;
+  const errors = validateRuntimeProviderSelection(drifted, policy);
+  assert.ok(errors.includes(
+    "observer-v1: providerProfileSha256 must match provider profile openai-responses-v1",
+  ));
+  assert.ok(errors.includes(
+    "observer-v1: modelProfileVersion must match provider profile openai-responses-v1",
+  ));
+  assert.ok(errors.includes(
+    "observer-v1: requestedModel must be gpt-5.6-luna for provider profile openai-responses-v1",
+  ));
+  assert.ok(errors.includes("observer-v1: requestStorage must be disabled"));
+  assert.ok(errors.includes("observer-v1: inferenceSettings.providerSettings: missing store"));
+  assert.ok(errors.includes(
+    "observer-v1: inferenceSettings.providerSettings: unknown field temperature",
+  ));
+
+  const boundaryOnly = structuredClone(registration);
+  boundaryOnly.providerProfileId = "anthropic-boundary-v1";
+  assert.deepEqual(validateRuntimeProviderSelection(boundaryOnly, policy), [
+    "observer-v1: provider profile anthropic-boundary-v1 is not admitted for runtime use",
+  ]);
+
+  const prematurelyApproved = structuredClone(registration);
+  prematurelyApproved.approvalStatus = "approved";
+  assert.deepEqual(validateRuntimeProviderSelection(prematurelyApproved, policy), [
+    "observer-v1: provider profile openai-responses-v1 is not admitted for runtime use",
+  ]);
+
+  const retiredPolicy = structuredClone(policy);
+  retiredPolicy.policyVersion = "2.0.0";
+  retiredPolicy.profiles[0].runtimeAdmission = "retired";
+  signProviderPolicy(retiredPolicy);
+  const retiredRegistration = runtimeRegistrationFixture(retiredPolicy.profiles[0]);
+  retiredRegistration.approvalStatus = "retired";
+  assert.deepEqual(validateRuntimeProviderSelection(retiredRegistration, retiredPolicy), []);
 });
 
 test("runtime AI output bounds enforce the candidate role ceilings", () => {
@@ -562,6 +781,9 @@ test("runtime AI behavior changes require versions and new comparative evidence"
       promptVersion: "1.0.0",
       promptSha256: "a".repeat(64),
       comparisonReportSha256: "b".repeat(64),
+      providerProfileId: "openai-responses-v1",
+      providerProfileSha256: "c".repeat(64),
+      requestStorage: "disabled",
       inferenceSettings: { reasoningEffort: "low" },
     }],
   };
@@ -592,6 +814,15 @@ test("runtime AI behavior changes require versions and new comparative evidence"
   const removed = { registrations: [] };
   assert.deepEqual(validateRuntimeManifestTransition(removed, previous), [
     "observer-v1: registrations are append-only; retire instead of removing",
+  ]);
+
+  const providerChanged = structuredClone(previous);
+  providerChanged.registrations[0].providerProfileId = "local-json-v1";
+  providerChanged.registrations[0].providerProfileSha256 = "d".repeat(64);
+  assert.deepEqual(validateRuntimeManifestTransition(providerChanged, previous), [
+    "observer-v1: runtimeBehaviorVersion must increase when behavior changes",
+    "observer-v1: behavior changed without new comparative-evaluation evidence",
+    "observer-v1: modelProfileVersion must increase when model profile changes",
   ]);
 });
 
@@ -715,7 +946,7 @@ test("accepted architecture policy cannot disable its enforcement categories", (
   policy.providerPackages = [];
   policy.pureRuntimeExternalDependencies = {};
   assert.ok(validateAcceptedArchitecturePolicy(policy).some((error) =>
-    error.includes("policy differs from the accepted VSC-ARCH-1 workspace graph")));
+    error.includes("policy differs from the accepted VSC-ARCH-2 workspace graph")));
 });
 
 test("architecture fitness classifier rejects core framework and ambient effects", () => {
@@ -862,7 +1093,10 @@ test("boundary classifier allows only declared schema dependencies and no ambien
 
 test("browser fitness classifier rejects Node and provider-key access", () => {
   assert.deepEqual(
-    classifyBrowserSource(readText("scripts/fixtures/architecture/forbidden-browser.tsx")),
+    classifyBrowserSource(
+      readText("scripts/fixtures/architecture/forbidden-browser.tsx"),
+      currentBrowserBoundary(),
+    ),
     ["Node-only import openai/helpers/zod", "Node-only global", "provider credential name"],
   );
 });
@@ -914,25 +1148,110 @@ test("browser fitness classifier rejects legacy Node builtin specifiers", () => 
   }
   for (const name of ["VITE_OPENAI_API_KEY", "NEXT_PUBLIC_OPENAI_API_KEY", "OPENAI_KEY"]) {
     assert.deepEqual(
-      classifyBrowserSource(`export const credentialName = "${name}";`),
+      classifyBrowserSource(`export const credentialName = "${name}";`, currentBrowserBoundary()),
       ["provider credential name"],
     );
   }
   assert.deepEqual(
-    classifyBrowserSource('export const call = () => fetch("https://api.openai.com/v1/responses");'),
+    classifyBrowserSource(
+      'export const call = () => fetch("https://api.openai.com/v1/responses");',
+      currentBrowserBoundary(),
+    ),
     ["direct provider endpoint"],
   );
   assert.deepEqual(
-    classifyBrowserSource('export const endpoint = "https://api." + `openai.${"com"}/v1/responses`;'),
+    classifyBrowserSource(
+      'export const endpoint = "https://api." + `openai.${"com"}/v1/responses`;',
+      currentBrowserBoundary(),
+    ),
     ["direct provider endpoint"],
   );
   assert.deepEqual(
-    classifyBrowserSource('export const credentialName = "OPEN" + "AI_API_KEY";'),
+    classifyBrowserSource(
+      'export const credentialName = "OPEN" + "AI_API_KEY";',
+      currentBrowserBoundary(),
+    ),
     ["provider credential name"],
   );
   assert.deepEqual(
-    classifyBrowserSource('export const endpoint = ["https://api", "openai", "com/v1"].join(".");'),
+    classifyBrowserSource(
+      'export const endpoint = ["https://api", "openai", "com/v1"].join(".");',
+      currentBrowserBoundary(),
+    ),
     ["direct provider endpoint"],
+  );
+});
+
+test("browser provider boundary covers OpenAI, Anthropic, and Google SDKs and wire data", () => {
+  const boundary = currentBrowserBoundary();
+  for (const dependency of [
+    "openai",
+    "@openai/agents",
+    "@ai-sdk/openai",
+    "@langchain/openai",
+    "@anthropic-ai/sdk",
+    "@ai-sdk/anthropic",
+    "@langchain/anthropic",
+    "@google/genai",
+    "@google/generative-ai",
+    "@google-cloud/vertexai",
+    "@ai-sdk/google",
+    "@langchain/google-genai",
+    "@langchain/google-vertexai",
+  ]) {
+    assert.deepEqual(
+      classifyBrowserSource(`import provider from "${dependency}";`, boundary),
+      [`Node-only import ${dependency}`],
+    );
+  }
+  for (const credential of [
+    "OPENAI_API_KEY",
+    "ANTHROPIC_API_KEY",
+    "GEMINI_API_KEY",
+    "GOOGLE_GENAI_API_KEY",
+    "GOOGLE_APPLICATION_CREDENTIALS",
+  ]) {
+    assert.deepEqual(
+      classifyBrowserSource(`export const credential = "${credential}";`, boundary),
+      ["provider credential name"],
+    );
+  }
+  for (const endpoint of [
+    "https://api.openai.com/v1/responses",
+    "https://api.anthropic.com/v1/messages",
+    "https://generativelanguage.googleapis.com/v1beta/models",
+    "https://us-central1-aiplatform.googleapis.com/v1/projects",
+  ]) {
+    assert.deepEqual(
+      classifyBrowserSource(`export const endpoint = "${endpoint}";`, boundary),
+      ["direct provider endpoint"],
+    );
+  }
+  assert.deepEqual(
+    classifyBrowserSource(
+      'export const key = "ANTH" + "ROPIC_API_KEY"; export const host = "generative" + "language.googleapis.com";',
+      boundary,
+    ),
+    ["provider credential name", "direct provider endpoint"],
+  );
+  assert.deepEqual(
+    classifyBrowserSource(
+      'export const host = "api" + String.fromCharCode(46) + "anthropic.com";',
+      boundary,
+    ),
+    ["direct provider endpoint"],
+  );
+});
+
+test("provider boundary classifier covers browser build inputs without banning Node tooling", () => {
+  const boundary = currentBrowserBoundary();
+  assert.deepEqual(
+    classifyProviderBoundarySource([
+      'import path from "node:path";',
+      'const key = process.env.ANTHROPIC_API_KEY;',
+      'export const endpoint = "https://api.anthropic.com/v1/messages";',
+    ].join("\n"), boundary),
+    ["provider credential name", "direct provider endpoint"],
   );
 });
 
@@ -949,7 +1268,10 @@ test("static string alias analysis terminates on shadowed names", { timeout: 1_0
 
 test("module parsing catches template, comment-interposed, and opaque dynamic imports", () => {
   assert.deepEqual(
-    classifyBrowserSource('void import(`node:fs`); import/* boundary */("openai");'),
+    classifyBrowserSource(
+      'void import(`node:fs`); import/* boundary */("openai");',
+      currentBrowserBoundary(),
+    ),
     ["Node-only import node:fs", "Node-only import openai"],
   );
   assert.deepEqual(
@@ -1086,6 +1408,58 @@ test("architecture verifier discovers forbidden source and manifest dependencies
   assert.ok(errors.includes(
     "apps/replay-web/index.html: browser entry HTML forbids inline script content",
   ));
+});
+
+test("architecture verifier scans browser build code outside src for provider leakage", () => {
+  const temporaryRepository = fs.mkdtempSync(path.join(os.tmpdir(), "vsc-browser-build-boundary-"));
+  try {
+    fs.cpSync(
+      fromRoot("scripts/fixtures/architecture/workspace"),
+      temporaryRepository,
+      { recursive: true },
+    );
+    fs.writeFileSync(
+      path.join(temporaryRepository, "apps", "replay-web", "vite.config.ts"),
+      [
+        'import path from "node:path";',
+        "void path;",
+        'export const credential = "OPENAI_API_KEY";',
+        'export const endpoint = "https://api.openai.com/v1/responses";',
+      ].join("\n"),
+    );
+    const errors = verifyArchitectureAtRoot(temporaryRepository);
+    assert.ok(errors.includes(
+      "apps/replay-web/vite.config.ts: browser-safe graph forbids provider credential name",
+    ));
+    assert.ok(errors.includes(
+      "apps/replay-web/vite.config.ts: browser-safe graph forbids direct provider endpoint",
+    ));
+    assert.ok(!errors.includes(
+      "apps/replay-web/vite.config.ts: browser-safe graph forbids Node-only import node:path",
+    ));
+  } finally {
+    fs.rmSync(temporaryRepository, { recursive: true, force: true });
+  }
+});
+
+test("architecture verifier reports a null provider policy without crashing", () => {
+  const temporaryRepository = fs.mkdtempSync(path.join(os.tmpdir(), "vsc-null-provider-policy-"));
+  try {
+    fs.cpSync(
+      fromRoot("scripts/fixtures/architecture/workspace"),
+      temporaryRepository,
+      { recursive: true },
+    );
+    fs.writeFileSync(
+      path.join(temporaryRepository, "config", "provider-policy.json"),
+      "null\n",
+    );
+    assert.ok(verifyArchitectureAtRoot(temporaryRepository).includes(
+      "config/provider-policy.json must be an exact object",
+    ));
+  } finally {
+    fs.rmSync(temporaryRepository, { recursive: true, force: true });
+  }
 });
 
 test("architecture verifier scans reserved directory names nested under src", () => {

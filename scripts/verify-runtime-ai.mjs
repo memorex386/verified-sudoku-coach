@@ -13,15 +13,27 @@ import {
 } from "./lib/project.mjs";
 import {
   validateArtifactPath,
-  validateInferenceSettings,
   validateOutputTokenBound,
   validateRegistrationIdentity,
+  validateRuntimeRegistrationShape,
   validateRuntimeManifestTransition,
   validateTimeoutBound,
 } from "./lib/runtime-ai.mjs";
+import {
+  validateProviderPolicy,
+  validateProviderPolicyTransition,
+  validateRuntimeProviderSelection,
+} from "./lib/provider-policy.mjs";
 
 const errors = [];
 const manifest = readJson("ai/runtime-manifest.json");
+let providerPolicy = { profiles: [] };
+try {
+  providerPolicy = readJson("config/provider-policy.json");
+  errors.push(...validateProviderPolicy(providerPolicy));
+} catch {
+  errors.push("config/provider-policy.json: provider policy must be valid JSON");
+}
 const manifestKeys = new Set(Object.keys(manifest));
 for (const expected of ["schemaVersion", "status", "registrations"]) {
   if (!manifestKeys.has(expected)) {
@@ -48,60 +60,16 @@ if (registrations.length > 0 && manifest.status !== "registered") {
 const registeredPrompts = new Set();
 const ids = new Set();
 for (const registration of registrations) {
+  const shapeErrors = validateRuntimeRegistrationShape(registration);
+  errors.push(...shapeErrors);
   if (!registration || typeof registration !== "object" || Array.isArray(registration)) {
-    errors.push("ai/runtime-manifest.json: every registration must be an exact object");
     continue;
-  }
-  const required = new Set([
-    "id",
-    "role",
-    "approvalStatus",
-    "provider",
-    "requestedModel",
-    "modelProfileVersion",
-    "inferenceSettings",
-    "runtimeBehaviorVersion",
-    "promptPath",
-    "promptVersion",
-    "promptSha256",
-    "schemaPath",
-    "schemaVersion",
-    "schemaSha256",
-    "rendererManifestPath",
-    "rendererVersion",
-    "rendererManifestSha256",
-    "proofPolicyPath",
-    "proofPolicyVersion",
-    "proofPolicySha256",
-    "evalSuiteManifestPath",
-    "evalSuiteVersion",
-    "evalSuiteManifestSha256",
-    "comparisonReportPath",
-    "comparisonReportSha256",
-    "maxOutputTokens",
-    "timeoutMs",
-    "store",
-    "automaticRetry",
-    "failurePolicy",
-  ]);
-  for (const field of required) {
-    if (registration[field] === undefined || registration[field] === "") {
-      errors.push(`${registration.id ?? "registration"}: missing ${field}`);
-    }
-  }
-  for (const field of Object.keys(registration)) {
-    if (!required.has(field)) {
-      errors.push(`${registration.id ?? "registration"}: unknown field ${field}`);
-    }
   }
   if (ids.has(registration.id)) {
     errors.push(`ai/runtime-manifest.json: duplicate registration ${registration.id}`);
   }
   ids.add(registration.id);
   errors.push(...validateRegistrationIdentity(registration));
-  if (registration.store !== false) {
-    errors.push(`${registration.id}: store must be false`);
-  }
   if (registration.automaticRetry !== false) {
     errors.push(`${registration.id}: automaticRetry must be false`);
   }
@@ -111,24 +79,12 @@ for (const registration of registrations) {
   if (!["observer", "teacher"].includes(registration.role)) {
     errors.push(`${registration.id}: invalid role ${registration.role}`);
   }
-  if (registration.provider !== "openai") {
-    errors.push(`${registration.id}: provider must be openai until the provider policy changes`);
-  }
   if (registration.failurePolicy !== "visible-pause") {
     errors.push(`${registration.id}: failurePolicy must be visible-pause`);
   }
   errors.push(...validateOutputTokenBound(registration));
   errors.push(...validateTimeoutBound(registration));
-  errors.push(...validateInferenceSettings(registration));
-
-  const expectedModel = registration.role === "observer"
-    ? "gpt-5.6-luna"
-    : registration.role === "teacher"
-      ? "gpt-5.6-terra"
-      : undefined;
-  if (expectedModel && registration.requestedModel !== expectedModel) {
-    errors.push(`${registration.id}: ${registration.role} must request ${expectedModel} until the profile policy changes`);
-  }
+  errors.push(...validateRuntimeProviderSelection(registration, providerPolicy));
 
   for (const [kind, fileField, hashField] of [
     ["prompt", "promptPath", "promptSha256"],
@@ -200,6 +156,26 @@ if (baseRef && /^0{40}$/.test(baseRef)) {
     if (registrations.length > 0) {
       errors.push(
         `ai/runtime-manifest.json: cannot validate behavior changes against ${baseRef}`,
+      );
+    }
+  }
+  let previousProviderPolicyText;
+  try {
+    previousProviderPolicyText = execFileSync(
+      "git",
+      ["show", `${baseRef}:config/provider-policy.json`],
+      { cwd: fromRoot(), encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] },
+    );
+  } catch {
+    // The accepted foundation amendment is the one-time introduction of this policy file.
+  }
+  if (previousProviderPolicyText !== undefined) {
+    try {
+      const previousProviderPolicy = JSON.parse(previousProviderPolicyText);
+      errors.push(...validateProviderPolicyTransition(providerPolicy, previousProviderPolicy));
+    } catch {
+      errors.push(
+        `config/provider-policy.json: cannot validate provider-policy changes against ${baseRef}`,
       );
     }
   }

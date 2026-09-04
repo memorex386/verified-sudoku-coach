@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "providerPolicyPath": "config/provider-policy.json",
   "workspaces": {
     "@fixture/domain": {
       "path": "packages/domain",
@@ -12,7 +13,6 @@
   },
   "browserPackages": ["@fixture/replay-web"],
   "providerPackages": [],
-  "browserForbiddenDependencies": ["openai", "@openai/"],
   "nodeOnlyPackages": ["@fixture/domain"],
   "corePackages": ["@fixture/domain"],
   "boundaryPackages": [],

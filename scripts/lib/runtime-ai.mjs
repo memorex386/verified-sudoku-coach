@@ -1,15 +1,3 @@
-const inferenceSettingKeys = [
-  "reasoningEffort",
-  "structuredOutputMode",
-  "serviceTier",
-  "toolPolicy",
-  "samplingPolicy",
-];
-
-const expectedReasoningEffort = {
-  observer: "low",
-  teacher: "medium",
-};
 const numericIdentifier = "(?:0|[1-9]\\d*)";
 const nonNumericIdentifier = "(?:\\d*[A-Za-z-][0-9A-Za-z-]*)";
 const prereleaseIdentifier = `(?:${numericIdentifier}|${nonNumericIdentifier})`;
@@ -27,6 +15,60 @@ const artifactPolicies = {
   "evaluation-suite manifest": ["tools/eval-cli/suites/", ".json"],
   "comparison report": ["docs/evaluation/reports/", ".json"],
 };
+
+const runtimeRegistrationKeys = [
+  "id",
+  "role",
+  "approvalStatus",
+  "providerProfileId",
+  "providerProfileSha256",
+  "requestedModel",
+  "modelProfileVersion",
+  "inferenceSettings",
+  "runtimeBehaviorVersion",
+  "promptPath",
+  "promptVersion",
+  "promptSha256",
+  "schemaPath",
+  "schemaVersion",
+  "schemaSha256",
+  "rendererManifestPath",
+  "rendererVersion",
+  "rendererManifestSha256",
+  "proofPolicyPath",
+  "proofPolicyVersion",
+  "proofPolicySha256",
+  "evalSuiteManifestPath",
+  "evalSuiteVersion",
+  "evalSuiteManifestSha256",
+  "comparisonReportPath",
+  "comparisonReportSha256",
+  "maxOutputTokens",
+  "timeoutMs",
+  "requestStorage",
+  "automaticRetry",
+  "failurePolicy",
+];
+
+export function validateRuntimeRegistrationShape(registration) {
+  if (!registration || typeof registration !== "object" || Array.isArray(registration)) {
+    return ["ai/runtime-manifest.json: every registration must be an exact object"];
+  }
+  const label = typeof registration.id === "string" ? registration.id : "registration";
+  const errors = [];
+  for (const field of runtimeRegistrationKeys) {
+    if (!Object.hasOwn(registration, field) || registration[field] === undefined ||
+        registration[field] === "") {
+      errors.push(`${label}: missing ${field}`);
+    }
+  }
+  for (const field of Object.keys(registration)) {
+    if (!runtimeRegistrationKeys.includes(field)) {
+      errors.push(`${label}: unknown field ${field}`);
+    }
+  }
+  return errors;
+}
 
 export function validateRegistrationIdentity(registration) {
   const label = typeof registration.id === "string" ? registration.id : "registration";
@@ -65,48 +107,6 @@ export function validateArtifactPath(kind, artifactPath) {
   return [];
 }
 
-export function validateInferenceSettings(registration) {
-  const label = registration.id ?? "registration";
-  const settings = registration.inferenceSettings;
-  if (!settings || typeof settings !== "object" || Array.isArray(settings)) {
-    return [`${label}: inferenceSettings must be an exact object`];
-  }
-
-  const errors = [];
-  const actualKeys = Object.keys(settings);
-  for (const key of inferenceSettingKeys) {
-    if (!Object.hasOwn(settings, key)) {
-      errors.push(`${label}: inferenceSettings missing ${key}`);
-    }
-  }
-  for (const key of actualKeys) {
-    if (!inferenceSettingKeys.includes(key)) {
-      errors.push(`${label}: inferenceSettings unknown field ${key}`);
-    }
-  }
-
-  const expectedEffort = expectedReasoningEffort[registration.role];
-  if (expectedEffort && settings.reasoningEffort !== expectedEffort) {
-    errors.push(
-      `${label}: ${registration.role} reasoningEffort must be ${expectedEffort} until the profile policy changes`,
-    );
-  }
-  if (settings.structuredOutputMode !== "strict-json-schema") {
-    errors.push(`${label}: structuredOutputMode must be strict-json-schema`);
-  }
-  if (settings.serviceTier !== "auto") {
-    errors.push(`${label}: serviceTier must be auto until the profile policy changes`);
-  }
-  if (settings.toolPolicy !== "none") {
-    errors.push(`${label}: toolPolicy must be none`);
-  }
-  if (settings.samplingPolicy !== "provider-default-no-parameters") {
-    errors.push(`${label}: samplingPolicy must be provider-default-no-parameters`);
-  }
-
-  return errors;
-}
-
 export function validateOutputTokenBound(registration) {
   const label = registration.id ?? "registration";
   if (!Number.isSafeInteger(registration.maxOutputTokens) || registration.maxOutputTokens < 1) {
@@ -135,7 +135,8 @@ export function validateTimeoutBound(registration) {
 
 const behaviorFields = [
   "role",
-  "provider",
+  "providerProfileId",
+  "providerProfileSha256",
   "requestedModel",
   "modelProfileVersion",
   "inferenceSettings",
@@ -156,7 +157,7 @@ const behaviorFields = [
   "evalSuiteManifestSha256",
   "maxOutputTokens",
   "timeoutMs",
-  "store",
+  "requestStorage",
   "automaticRetry",
   "failurePolicy",
 ];
@@ -288,12 +289,13 @@ export function validateRuntimeManifestTransition(currentManifest, previousManif
       ["proof policy", "proofPolicyVersion", ["proofPolicyPath", "proofPolicySha256"]],
       ["evaluation suite", "evalSuiteVersion", ["evalSuiteManifestPath", "evalSuiteManifestSha256"]],
       ["model profile", "modelProfileVersion", [
-        "provider",
+        "providerProfileId",
+        "providerProfileSha256",
         "requestedModel",
         "inferenceSettings",
         "maxOutputTokens",
         "timeoutMs",
-        "store",
+        "requestStorage",
         "automaticRetry",
       ]],
     ]) {

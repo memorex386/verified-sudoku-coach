@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
-  "policyVersion": "VSC-ARCH-1",
+  "policyVersion": "VSC-ARCH-2",
+  "providerPolicyPath": "config/provider-policy.json",
   "workspaces": {
     "@verified-sudoku/domain": {
       "path": "packages/domain",
@@ -85,7 +86,6 @@
   },
   "browserPackages": ["@verified-sudoku/replay-web"],
   "providerPackages": ["@verified-sudoku/adapter-openai"],
-  "browserForbiddenDependencies": ["openai", "@openai/"],
   "nodeOnlyPackages": [
     "@verified-sudoku/adapter-openai",
     "@verified-sudoku/local-gateway",
