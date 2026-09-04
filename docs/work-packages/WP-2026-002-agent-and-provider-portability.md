@@ -87,10 +87,29 @@ Record exact results before handoff. Independent review must also test a foreign
 escape, a stale/over-privileged work order, a repeated dependency failure fingerprint, and one
 fresh-agent discovery path without using credentials.
 
+On Windows, these exact commands passed on 2026-09-04:
+
+- `npm run docs:check`: PASS — documentation, links, ADR, acceptance, and registry rules passed.
+- `npm run architecture:check`: PASS — dependency, core purity, provider, and browser boundaries
+  passed.
+- `npm run runtime-ai:check`: PASS — exact provider/runtime policy and transition checks passed.
+- `npm run automation:check`: PASS — the admitted shadow policy and fixture identity passed.
+- `npm run automation:fixture`: PASS — TypeScript 7.0.2 was deterministically `deferred` for
+  `compiler-or-build-tool` and `peer-conflict`, with zero model, repair, mutation, or network calls.
+- `npm run skills:check`: PASS — canonical skills and thin Claude/Gemini adapters matched.
+- `npm test`: PASS — all 112 validation and adversarial tests passed.
+- `npm run typecheck`: PASS — strict project-reference compilation passed.
+- `npm run verify`: PASS — the complete credential-free aggregator passed.
+- `git diff --check`: PASS — no whitespace errors.
+
+`npm ci` also passed with zero reported vulnerabilities, and the external skill-creator validator
+reported `Skill is valid!` for `steward-dependency-pr`.
+
 ## Delivery evidence
 
-No delivery PR or release exists yet. This package records the accepted maintainer decision and the
-implementation branch remains under review.
+Implementation is recorded on `codex/agent-portability`, including audited controller head
+`d486c5236deb4caa2e065a4b6c464f01ed1418ba`. No release exists, and no merge, deployment,
+provider spend, or live automation is authorized.
 
 ## Known limitations and blockers
 
@@ -98,13 +117,21 @@ Only static discovery and credential-free conformance are in scope. OpenAI remai
 planned runtime adapter; its current hosted routes are mutable candidates with provider-default
 abuse monitoring and unverified private-host retention control, so they cannot yet be approved.
 Claude, Gemini, and open-weight quality, latency, cost, and data handling remain unmeasured until
-their own registered adapters and authorized comparative evaluations exist.
+their own registered adapters and authorized comparative evaluations exist. The in-memory result
+and lineage stores are conformance fakes, not production persistence; host authentication, durable
+compare-and-swap storage, and time/token/cost budget enforcement remain live-runner work. The
+credential-free reference controller should be split into focused codec, state/history, and store
+modules before such a runner is accepted.
 
 ## Next action
 
-- Complete credential-free validation and independent portability/threat review, then open the foundation-amendment pull request without merging it.
+- Open the validated foundation-amendment pull request without merging, deploying, spending, or publishing.
 
 ## Checkpoints
 
 - 2026-09-04 — Maintainer accepted a single-provider reviewer cohort and provider-/agent-neutral contracts; portability foundation implementation began before WP-2026-003 readiness.
 - 2026-09-04 — Independent claim review rejected broad storage, alternate-provider, open-weight, and frozen-route claims; exact policy variants and approval blockers replaced them.
+- 2026-09-04 — Integrated architecture/threat review exercised policy admission, persisted-state
+  decoding, work-order renewal, grants, replay storage, lineage caps, exact-SHA mutation, terminal
+  paths, and rollback. Findings were converted into regressions; all 112 tests and the full
+  credential-free verifier pass with the live runner explicitly out of scope.

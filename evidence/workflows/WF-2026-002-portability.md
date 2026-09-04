@@ -81,15 +81,31 @@ for this workflow record; that absence is explicit rather than replaced with a g
   explicit renewal after a repair-created head. Integration remained blocked until classification
   moved inside the controller, state decoding failed closed, stage grants were enforced, and a new
   exact-head work order became mandatory.
+- Integrated adversarial review found that approval resumption revalidated an impossible projected
+  phase, persisted schema versions were ignored, a replacement work order could add grants or
+  capabilities, a no-op patch could claim publication, and renewal could reuse old authority or
+  evidence. Regression tests now stop every case before an external effect.
+- Replay review found exact-shaped but false terminal outcomes, attempt counts, and reason codes,
+  plus malformed records whose map key disagreed with their identity. Replay now occurs only after
+  deterministic identity derivation; it requires the exact terminal controller state, legal
+  history, current classification, and authoritative lineage ledger before returning a result.
+- Persisted-state review found live boundary limits missing on stored grant references and reason
+  codes. Storage decoding now mirrors the live bounds and fails closed on unknown, oversized,
+  noncanonical, or inconsistent values.
+- Claim review separated host authentication from controller validation and removed unimplemented
+  time/token/cost-budget claims. A future live adapter must authenticate the GitHub event and
+  enforce those `AutomationSpecV1` budgets; the synthetic fixture proves neither.
 - Review found a vendor-specific future branch example and renumbered work-package test drift.
   Machine checks now lock the neutral convention and the amended dependency graph.
 
 ## Validation performed
 
-Validation results are recorded in the work package and delivery pull request after the integrated
-branch completes its credential-free checks. The required suite includes the synthetic dependency
-fixture, policy, architecture, runtime-AI, agent-discovery, documentation, work-package, security,
-license, test, TypeScript, and full verification commands.
+The integrated Windows branch passed a clean `npm ci` with zero reported vulnerabilities, the
+canonical skill validator, every work-package command, and the full credential-free `npm run
+verify` aggregator. The suite passed 112/112 tests. The recorded TypeScript 5.9.2 to 7.0.2 fixture
+returned `deferred` with `compiler-or-build-tool` and `peer-conflict`, zero model/repair/mutation
+attempts, a replayed terminal result, and zero network calls. No live model, GitHub mutation,
+deployment, or credential was used.
 
 ## Evidence and limitations
 
@@ -112,4 +128,7 @@ automated repair quality; deployment safety; or release readiness. Anthropic and
 boundary descriptors, not usable or approved runtime registrations. OpenAI remains a candidate,
 not an approved production profile: its current provider-managed model routes are mutable and its
 private-host retention control is unverified. Built-browser artifact inspection and comparative
-provider evaluation remain future work.
+provider evaluation remain future work. The in-memory result and lineage stores are conformance
+adapters, not durable production persistence; a live host requires authenticated, transactional
+compare-and-swap adapters. The finite controller is intentionally a credential-free reference and
+should be split into codec, state/history, and store modules before a live runner is accepted.
