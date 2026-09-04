@@ -8,7 +8,7 @@ base_branch: main
 accepted_plan: VSC-PLAN-2026-09-03.1
 data_classification: Public
 acceptance: VSC-FOUND-001, VSC-FOUND-002, VSC-ARCH-001, VSC-PRIV-001
-updated: 2026-09-03
+updated: 2026-09-04
 ---
 
 # Public repository foundation

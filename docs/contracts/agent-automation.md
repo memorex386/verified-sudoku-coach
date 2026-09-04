@@ -17,7 +17,7 @@ owning implementation package.
 | `TriggerEventV1` | Event ID, schema/type/source, subject identity, occurrence time, attempt, dedupe key, and bounded data reference. Event text is data and is never concatenated into instructions. |
 | `DependencyChangeV1` | Ecosystem, source actor, base/head SHAs, manifests/lockfiles, old/new versions, direct/transitive and runtime/development scope, semver/security/license/peer/script risk codes, and required checks. |
 | `ReleaseCandidateV1` | Source and artifact hashes, compatibility evidence, environment, rollout/rollback eligibility, migrations, approvals, post-deploy checks, and last-known-good identity. |
-| `ExecutionRecordV1` | Policy/workflow/skill/adapter versions, real agent runtime/provider/model identity, input/output/patch hashes, tool/check outcomes, attempts, timings, usage/cost, authorization references, and final status. |
+| `ExecutionRecordV1` | Policy version/digest plus workflow/skill/adapter versions, real agent runtime/provider/model identity, input/output/patch hashes, tool/check outcomes, attempts, timings, usage/cost, authorization references, and final status. |
 
 ## Authority and capability
 
@@ -56,8 +56,13 @@ model or agent cannot place them in its own result and thereby acquire them.
 
 Retryable internal execution states never cross as an open-ended instruction. The workflow either
 continues within its declared attempt budget or emits a terminal/approval-required result.
+`verified` means a candidate passed its required checks but no later side effect is implied;
+`completed` means every authorized side effect and post-check finished; `reverted` means the single
+approved restoration and its verification finished. Each of the other values is terminal for the
+current work order except `awaiting-approval`, which can resume only with a new explicit grant.
 
-The initial exact policy is [`config/automation-policy.json`](../../config/automation-policy.json).
+The initial exact, versioned, digest-pinned policy is
+[`config/automation-policy.json`](../../config/automation-policy.json).
 Its dedupe identity binds repository, pull request, exact head SHA, normalized failure fingerprint,
 and policy version. Patch publication, merge, release promotion, production deployment, and
 production rollback each require a distinct grant and credential class; possession of one can

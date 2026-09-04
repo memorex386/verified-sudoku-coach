@@ -273,6 +273,7 @@ test("automation policy is exact, shadow-only, and independently authorized", ()
   unknown.authority.pullRequestMerge.unreviewed = true;
   const unknownErrors = validateAutomationPolicy(unknown);
   assert.ok(unknownErrors.includes("automation policy unknown field unreviewed"));
+  assert.ok(unknownErrors.includes("policySha256 must match the canonical automation policy"));
   assert.ok(unknownErrors.includes(
     "authority.pullRequestMerge unknown field unreviewed",
   ));
@@ -1660,7 +1661,7 @@ test("accepted seed packages cannot bypass the foundation dependency chain", asy
     readText("docs/acceptance/catalog.md"),
   );
   assert.ok(errors.some((error) =>
-    error.includes("accepted seed dependency must be WP-2026-001")));
+    error.includes("accepted seed dependency must be WP-2026-002")));
 });
 
 test("work-package verifier rejects duplicate required sections", async () => {

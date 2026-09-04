@@ -74,6 +74,7 @@ quality or live-agent behavior.
 npm run docs:check
 npm run architecture:check
 npm run runtime-ai:check
+npm run automation:check
 npm run skills:check
 npm test
 npm run typecheck

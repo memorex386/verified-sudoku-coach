@@ -1,6 +1,9 @@
+import crypto from "node:crypto";
+
 const policyKeys = [
   "schemaVersion",
   "policyVersion",
+  "policySha256",
   "mode",
   "source",
   "eligibility",
@@ -122,6 +125,29 @@ const fullLowercaseSha256 = /^[0-9a-f]{64}$/;
 const stableSemver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const npmPackageName = /^(?:@[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*|[a-z0-9][a-z0-9._-]*)$/;
 const githubRepository = /^[a-z0-9][a-z0-9_.-]{0,99}\/[a-z0-9][a-z0-9_.-]{0,99}$/;
+const sha256 = /^[0-9a-f]{64}$/;
+const acceptedPolicySha256 = "ffb998786bd30f2a5eb0faa8e8a648dd4fe4be111939bb03ebec72acf6aca644";
+
+function canonicalValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => canonicalValue(item));
+  }
+  if (isExactObject(value)) {
+    return Object.fromEntries(
+      Object.keys(value).sort().map((key) => [key, canonicalValue(value[key])]),
+    );
+  }
+  return value;
+}
+
+export function automationPolicyDigest(policy) {
+  const withoutDigest = isExactObject(policy)
+    ? Object.fromEntries(Object.entries(policy).filter(([key]) => key !== "policySha256"))
+    : policy;
+  return crypto.createHash("sha256")
+    .update(JSON.stringify(canonicalValue(withoutDigest)))
+    .digest("hex");
+}
 
 function isExactObject(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -212,6 +238,16 @@ export function validateAutomationPolicy(policy) {
   }
   if (policy.policyVersion !== "VSC-AUTOMATION-1") {
     errors.push("policyVersion must be VSC-AUTOMATION-1");
+  }
+  if (!sha256.test(policy.policySha256 ?? "")) {
+    errors.push("policySha256 must be a lowercase SHA-256 digest");
+  } else {
+    if (automationPolicyDigest(policy) !== policy.policySha256) {
+      errors.push("policySha256 must match the canonical automation policy");
+    }
+    if (policy.policySha256 !== acceptedPolicySha256) {
+      errors.push("policySha256 must match the accepted VSC-AUTOMATION-1 policy");
+    }
   }
   if (policy.mode !== "shadow") {
     errors.push("mode must remain shadow for VSC-AUTOMATION-1");

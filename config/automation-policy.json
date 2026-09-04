@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
   "policyVersion": "VSC-AUTOMATION-1",
+  "policySha256": "ffb998786bd30f2a5eb0faa8e8a648dd4fe4be111939bb03ebec72acf6aca644",
   "mode": "shadow",
   "source": {
     "kind": "dependabot",

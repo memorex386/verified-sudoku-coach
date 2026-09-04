@@ -40,6 +40,11 @@ one rerun for a deterministically recognized infrastructure failure are allowed.
 head SHA + failure fingerprint + policy version is the dedupe identity. A repeated event with that
 identity returns its durable result rather than starting again.
 
+The failure fingerprint is a SHA-256 over sorted normalized risk codes and required-check outcomes;
+a clean pre-check uses a defined `no-failure` sentinel. It never hashes arbitrary raw logs into
+public evidence. A changed SHA, normalized outcome, or policy version creates a new work order—it
+does not reopen attempts inside the old one.
+
 The analyzer never uses `--force`, `--legacy-peer-deps`, broad version overrides, test deletion,
 gate weakening, or unrelated upgrades to manufacture a green result.
 
@@ -62,6 +67,19 @@ runs. Initial eligibility is deliberately limited to:
 Any AI-authored repair requires human review during the evidence phase. Major updates, runtime or
 toolchain changes, GitHub Actions, security-sensitive surfaces, native dependencies, peer conflicts,
 unknown licenses, or missing telemetry terminate as `deferred` or `escalated`.
+
+## Rollout stages
+
+| Stage | Allowed behavior | Promotion evidence |
+| --- | --- | --- |
+| Local fixture | Classify recorded/synthetic input; no network mutation | Deterministic and adversarial tests |
+| Shadow check | Inspect a live PR read-only and publish a check only with a separate grant; never patch or merge | Correct disposition, cost, latency, false-positive/negative review |
+| Assisted repair | Publish one compare-and-swap patch after approval; human still merges | Local/remote exact-SHA checks and reviewed repair history |
+| Narrow auto-merge | Merge only an unchanged eligible patch with every protected check green | Separately accepted policy version and sustained shadow evidence |
+| Release steward | Consume the merged immutable artifact under separate release/deploy grants | Rehearsed verification and one-rollback path; production remains human-gated during the evidence phase |
+
+Promotion changes policy; it is never inferred from a streak of green runs. Revocation or kill
+switch takes effect before the next side effect and ends active work at a terminal state.
 
 ## Model route
 
