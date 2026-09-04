@@ -14,8 +14,11 @@ const policyKeys = [
 const sourceKeys = ["kind", "ecosystem", "actor", "event", "classification"];
 const eligibilityKeys = [
   "dependencySection",
+  "directDependency",
+  "existingDependency",
   "updateType",
   "allowedFiles",
+  "forbiddenRiskCodes",
   "statefulChanges",
   "irreversibleChanges",
   "ineligibleOutcome",
@@ -63,9 +66,12 @@ const dependencyPullRequestKeys = [
   "pullRequestNumber",
   "dependencyName",
   "dependencySection",
+  "directDependency",
+  "existingDependency",
   "currentVersion",
   "proposedVersion",
   "changedFiles",
+  "riskCodes",
   "headSha",
   "failureFingerprint",
   "policyVersion",
@@ -75,6 +81,19 @@ const dependencyPullRequestKeys = [
 ];
 
 const expectedAllowedFiles = ["package.json", "package-lock.json"];
+const expectedForbiddenRiskCodes = [
+  "compiler-or-build-tool",
+  "license-change",
+  "lifecycle-script",
+  "missing-telemetry",
+  "native-dependency",
+  "new-direct-package",
+  "peer-conflict",
+  "security-sensitive-surface",
+  "source-change",
+  "vulnerability-increase",
+  "workflow-change",
+];
 const expectedDecisionOrder = [
   "deterministic-classification",
   "cheap-model-assessment",
@@ -222,11 +241,20 @@ export function validateAutomationPolicy(policy) {
     if (policy.eligibility.dependencySection !== "devDependencies") {
       errors.push("eligibility.dependencySection must be devDependencies");
     }
+    if (policy.eligibility.directDependency !== "required") {
+      errors.push("eligibility.directDependency must be required");
+    }
+    if (policy.eligibility.existingDependency !== "required") {
+      errors.push("eligibility.existingDependency must be required");
+    }
     if (policy.eligibility.updateType !== "semver-patch") {
       errors.push("eligibility.updateType must be semver-patch");
     }
     if (!exactArray(policy.eligibility.allowedFiles, expectedAllowedFiles)) {
       errors.push("eligibility.allowedFiles must be exactly package.json and package-lock.json");
+    }
+    if (!exactArray(policy.eligibility.forbiddenRiskCodes, expectedForbiddenRiskCodes)) {
+      errors.push("eligibility.forbiddenRiskCodes must contain the exact reviewed risk set");
     }
     if (policy.eligibility.statefulChanges !== "ineligible") {
       errors.push("eligibility.statefulChanges must be ineligible");
@@ -353,12 +381,25 @@ export function classifyDependencyPullRequest(policy, candidate) {
   if (candidate.dependencySection !== policy.eligibility?.dependencySection) {
     reasons.push("dependency is not a devDependency");
   }
+  if (candidate.directDependency !== true) {
+    reasons.push("dependency is not a direct dependency");
+  }
+  if (candidate.existingDependency !== true) {
+    reasons.push("dependency is not already declared");
+  }
   if (!isSemverPatchUpdate(candidate.currentVersion, candidate.proposedVersion)) {
     reasons.push("dependency update is not a stable semver patch");
   }
 
   if (!exactArray(candidate.changedFiles, expectedAllowedFiles)) {
     reasons.push("changedFiles must be exactly package.json and package-lock.json");
+  }
+  if (!Array.isArray(candidate.riskCodes) ||
+      new Set(candidate.riskCodes).size !== candidate.riskCodes.length ||
+      candidate.riskCodes.some((code) => !expectedForbiddenRiskCodes.includes(code))) {
+    reasons.push("riskCodes must be a unique array of known deterministic risk codes");
+  } else if (candidate.riskCodes.length > 0) {
+    reasons.push(`forbidden dependency risk: ${candidate.riskCodes.join(",")}`);
   }
   if (!fullLowercaseSha1.test(candidate.headSha ?? "")) {
     reasons.push("headSha must be an exact full lowercase SHA-1");

@@ -79,7 +79,7 @@ run on the exact candidate SHA. A passing security or dependency-review job does
 install, build, typecheck, or test evidence.
 
 PR [#2](https://github.com/memorex386/verified-sudoku-coach/pull/2) is the first public fixture:
-TypeScript 7 is a major toolchain update whose declared `typescript-eslint` peer range excludes it.
+TypeScript 7.0.2 is a major toolchain update whose declared `typescript-eslint` peer range excludes it.
 The expected policy result is `deferred` with no repair and no model spend. A future TypeScript
 migration is a separately scoped work package.
 

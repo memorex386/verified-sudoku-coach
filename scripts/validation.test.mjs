@@ -244,11 +244,14 @@ function validDependencyPullRequest() {
     ecosystem: "npm",
     repository: "memorex386/verified-sudoku-coach",
     pullRequestNumber: 42,
-    dependencyName: "typescript",
+    dependencyName: "globals",
     dependencySection: "devDependencies",
-    currentVersion: "5.9.2",
-    proposedVersion: "5.9.3",
+    directDependency: true,
+    existingDependency: true,
+    currentVersion: "17.12.0",
+    proposedVersion: "17.12.1",
     changedFiles: ["package.json", "package-lock.json"],
+    riskCodes: [],
     headSha,
     failureFingerprint: "b".repeat(64),
     policyVersion: "VSC-AUTOMATION-1",
@@ -365,6 +368,8 @@ test("dependency pull-request eligibility is a deterministic narrow allowlist", 
     ["repository", "Not Canonical", "repository must be a canonical lowercase owner/name"],
     ["pullRequestNumber", 0, "pullRequestNumber must be a positive safe integer"],
     ["dependencySection", "dependencies", "dependency is not a devDependency"],
+    ["directDependency", false, "dependency is not a direct dependency"],
+    ["existingDependency", false, "dependency is not already declared"],
     ["proposedVersion", "5.10.0", "dependency update is not a stable semver patch"],
     ["changedFiles", ["package.json", "scripts/install.mjs"],
       "changedFiles must be exactly package.json and package-lock.json"],
@@ -397,7 +402,10 @@ test("dependency pull-request eligibility is a deterministic narrow allowlist", 
 
   const currentTypeScriptMajorFixture = validDependencyPullRequest();
   currentTypeScriptMajorFixture.pullRequestNumber = 2;
-  currentTypeScriptMajorFixture.proposedVersion = "7.0.0";
+  currentTypeScriptMajorFixture.dependencyName = "typescript";
+  currentTypeScriptMajorFixture.currentVersion = "5.9.2";
+  currentTypeScriptMajorFixture.proposedVersion = "7.0.2";
+  currentTypeScriptMajorFixture.riskCodes = ["compiler-or-build-tool", "peer-conflict"];
   currentTypeScriptMajorFixture.idempotencyKey = dependencyPullRequestIdempotencyKey(
     currentTypeScriptMajorFixture,
   );
@@ -410,6 +418,9 @@ test("dependency pull-request eligibility is a deterministic narrow allowlist", 
   assert.equal(currentFixtureResult.terminalOutcome, "deferred");
   assert.ok(currentFixtureResult.reasons.includes(
     "dependency update is not a stable semver patch",
+  ));
+  assert.ok(currentFixtureResult.reasons.includes(
+    "forbidden dependency risk: compiler-or-build-tool,peer-conflict",
   ));
 });
 

@@ -11,8 +11,23 @@
   },
   "eligibility": {
     "dependencySection": "devDependencies",
+    "directDependency": "required",
+    "existingDependency": "required",
     "updateType": "semver-patch",
     "allowedFiles": ["package.json", "package-lock.json"],
+    "forbiddenRiskCodes": [
+      "compiler-or-build-tool",
+      "license-change",
+      "lifecycle-script",
+      "missing-telemetry",
+      "native-dependency",
+      "new-direct-package",
+      "peer-conflict",
+      "security-sensitive-surface",
+      "source-change",
+      "vulnerability-increase",
+      "workflow-change"
+    ],
     "statefulChanges": "ineligible",
     "irreversibleChanges": "ineligible",
     "ineligibleOutcome": "deferred"
