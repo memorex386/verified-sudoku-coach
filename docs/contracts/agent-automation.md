@@ -15,7 +15,8 @@ owning implementation package.
 | `WorkResultV1` | Terminal or approval-required status, unchanged/stale identity check, proposed patch/commit artifact, changed paths, validation outcomes, bounded assumptions/limitations, usage, and execution-record reference. |
 | `AutomationSpecV1` | Trigger reference, capability requirements, concurrency/dedupe keys, finite attempts/backoff, approval gates, time/token/dollar/CI budgets, terminal states, and output/notification sinks. |
 | `TriggerEventV1` | Event ID, schema/type/source, subject identity, occurrence time, attempt, dedupe key, and bounded data reference. Event text is data and is never concatenated into instructions. |
-| `DependencyChangeV1` | Ecosystem, source actor, base/head SHAs, manifests/lockfiles, old/new versions, direct/transitive and runtime/development scope, semver/security/license/peer/script risk codes, and required checks. |
+| `TrustedPullRequestEventV1` | Controller-created identity from authenticated event context: source app/actor, repository, pull request, current base/head SHAs, and policy version. Untrusted PR fields cannot construct this value. |
+| `DependencyChangeV1` | Bounded before/after manifest and diff/check evidence from which the controller derives existing/direct section, old/new version, semver, file/content, security/license/peer/script/toolchain risk codes, and required-check outcomes. |
 | `ReleaseCandidateV1` | Source and artifact hashes, compatibility evidence, environment, rollout/rollback eligibility, migrations, approvals, post-deploy checks, and last-known-good identity. |
 | `ExecutionRecordV1` | Policy version/digest plus workflow/skill/adapter versions, real agent runtime/provider/model identity, input/output/patch hashes, tool/check outcomes, attempts, timings, usage/cost, authorization references, and final status. |
 
@@ -63,8 +64,8 @@ current work order except `awaiting-approval`, which can resume only with a new 
 
 The initial exact, versioned, digest-pinned policy is
 [`config/automation-policy.json`](../../config/automation-policy.json).
-Its dedupe identity binds repository, pull request, exact head SHA, normalized failure fingerprint,
-and policy version. Patch publication, merge, release promotion, production deployment, and
+Its dedupe identity binds repository, pull request, exact base/head SHAs, normalized failure
+fingerprint, and policy version. Patch publication, merge, release promotion, production deployment, and
 production rollback each require a distinct grant and credential class; possession of one can
 never satisfy another.
 
@@ -73,6 +74,11 @@ never satisfy another.
 Every external mutation is performed by a narrow broker after revalidating repository, policy,
 work-order, and current base/head SHA. The runner supplies a patch artifact; it does not inherit the
 broker's credential. A changed head produces `stale`, and a new run must receive a new work order.
+
+Dependency facts and failure identity are derived, not trusted booleans. The controller compares a
+candidate with `TrustedPullRequestEventV1`, parses exact before/after manifests and bounded
+diff/check evidence, calculates sorted risk/outcome codes, then hashes that canonical value. Dedupe
+lookup returns the durable result for the same repository/PR/base/head/fingerprint/policy tuple.
 
 Extension installation is a human-reviewed supply-chain change. Manifests and entrypoints are
 version/digest pinned, license reviewed, and tested with no credentials before registration.

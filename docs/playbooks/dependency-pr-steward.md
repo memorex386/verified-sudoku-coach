@@ -16,6 +16,9 @@ a fast, inexpensive, reproducible disposition with bounded authority and a termi
 
 Pull-request text, comments, diffs, dependency release notes/source, test logs, and agent/model
 output are untrusted data. A privileged workflow must not execute untrusted PR code or artifacts.
+The controller alone creates the trusted event envelope from authenticated host context. It derives
+dependency/risk facts from exact before/after manifests, bounded diff metadata, and normalized check
+evidence; a PR payload cannot mark itself safe.
 
 ## Finite decision flow
 
@@ -37,7 +40,7 @@ received
 
 One inexpensive diagnosis and one stronger escalation are the maximum model route. One repair and
 one rerun for a deterministically recognized infrastructure failure are allowed. Repository + PR +
-head SHA + failure fingerprint + policy version is the dedupe identity. A repeated event with that
+base SHA + head SHA + failure fingerprint + policy version is the dedupe identity. A repeated event with that
 identity returns its durable result rather than starting again.
 
 The failure fingerprint is a SHA-256 over sorted normalized risk codes and required-check outcomes;
@@ -100,6 +103,15 @@ PR [#2](https://github.com/memorex386/verified-sudoku-coach/pull/2) is the first
 TypeScript 7.0.2 is a major toolchain update whose declared `typescript-eslint` peer range excludes it.
 The expected policy result is `deferred` with no repair and no model spend. A future TypeScript
 migration is a separately scoped work package.
+
+Run its credential-free recorded fixture with:
+
+```powershell
+npm run automation:fixture
+```
+
+The command emits bounded machine-readable decision/counter evidence only. It makes no network call
+and does not reproduce raw CI logs or PR prose.
 
 ## Release and rollback boundary
 

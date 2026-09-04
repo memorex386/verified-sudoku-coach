@@ -14,7 +14,7 @@ Domain, proof, and coaching policy do not depend on contracts, providers, networ
 frameworks, or the host product. Wire contracts do not import domain values; boundary codecs are
 the explicit anti-corruption layer. The allowed package graph is machine-readable in
 [`config/architecture.json`](../../config/architecture.json) and verified in CI.
-Its `VSC-ARCH-1` policy digest locks the accepted workspace graph and enforcement categories;
+Its `VSC-ARCH-2` policy digest locks the accepted workspace/provider graph and enforcement categories;
 changing it requires the governing ADR and verifier to change together.
 The AST and manifest fitness checks are defense-in-depth drift guards, not a JavaScript sandbox or
 a substitute for review. Release work must also inspect built artifacts and exercise consumer

@@ -47,9 +47,9 @@ workspace comments whose work-package IDs changed.
 ## Affected interfaces
 
 `ProviderProfileV1`, `ExtensionManifestV1`, `WorkOrderV1`, `WorkResultV1`, `AutomationSpecV1`,
-`TriggerEventV1`, `ExecutionRecordV1`, runtime registration identity, browser/provider-boundary
-policy, repository instruction discovery, skill discovery, future branch names, and PR/release
-authorization states.
+`TriggerEventV1`, `TrustedPullRequestEventV1`, `DependencyChangeV1`, `ExecutionRecordV1`, runtime
+registration identity, browser/provider-boundary policy, repository instruction discovery, skill
+discovery, future branch names, and PR/release authorization states.
 
 ## Architecture and privacy invariants
 
@@ -75,6 +75,7 @@ npm run docs:check
 npm run architecture:check
 npm run runtime-ai:check
 npm run automation:check
+npm run automation:fixture
 npm run skills:check
 npm test
 npm run typecheck

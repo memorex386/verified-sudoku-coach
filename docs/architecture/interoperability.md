@@ -47,10 +47,10 @@ flowchart LR
     Controller --> Evidence
 ```
 
-The controller owns state transitions, idempotency, attempt/time/cost limits, capability grants,
-approval checks, and terminal outcomes. An adapter translates one external protocol and reports a
-normalized result. It cannot expand its own authority or call another adapter outside the current
-work order.
+The controller owns authenticated event normalization, derived risk/failure identity, state
+transitions, idempotency, attempt/time/cost limits, capability grants, approval checks, and terminal
+outcomes. An adapter translates one external protocol and reports a normalized result. It cannot
+expand its own authority or call another adapter outside the current work order.
 
 Effective capability is always the intersection of:
 
@@ -85,6 +85,10 @@ OpenAI is the first reference adapter. Anthropic, Google, and local/open-weight 
 the same conformance and comparative evaluation before a claim names them. Open-weight profiles
 also bind the model-weight digest, quantization, inference server, prompt template, and relevant
 hardware/runtime identity. API-shape compatibility alone is not conformance.
+
+The initial Anthropic and Google `boundary-only` descriptors exist solely to ban known SDK,
+credential, and endpoint leakage from browser surfaces. They register no adapter, model, runtime
+capability, compatibility, data-handling fact, or quality claim.
 
 The reviewer cohort uses one frozen approved registration. Alternate registrations remain
 owner/evaluation-only. Provider unavailability produces the existing visible pause; Coach v1 has no

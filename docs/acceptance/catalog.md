@@ -66,10 +66,12 @@ candidate adapter without becoming the application contract.
 
 Owner: `WP-2026-002`
 
-A machine-readable policy separates analysis, patch publication, merge, release, and production
-credentials. Dependency handling verifies source and exact SHA, deduplicates by failure identity,
-classifies deterministically first, and permits at most one inexpensive diagnosis, one stronger
-escalation, one repair, and one recognized-infrastructure rerun before a terminal result. Shadow
+A machine-readable policy and pure finite-state controller separate analysis, patch publication,
+merge, release, and production credentials. Dependency handling compares an authenticated event
+envelope with current base/head SHAs, derives manifest/diff/check risks, computes and durably
+deduplicates a canonical failure identity, classifies deterministically first, and permits at most
+one inexpensive diagnosis, one stronger escalation, one repair, and one recognized-infrastructure
+rerun before a terminal result. Every error, timeout, and attempt-exhaustion path terminates. Shadow
 mode cannot merge. Future release execution permits at most one deployment and one rollback, then
 verifies and stops; stateful/irreversible changes are ineligible.
 
