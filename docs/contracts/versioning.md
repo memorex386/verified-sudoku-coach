@@ -34,14 +34,15 @@ at the application boundary.
 A model behavior is identified by more than a model name. The manifest in
 [`ai/runtime-manifest.json`](../../ai/runtime-manifest.json) records the prompt source/hash, request
 schema/hash, provider-profile ID/hash, adapter route, requested model, provider-native settings,
-output bound, storage choice, evaluator version, and visible failure/recovery policy. The
+output bound, response-storage request, evaluator version, and visible failure/recovery policy. The
 registration ID and complete runtime-behavior version enter every replay/trace identity. Live
 reports additionally record the real provider/adapter and requested/returned model metadata.
 
 Provider-native settings are inline, exact-key manifest data rather than undocumented defaults.
 Their allowed shape comes from the digest-pinned provider profile. Common application constraints
-bind strict structured output, absence of tools, disabled request storage, no automatic retry,
-finite output/deadline, and visible failure. A caller cannot add, omit, or override a setting
+bind strict structured output, absence of tools, an explicit response-storage policy, no automatic
+retry, finite output/deadline, and visible failure. Provider abuse-monitoring, retention-control,
+and artifact-revision evidence remain distinct. A caller cannot add, omit, or override a setting
 outside the approved registration.
 
 A change to any of these values is behavior-changing even when TypeScript does not change. Follow

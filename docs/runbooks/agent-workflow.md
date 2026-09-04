@@ -24,6 +24,11 @@ read authority -> select ready work package -> isolated branch/worktree -> focus
 does not need to exist before its implementing package starts. Implementation makes those commands
 executable and CI-wired before `Done`.
 
+A human may accept and start a decision-complete `Draft` in one reviewed change when that change
+also records its accepted-plan version and first checkpoint. The verifier applies the same
+unfinished-decision ban as `Ready`, requires completed dependencies, and permits only one active
+package. Otherwise, use the ordinary `Draft` → `Ready` → `In progress` progression.
+
 Repository bootstrap is the sole exception: the empty repository received a minimal `main` commit,
 then the initial clone became the isolated `codex/coach-foundation` checkout. Before the foundation
 commit, a sibling `main` worktree was created and left read-only. This one-time ordering is recorded

@@ -78,8 +78,8 @@ test will not be represented as proof of player learning or business impact.
 
 These directories currently contain boundaries only, not feature implementations.
 
-Canonical repository instructions and skills are open-format, with thin discovery adapters for
-supported coding agents. Product inference uses registered capability/data-handling profiles;
+Canonical repository instructions and skills are open-format, with checked thin adapters for the
+Claude and Gemini discovery formats. Product inference uses registered capability/data-handling profiles;
 engineering automation uses bounded work orders and separate mutation brokers. Structural
 portability is tested, while compatibility or quality claims for a named agent/provider require
 their own conformance and measured evidence.

@@ -7,12 +7,14 @@ replace chat history as project authority. `In progress` is the active state.
 
 The enforced lifecycle is `Draft -> Ready -> In progress -> Done`, with `Ready -> Draft` for
 refinement, `In progress -> Blocked`, and `Blocked -> In progress` or `Done` as the only side paths.
+A decision-complete Draft may move directly to `In progress` only when one reviewed change also
+records its accepted plan and first checkpoint; the same readiness and dependency gates apply.
 Active work cannot be demoted to a planning state, `Done` is terminal, and checkpoints become exact
 append-only history once implementation starts.
 
 | ID | Title | Status | Depends on | Owner | Accepted plan | Data | Next action | Updated |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| [WP-2026-001](WP-2026-001-public-repository-foundation.md) | Public repository foundation | Done | None | Maintainer | [VSC-PLAN-2026-09-03.1](../product/plans/VSC-PLAN-2026-09-03.1.md) | Public | No action remains in WP-2026-001; follow the generated registry for the current package. | 2026-09-03 |
+| [WP-2026-001](WP-2026-001-public-repository-foundation.md) | Public repository foundation | Done | None | Maintainer | [VSC-PLAN-2026-09-03.1](../product/plans/VSC-PLAN-2026-09-03.1.md) | Public | No action remains in WP-2026-001; follow the generated registry for the current package. | 2026-09-04 |
 | [WP-2026-002](WP-2026-002-agent-and-provider-portability.md) | Agent and provider portability foundation | In progress | WP-2026-001 | Maintainer | [VSC-PLAN-2026-09-04.2](../product/plans/VSC-PLAN-2026-09-04.2.md) | Public | Complete credential-free validation and independent portability/threat review, then open the foundation-amendment pull request without merging it. | 2026-09-04 |
 | [WP-2026-003](WP-2026-003-contracts-and-proof-engine.md) | Contracts and deterministic proof engine | Draft | WP-2026-002 | Maintainer | [VSC-PLAN-2026-09-04.2](../product/plans/VSC-PLAN-2026-09-04.2.md) | Public | Finalize the field-level V1 contract tables and generated-fixture seed protocol for explicit readiness review; do not implement while status remains Draft. | 2026-09-04 |
 | [WP-2026-004](WP-2026-004-coach-application.md) | Provider-neutral coach application | Draft | WP-2026-003 | Maintainer | [VSC-PLAN-2026-09-04.2](../product/plans/VSC-PLAN-2026-09-04.2.md) | Public | Specify the complete command/event/effect table and intervention state machine without writing implementation code. | 2026-09-04 |

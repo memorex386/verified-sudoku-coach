@@ -81,18 +81,20 @@ from that policy, including indirect SDKs and statically constructed strings. Th
 depth, not a claim that source pattern matching proves a built artifact safe. WP-2026-005 must also
 inspect the actual browser bundle before release.
 
-OpenAI is the first reference adapter. Anthropic, Google, and local/open-weight adapters must pass
+OpenAI is the first planned reference adapter. Anthropic, Google, and local/open-weight adapters must pass
 the same conformance and comparative evaluation before a claim names them. Open-weight profiles
-also bind the model-weight digest, quantization, inference server, prompt template, and relevant
-hardware/runtime identity. API-shape compatibility alone is not conformance.
+use a separate enforced artifact variant binding model-weight digest, quantization, inference-server
+artifact/version, prompt-template digest, and relevant hardware/runtime identity. API-shape
+compatibility alone is not conformance.
 
-The initial Anthropic and Google `boundary-only` descriptors exist solely to ban known SDK,
+The Anthropic and Google `boundary-only` descriptors exist solely to ban known SDK,
 credential, and endpoint leakage from browser surfaces. They register no adapter, model, runtime
 capability, compatibility, data-handling fact, or quality claim.
 
-The reviewer cohort uses one frozen approved registration. Alternate registrations remain
-owner/evaluation-only. Provider unavailability produces the existing visible pause; Coach v1 has no
-automatic provider failover.
+The reviewer cohort must use one frozen approved registration. A hosted profile with a mutable
+provider-managed route cannot be approved; the current GPT-5.6 Luna/Terra entries are candidates
+only. Alternate registrations remain owner/evaluation-only. Once implemented, provider
+unavailability produces a visible pause; Coach v1 has no automatic provider failover.
 
 ## Engineering-agent adapters
 

@@ -9,12 +9,12 @@ Each entry binds:
 - Stable registration ID, role (`observer` or `teacher`), and status (`candidate`, `approved`, or
   `retired`). Runtime composition accepts only `approved`.
 - Registered provider-profile ID and SHA-256, requested model, model-profile version, exact
-  provider-native settings, and complete runtime-behavior version.
+  provider-request settings, and complete runtime-behavior version.
 - Prompt path/version/SHA-256 and strict output-schema path/version/SHA-256.
 - Renderer-manifest and proof-policy path/version/SHA-256 triples.
 - Evaluation-suite-manifest path/version/SHA-256 plus aggregate comparative-report path/SHA-256.
 - Positive finite output-token and timeout bounds, with observer output capped at 256 tokens and
-  teacher output capped at 768; top-level `requestStorage:"disabled"`,
+  teacher output capped at 768; top-level `responseStoragePolicy:"request-not-to-store"`,
   `automaticRetry:false`, and `failurePolicy:"visible-pause"`.
 
 `config/provider-policy.json` is the sole provider security and capability registry. A profile
@@ -22,9 +22,11 @@ identifies its Node-only adapter, provider protocol/version, allowed roles and r
 capabilities, data-handling claims that require revalidation, exact provider-settings shape, and
 browser-forbidden SDK specifiers, credential names, and endpoint hosts. Runtime registrations
 reference a profile and its digest; they do not copy or reinterpret that policy. The provider
-adapter proves how the neutral storage requirement maps to its native request. For the initial
-OpenAI profile this includes exact `store:false`; another provider must declare and verify its own
-equivalent or remain ineligible for live use.
+adapter must prove how the neutral response-storage policy maps to its native request. For the
+planned OpenAI adapter this includes exact `store:false`, which disables later API retrieval of the
+generated response but is not a Zero Data Retention claim. Abuse-monitoring policy and private-host
+retention-control verification are separate profile fields. Another provider must declare and
+verify its own behavior or remain ineligible for live use.
 
 Profile and policy digests are computed from canonical JSON and checked against the base revision.
 The profile digest excludes only `runtimeAdmission`, so promotion/retirement changes policy
@@ -51,12 +53,13 @@ Approved registrations supply the prompt/model-profile portions of the canonical
 ruleset, schema, renderer, fixture, and evaluation-suite versions; replay/trace encoding fails if
 any of the nine values is absent or if an event's identity hash differs from its trace envelope.
 
-The initial candidate registrations request `gpt-5.6-luna` for observer and `gpt-5.6-terra` for
-teacher through the OpenAI Responses adapter. Changing a provider profile, adapter, requested model,
-or native setting requires the runtime-AI runbook, synchronized comparative evidence, and an
-accepted policy/ADR change; a provider response or outage never authorizes substitution. The
-reviewer cohort freezes one approved registration per role. Alternate providers remain
-evaluation-only until separately accepted.
+WP-2026-005 plans candidate registrations requesting `gpt-5.6-luna` for observer and
+`gpt-5.6-terra` for teacher through the OpenAI Responses adapter. The current profile marks those
+hosted routes mutable and therefore not cohort-approvable. Changing a provider profile, adapter,
+requested model, or native setting requires the runtime-AI runbook, synchronized comparative
+evidence, and an accepted policy/ADR change; a provider response or outage never authorizes
+substitution. The reviewer cohort requires one immutable approved registration per role. Alternate
+providers remain evaluation-only until separately accepted.
 
 Existing registration IDs are append-only and may only advance `candidate -> approved -> retired`
 (with direct candidate retirement also allowed). A behavior-bearing field change must increment the

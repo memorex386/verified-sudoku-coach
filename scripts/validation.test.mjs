@@ -123,7 +123,7 @@ function runtimeRegistrationFixture(profile, role = "observer") {
     comparisonReportSha256: "f".repeat(64),
     maxOutputTokens: role === "observer" ? 256 : 768,
     timeoutMs: role === "observer" ? 5_000 : 10_000,
-    requestStorage: "disabled",
+    responseStoragePolicy: profile.dataHandling.responseStoragePolicy,
     automaticRetry: false,
     failurePolicy: "visible-pause",
   };
@@ -607,6 +607,7 @@ test("provider policy is exact, self-digested, and OpenAI-first without admittin
     policy.profiles[0].inferenceSettingsByRole.observer.providerSettings.store,
     false,
   );
+  assert.deepEqual(policy.profiles.slice(1).map((profile) => profile.dataHandling), [null, null]);
 });
 
 test("provider policy rejects unknown keys and any unsigned descriptor drift", () => {
@@ -631,6 +632,59 @@ test("provider policy rejects unknown keys and any unsigned descriptor drift", (
   ));
 });
 
+test("boundary-only provider records cannot assert artifact or retention facts", () => {
+  const policy = loadProviderPolicy();
+  const profile = policy.profiles[1];
+  profile.artifactIdentity = {
+    kind: "hosted-route",
+    revisionPolicy: "mutable-provider-route",
+    resolvedIdentityEvidence: "required-per-call",
+  };
+  profile.dataHandling = {
+    responseStoragePolicy: "request-not-to-store",
+    abuseMonitoringPolicy: "provider-default",
+    retentionControl: "not-verified",
+  };
+  signProviderPolicy(policy);
+  const errors = validateProviderPolicy(policy);
+  assert.ok(errors.includes(
+    "provider profile anthropic-boundary-v1: boundary-only profiles must not assert artifact identity",
+  ));
+  assert.ok(errors.includes(
+    "provider profile anthropic-boundary-v1: boundary-only profiles must not assert data handling",
+  ));
+});
+
+test("a mutable or retention-unverified hosted route cannot become approved", () => {
+  const policy = loadProviderPolicy();
+  policy.profiles[0].runtimeAdmission = "approved";
+  signProviderPolicy(policy);
+  const errors = validateProviderPolicy(policy);
+  assert.ok(errors.includes(
+    "provider profile openai-responses-v1: approved hosted profiles require an immutable provider revision",
+  ));
+  assert.ok(errors.includes(
+    "provider profile openai-responses-v1: approved profiles require host-verified retention control",
+  ));
+});
+
+test("a hosted alias cannot gain immutable status by relabeling policy metadata", () => {
+  const policy = loadProviderPolicy();
+  const profile = policy.profiles[0];
+  profile.runtimeAdmission = "approved";
+  profile.artifactIdentity.revisionPolicy = "immutable-provider-revision";
+  profile.artifactIdentity.requestedRevisionsByRole = structuredClone(profile.modelsByRole);
+  profile.dataHandling.retentionControl = "host-verified";
+  signProviderPolicy(policy);
+  const errors = validateProviderPolicy(policy);
+  assert.ok(errors.includes(
+    "provider profile openai-responses-v1.artifactIdentity.requestedRevisionsByRole.observer must identify a dated or SHA-256 immutable provider revision",
+  ));
+  assert.ok(errors.includes(
+    "provider profile openai-responses-v1.artifactIdentity.requestedRevisionsByRole.teacher must identify a dated or SHA-256 immutable provider revision",
+  ));
+});
+
 test("provider policy accepts an unfamiliar provider through descriptor data alone", () => {
   const policy = loadProviderPolicy();
   const profile = structuredClone(policy.profiles[0]);
@@ -652,6 +706,55 @@ test("provider policy accepts an unfamiliar provider through descriptor data alo
   policy.profiles.push(profile);
   signProviderPolicy(policy);
   assert.deepEqual(validateProviderPolicy(policy), []);
+});
+
+test("open-weight providers require immutable artifact and execution identity", () => {
+  const policy = loadProviderPolicy();
+  const profile = structuredClone(policy.profiles[0]);
+  profile.id = "local-open-weight-v1";
+  profile.provider = "local-model";
+  profile.providerKind = "open-weight";
+  profile.adapter.package = "@verified-sudoku/adapter-local-model";
+  profile.adapter.protocol = "local-json";
+  profile.modelsByRole = { observer: "fixture-observer" };
+  profile.inferenceSettingsByRole = {
+    observer: { providerSettings: { format: "json" } },
+  };
+  profile.artifactIdentity = {
+    kind: "open-weight-artifact",
+    weightsSha256: "1".repeat(64),
+    quantization: "q4-k-m",
+    inferenceServer: {
+      name: "vllm",
+      version: "1.0.0",
+      artifactSha256: "2".repeat(64),
+    },
+    promptTemplateSha256: "3".repeat(64),
+    executionEnvironment: {
+      runtime: "cuda",
+      runtimeVersion: "12.8.0",
+      hardwareClass: "nvidia-l4",
+    },
+  };
+  profile.dataHandling = {
+    responseStoragePolicy: "self-hosted-ephemeral",
+    abuseMonitoringPolicy: "self-hosted",
+    retentionControl: "host-verified",
+  };
+  profile.browserBoundary = {
+    dependencyPatterns: ["@local-model/sdk"],
+    credentialNamePatterns: ["\\bLOCAL_MODEL_TOKEN\\b"],
+    endpointPatterns: ["\\blocal-model\\.example(?=[/:]|$)"],
+  };
+  policy.profiles.push(profile);
+  signProviderPolicy(policy);
+  assert.deepEqual(validateProviderPolicy(policy), []);
+
+  delete profile.artifactIdentity.weightsSha256;
+  signProviderPolicy(policy);
+  assert.ok(validateProviderPolicy(policy).includes(
+    "provider profile local-open-weight-v1.artifactIdentity: missing weightsSha256",
+  ));
 });
 
 test("runtime-admitted provider profiles retain the neutral safety capabilities", () => {
@@ -723,7 +826,7 @@ test("runtime provider selection is exact, role-bound, and provider-neutral", ()
   drifted.providerProfileSha256 = "0".repeat(64);
   drifted.modelProfileVersion = "2.0.0";
   drifted.requestedModel = "unregistered-model";
-  drifted.requestStorage = "enabled";
+  drifted.responseStoragePolicy = "provider-default";
   delete drifted.inferenceSettings.providerSettings.store;
   drifted.inferenceSettings.providerSettings.temperature = 0;
   const errors = validateRuntimeProviderSelection(drifted, policy);
@@ -736,7 +839,9 @@ test("runtime provider selection is exact, role-bound, and provider-neutral", ()
   assert.ok(errors.includes(
     "observer-v1: requestedModel must be gpt-5.6-luna for provider profile openai-responses-v1",
   ));
-  assert.ok(errors.includes("observer-v1: requestStorage must be disabled"));
+  assert.ok(errors.includes(
+    "observer-v1: responseStoragePolicy must be request-not-to-store",
+  ));
   assert.ok(errors.includes("observer-v1: inferenceSettings.providerSettings: missing store"));
   assert.ok(errors.includes(
     "observer-v1: inferenceSettings.providerSettings: unknown field temperature",
@@ -805,12 +910,12 @@ test("runtime AI behavior changes require versions and new comparative evidence"
       comparisonReportSha256: "b".repeat(64),
       providerProfileId: "openai-responses-v1",
       providerProfileSha256: "c".repeat(64),
-      requestStorage: "disabled",
-      inferenceSettings: { reasoningEffort: "low" },
+      responseStoragePolicy: "request-not-to-store",
+      inferenceSettings: { reasoning: { effort: "low" } },
     }],
   };
   const changed = structuredClone(previous);
-  changed.registrations[0].inferenceSettings.reasoningEffort = "medium";
+  changed.registrations[0].inferenceSettings.reasoning.effort = "medium";
   assert.deepEqual(validateRuntimeManifestTransition(changed, previous), [
     "observer-v1: runtimeBehaviorVersion must increase when behavior changes",
     "observer-v1: behavior changed without new comparative-evaluation evidence",
@@ -826,7 +931,7 @@ test("runtime AI behavior changes require versions and new comparative evidence"
   downgradeBase.registrations[0].runtimeBehaviorVersion = "3.0.0";
   downgradeBase.registrations[0].modelProfileVersion = "3.0.0";
   const downgraded = structuredClone(changed);
-  downgraded.registrations[0].inferenceSettings.reasoningEffort = "high";
+  downgraded.registrations[0].inferenceSettings.reasoning.effort = "high";
   downgraded.registrations[0].comparisonReportSha256 = "d".repeat(64);
   assert.ok(validateRuntimeManifestTransition(downgraded, downgradeBase).some((error) =>
     error.includes("runtimeBehaviorVersion must increase")));
@@ -2370,6 +2475,22 @@ test("a not-started package may replace setup prose with its first checkpoint", 
   assert.deepEqual(validateCheckpointHistory(started, base), []);
 });
 
+test("a decision-complete Draft may start atomically with its first checkpoint", () => {
+  const base = [{
+    file: "docs/work-packages/WP-2026-002-portability.md",
+    id: "WP-2026-002",
+    status: "Draft",
+    checkpointContent: "Implementation has not begun.",
+  }];
+  const started = [{
+    file: base[0].file,
+    id: base[0].id,
+    status: "In progress",
+    checkpointContent: "- 2026-09-04 — accepted plan and implementation start recorded together",
+  }];
+  assert.deepEqual(validateCheckpointHistory(started, base), []);
+});
+
 test("work-package verifier rejects an all-zero push base", async () => {
   const previous = process.env.WORK_PACKAGE_BASE_REF;
   process.env.WORK_PACKAGE_BASE_REF = "0".repeat(40);
@@ -2413,6 +2534,21 @@ test("Ready permits decision-complete commands that implementation will create",
     loadAcceptedPlans(),
     () => true,
   ), []);
+});
+
+test("In progress rejects unfinished decisions just like Ready", async () => {
+  const packages = structuredClone(loadWorkPackages());
+  const active = packages.find((item) => item.status === "In progress");
+  assert.ok(active);
+  active.body = active.body.replace("## Goal", "## Goal\n\nTBD");
+  const errors = await validateWorkPackagesOffline(
+    packages,
+    readText("docs/acceptance/catalog.md"),
+    loadAcceptedPlans(),
+  );
+  assert.ok(errors.includes(
+    `${active.file}: In progress work may not contain unfinished decisions or commands`,
+  ));
 });
 
 test("work-package verifier permits future schema-valid packages beyond the accepted seed", async () => {

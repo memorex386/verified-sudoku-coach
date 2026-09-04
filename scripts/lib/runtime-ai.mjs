@@ -45,7 +45,7 @@ const runtimeRegistrationKeys = [
   "comparisonReportSha256",
   "maxOutputTokens",
   "timeoutMs",
-  "requestStorage",
+  "responseStoragePolicy",
   "automaticRetry",
   "failurePolicy",
 ];
@@ -157,7 +157,7 @@ const behaviorFields = [
   "evalSuiteManifestSha256",
   "maxOutputTokens",
   "timeoutMs",
-  "requestStorage",
+  "responseStoragePolicy",
   "automaticRetry",
   "failurePolicy",
 ];
@@ -295,7 +295,7 @@ export function validateRuntimeManifestTransition(currentManifest, previousManif
         "inferenceSettings",
         "maxOutputTokens",
         "timeoutMs",
-        "requestStorage",
+        "responseStoragePolicy",
         "automaticRetry",
       ]],
     ]) {

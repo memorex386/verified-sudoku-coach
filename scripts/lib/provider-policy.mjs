@@ -12,8 +12,10 @@ const exactProfileKeys = [
   "profileVersion",
   "profileSha256",
   "provider",
+  "providerKind",
   "runtimeAdmission",
   "adapter",
+  "artifactIdentity",
   "capabilities",
   "modelsByRole",
   "inferenceSettingsByRole",
@@ -21,7 +23,31 @@ const exactProfileKeys = [
   "browserBoundary",
 ];
 const exactAdapterKeys = ["package", "protocol", "protocolVersion"];
-const exactDataHandlingKeys = ["requestStorage"];
+const exactDataHandlingKeys = [
+  "responseStoragePolicy",
+  "abuseMonitoringPolicy",
+  "retentionControl",
+];
+const exactHostedArtifactKeys = [
+  "kind",
+  "revisionPolicy",
+  "requestedRevisionsByRole",
+  "resolvedIdentityEvidence",
+];
+const exactOpenWeightArtifactKeys = [
+  "kind",
+  "weightsSha256",
+  "quantization",
+  "inferenceServer",
+  "promptTemplateSha256",
+  "executionEnvironment",
+];
+const exactInferenceServerKeys = ["name", "version", "artifactSha256"];
+const exactExecutionEnvironmentKeys = [
+  "runtime",
+  "runtimeVersion",
+  "hardwareClass",
+];
 const exactBrowserBoundaryKeys = [
   "dependencyPatterns",
   "credentialNamePatterns",
@@ -29,15 +55,17 @@ const exactBrowserBoundaryKeys = [
 ];
 const runtimeRoles = ["observer", "teacher"];
 const runtimeAdmissions = new Set(["candidate", "approved", "retired", "boundary-only"]);
+const providerKinds = new Set(["hosted-api", "open-weight"]);
 const requiredRuntimeCapabilities = [
   "no-tools",
-  "request-storage-disabled",
+  "response-storage-control",
   "strict-json-schema",
 ];
 const identifierPattern = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const adapterPackagePattern = /^@verified-sudoku\/adapter-[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const capabilityPattern = /^[a-z][a-z0-9]*(?:[.-][a-z0-9]+)*$/;
 const digestPattern = /^[0-9a-f]{64}$/;
+const immutableHostedRevisionPattern = /(?:-(?:19|20)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])|@sha256:[0-9a-f]{64})$/;
 const semanticVersionPattern = /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/;
 
 function isExactObject(value) {
@@ -195,6 +223,142 @@ function profileLabel(profile, index) {
     : `provider profile at index ${index}`;
 }
 
+function validateArtifactIdentity(profile, label) {
+  const errors = [];
+  if (profile.runtimeAdmission === "boundary-only") {
+    if (profile.artifactIdentity !== null) {
+      errors.push(`${label}: boundary-only profiles must not assert artifact identity`);
+    }
+    return errors;
+  }
+  if (profile.providerKind === "hosted-api") {
+    errors.push(...validateExactKeys(
+      profile.artifactIdentity,
+      exactHostedArtifactKeys,
+      `${label}.artifactIdentity`,
+    ));
+    if (isExactObject(profile.artifactIdentity)) {
+      if (profile.artifactIdentity.kind !== "hosted-route") {
+        errors.push(`${label}.artifactIdentity.kind must be hosted-route`);
+      }
+      if (!["mutable-provider-route", "immutable-provider-revision"].includes(
+        profile.artifactIdentity.revisionPolicy,
+      )) {
+        errors.push(`${label}.artifactIdentity.revisionPolicy is invalid`);
+      }
+      if (profile.artifactIdentity.resolvedIdentityEvidence !== "required-per-call") {
+        errors.push(
+          `${label}.artifactIdentity.resolvedIdentityEvidence must be required-per-call`,
+        );
+      }
+      if (profile.artifactIdentity.revisionPolicy === "mutable-provider-route") {
+        if (profile.artifactIdentity.requestedRevisionsByRole !== null) {
+          errors.push(
+            `${label}.artifactIdentity.requestedRevisionsByRole must be null for a mutable route`,
+          );
+        }
+      } else if (profile.artifactIdentity.revisionPolicy === "immutable-provider-revision") {
+        errors.push(...validateRoleMap(
+          profile.artifactIdentity.requestedRevisionsByRole,
+          `${label}.artifactIdentity.requestedRevisionsByRole`,
+          (revision, revisionLabel) => typeof revision === "string" &&
+              immutableHostedRevisionPattern.test(revision)
+            ? []
+            : [`${revisionLabel} must identify a dated or SHA-256 immutable provider revision`],
+        ));
+        if (isExactObject(profile.artifactIdentity.requestedRevisionsByRole) &&
+            isExactObject(profile.modelsByRole)) {
+          if (!sameKeys(
+            profile.artifactIdentity.requestedRevisionsByRole,
+            profile.modelsByRole,
+          )) {
+            errors.push(`${label}: immutable revisions and modelsByRole must declare identical roles`);
+          }
+          for (const [role, revision] of Object.entries(
+            profile.artifactIdentity.requestedRevisionsByRole,
+          )) {
+            if (profile.modelsByRole[role] !== revision) {
+              errors.push(`${label}: modelsByRole.${role} must equal its immutable revision`);
+            }
+          }
+        }
+      }
+      if (profile.runtimeAdmission === "approved" &&
+          profile.artifactIdentity.revisionPolicy !== "immutable-provider-revision") {
+        errors.push(`${label}: approved hosted profiles require an immutable provider revision`);
+      }
+    }
+    return errors;
+  }
+  if (profile.providerKind !== "open-weight") {
+    return errors;
+  }
+  errors.push(...validateExactKeys(
+    profile.artifactIdentity,
+    exactOpenWeightArtifactKeys,
+    `${label}.artifactIdentity`,
+  ));
+  if (!isExactObject(profile.artifactIdentity)) {
+    return errors;
+  }
+  if (profile.artifactIdentity.kind !== "open-weight-artifact") {
+    errors.push(`${label}.artifactIdentity.kind must be open-weight-artifact`);
+  }
+  for (const field of ["weightsSha256", "promptTemplateSha256"]) {
+    if (!digestPattern.test(profile.artifactIdentity[field] ?? "")) {
+      errors.push(`${label}.artifactIdentity.${field} must be a lowercase SHA-256 digest`);
+    }
+  }
+  if (typeof profile.artifactIdentity.quantization !== "string" ||
+      !identifierPattern.test(profile.artifactIdentity.quantization)) {
+    errors.push(`${label}.artifactIdentity.quantization must be a lowercase kebab-case string`);
+  }
+  errors.push(...validateExactKeys(
+    profile.artifactIdentity.inferenceServer,
+    exactInferenceServerKeys,
+    `${label}.artifactIdentity.inferenceServer`,
+  ));
+  if (isExactObject(profile.artifactIdentity.inferenceServer)) {
+    const server = profile.artifactIdentity.inferenceServer;
+    if (typeof server.name !== "string" || !identifierPattern.test(server.name)) {
+      errors.push(`${label}.artifactIdentity.inferenceServer.name must be lowercase kebab-case`);
+    }
+    if (typeof server.version !== "string" || !semanticVersionPattern.test(server.version)) {
+      errors.push(`${label}.artifactIdentity.inferenceServer.version must be semantic-versioned`);
+    }
+    if (!digestPattern.test(server.artifactSha256 ?? "")) {
+      errors.push(
+        `${label}.artifactIdentity.inferenceServer.artifactSha256 must be a lowercase SHA-256 digest`,
+      );
+    }
+  }
+  errors.push(...validateExactKeys(
+    profile.artifactIdentity.executionEnvironment,
+    exactExecutionEnvironmentKeys,
+    `${label}.artifactIdentity.executionEnvironment`,
+  ));
+  if (isExactObject(profile.artifactIdentity.executionEnvironment)) {
+    const environment = profile.artifactIdentity.executionEnvironment;
+    if (typeof environment.runtime !== "string" ||
+        !identifierPattern.test(environment.runtime)) {
+      errors.push(`${label}.artifactIdentity.executionEnvironment.runtime must be lowercase kebab-case`);
+    }
+    if (typeof environment.runtimeVersion !== "string" ||
+        !semanticVersionPattern.test(environment.runtimeVersion)) {
+      errors.push(
+        `${label}.artifactIdentity.executionEnvironment.runtimeVersion must be semantic-versioned`,
+      );
+    }
+    if (typeof environment.hardwareClass !== "string" ||
+        !identifierPattern.test(environment.hardwareClass)) {
+      errors.push(
+        `${label}.artifactIdentity.executionEnvironment.hardwareClass must be lowercase kebab-case`,
+      );
+    }
+  }
+  return errors;
+}
+
 export function validateProviderPolicy(policy) {
   const errors = validateExactKeys(policy, exactPolicyKeys, "config/provider-policy.json");
   if (!isExactObject(policy)) {
@@ -236,6 +400,9 @@ export function validateProviderPolicy(policy) {
     if (typeof profile.provider !== "string" || !identifierPattern.test(profile.provider)) {
       errors.push(`${label}: provider must be a lowercase kebab-case string`);
     }
+    if (!providerKinds.has(profile.providerKind)) {
+      errors.push(`${label}: providerKind must be hosted-api or open-weight`);
+    }
     if (!runtimeAdmissions.has(profile.runtimeAdmission)) {
       errors.push(`${label}: invalid runtimeAdmission ${profile.runtimeAdmission}`);
     }
@@ -264,6 +431,8 @@ export function validateProviderPolicy(policy) {
         errors.push(`${label}: boundary-only profiles must not declare an adapter`);
       }
     }
+
+    errors.push(...validateArtifactIdentity(profile, label));
 
     errors.push(...validateStringSet(
       profile.capabilities,
@@ -305,13 +474,33 @@ export function validateProviderPolicy(policy) {
       errors.push(`${label}: boundary-only profiles must not declare runtime roles`);
     }
 
-    errors.push(...validateExactKeys(
-      profile.dataHandling,
-      exactDataHandlingKeys,
-      `${label}.dataHandling`,
-    ));
-    if (profile.dataHandling?.requestStorage !== "disabled") {
-      errors.push(`${label}.dataHandling: requestStorage must be disabled`);
+    if (profile.runtimeAdmission === "boundary-only") {
+      if (profile.dataHandling !== null) {
+        errors.push(`${label}: boundary-only profiles must not assert data handling`);
+      }
+    } else {
+      errors.push(...validateExactKeys(
+        profile.dataHandling,
+        exactDataHandlingKeys,
+        `${label}.dataHandling`,
+      ));
+      if (isExactObject(profile.dataHandling)) {
+        if (!["request-not-to-store", "provider-verified-equivalent", "self-hosted-ephemeral"]
+          .includes(profile.dataHandling.responseStoragePolicy)) {
+          errors.push(`${label}.dataHandling: responseStoragePolicy is invalid`);
+        }
+        if (!["provider-default", "modified-abuse-monitoring", "zero-data-retention", "self-hosted"]
+          .includes(profile.dataHandling.abuseMonitoringPolicy)) {
+          errors.push(`${label}.dataHandling: abuseMonitoringPolicy is invalid`);
+        }
+        if (!["not-verified", "host-verified"].includes(profile.dataHandling.retentionControl)) {
+          errors.push(`${label}.dataHandling: retentionControl is invalid`);
+        }
+        if (profile.runtimeAdmission === "approved" &&
+            profile.dataHandling.retentionControl !== "host-verified") {
+          errors.push(`${label}: approved profiles require host-verified retention control`);
+        }
+      }
     }
 
     errors.push(...validateExactKeys(
@@ -479,8 +668,10 @@ export function validateRuntimeProviderSelection(registration, policy) {
   } else if (registration.requestedModel !== expectedModel) {
     errors.push(`${label}: requestedModel must be ${expectedModel} for provider profile ${profileId}`);
   }
-  if (registration.requestStorage !== profile.dataHandling?.requestStorage) {
-    errors.push(`${label}: requestStorage must be ${profile.dataHandling?.requestStorage}`);
+  if (registration.responseStoragePolicy !== profile.dataHandling?.responseStoragePolicy) {
+    errors.push(
+      `${label}: responseStoragePolicy must be ${profile.dataHandling?.responseStoragePolicy}`,
+    );
   }
   const expectedSettings = profile.inferenceSettingsByRole?.[registration.role];
   if (expectedSettings !== undefined) {

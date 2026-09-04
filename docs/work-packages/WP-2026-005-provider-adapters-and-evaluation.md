@@ -49,12 +49,13 @@ settings, prompt/schema/model profile hashes, eval case/report schemas, and guar
 ## Architecture and privacy invariants
 
 Provider responses are syntax- and semantics-untrusted. Requests contain only minimal verified
-packets with no identity or unrelated trace; disabled request storage, finite output bounds, and no
-automatic retry are explicit common policy. The OpenAI mapping additionally requires exact
-`store:false`. Browser workspaces cannot reach any provider package. Live mode requires current spend
-confirmation and never uploads raw outputs. The BYOK gateway binds only numeric loopback, requires
-exact Host/Origin allowlists plus a per-launch capability, has no wildcard CORS, and bounds every
-route, model, body, output, and cadence before invoking a provider.
+packets with no identity or unrelated trace; an explicit response-storage policy, finite output
+bounds, and no automatic retry are common policy. The OpenAI mapping additionally requires exact
+`store:false`, while provider-default abuse monitoring and host retention verification remain
+separate evidence. Browser workspaces cannot reach any provider package. Live mode requires current
+spend confirmation and never uploads raw outputs. The BYOK gateway binds only numeric loopback,
+requires exact Host/Origin allowlists plus a per-launch capability, has no wildcard CORS, and bounds
+every route, model, body, output, and cadence before invoking a provider.
 
 ## Acceptance criteria
 

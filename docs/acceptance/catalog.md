@@ -171,8 +171,10 @@ Runtime composition accepts only model/prompt/schema/validator/renderer bundles 
 Changing a prompt, schema, model profile, proof policy, or renderer changes its manifest and
 comparative evaluation. Every registration binds an approved provider profile and exact adapter
 settings. Initial candidate observer/teacher profiles request GPT-5.6 Luna/Terra through the OpenAI
-Responses adapter with strict structured output, request storage disabled (`store:false` at that
-adapter), finite limits, and no automatic retry. Alternate providers remain evaluation-only until
+Responses adapter with strict structured output, generated-response retrieval disabled through
+exact `store:false`, finite limits, and no automatic retry. This does not claim Zero Data Retention;
+abuse-monitoring and retention-control state are separate profile evidence. A mutable hosted-model
+route cannot be approved for the reviewer cohort. Alternate providers remain evaluation-only until
 their own conformance and approval evidence exists.
 
 ## VSC-EVAL-001 — Complete, guarded evaluation tooling

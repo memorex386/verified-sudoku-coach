@@ -95,8 +95,10 @@ implementation branch remains under review.
 ## Known limitations and blockers
 
 Only static discovery and credential-free conformance are in scope. OpenAI remains the first
-planned runtime adapter; Claude, Gemini, and open-weight quality, latency, cost, and data-handling
-remain unmeasured until their own registered adapters and authorized comparative evaluations exist.
+planned runtime adapter; its current hosted routes are mutable candidates with provider-default
+abuse monitoring and unverified private-host retention control, so they cannot yet be approved.
+Claude, Gemini, and open-weight quality, latency, cost, and data handling remain unmeasured until
+their own registered adapters and authorized comparative evaluations exist.
 
 ## Next action
 
@@ -105,3 +107,4 @@ remain unmeasured until their own registered adapters and authorized comparative
 ## Checkpoints
 
 - 2026-09-04 — Maintainer accepted a single-provider reviewer cohort and provider-/agent-neutral contracts; portability foundation implementation began before WP-2026-003 readiness.
+- 2026-09-04 — Independent claim review rejected broad storage, alternate-provider, open-weight, and frozen-route claims; exact policy variants and approval blockers replaced them.

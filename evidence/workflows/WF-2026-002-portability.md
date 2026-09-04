@@ -65,6 +65,11 @@ for this workflow record; that absence is explicit rather than replaced with a g
 - Review found that profile digests, lifecycle-script detection, indirect SDK scanning, and
   admission transitions were incomplete. The policy schema, verifier, fixtures, and tests were
   tightened together.
+- Claim review found that `store:false` had been mislabeled as disabling all request storage,
+  boundary-only providers asserted unverified retention facts, open-weight identity prose exceeded
+  its schema, and mutable hosted routes were called frozen. The corrected policy separates response
+  retrieval, abuse monitoring, verified retention control, and artifact identity; it rejects an
+  incomplete open-weight profile and blocks mutable/unverified hosted routes from approval.
 - Review found that the first dependency classifier accepted self-asserted actor, SHA, failure,
   and risk facts and described attempt caps without an executable state machine. Those findings
   blocked acceptance and drove the authenticated event, raw-evidence normalizer, persistent
@@ -97,5 +102,6 @@ does not prove Claude, Gemini, open-weight, or OpenAI model quality; named alter
 compatibility; a safe live GitHub runner; browser production-bundle absence; model cost/latency;
 automated repair quality; deployment safety; or release readiness. Anthropic and Google entries are
 boundary descriptors, not usable or approved runtime registrations. OpenAI remains a candidate,
-not an approved production profile. Built-browser artifact inspection and comparative provider
-evaluation remain future work.
+not an approved production profile: its current provider-managed model routes are mutable and its
+private-host retention control is unverified. Built-browser artifact inspection and comparative
+provider evaluation remain future work.
