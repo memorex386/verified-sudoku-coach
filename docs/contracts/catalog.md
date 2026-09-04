@@ -1,8 +1,9 @@
 # Public contract catalog
 
-This catalog fixes ownership and semantic boundaries before WP-2026-003 defines exact fields and
-Zod schemas. A name ending in `V1` is a serialized contract family; internal branded/immutable values
-remain separate and cross the boundary only through codecs.
+This catalog fixes ownership and semantic boundaries. WP-2026-003's exact fields, bounds, and
+validation ownership are defined by [Sudoku and proof contracts V1](sudoku-proof-v1.md). A name
+ending in `V1` is a serialized contract family; internal branded/immutable values remain separate
+and cross the boundary only through codecs.
 
 ## Canonical behavior identity
 
