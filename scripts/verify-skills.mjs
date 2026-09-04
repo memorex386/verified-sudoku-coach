@@ -19,6 +19,13 @@ export const canonicalSkillNames = Object.freeze([
   "steward-dependency-pr",
   "work-on-coach",
 ]);
+const neutralBranchConvention = "work/<work-package-id>-<short-topic>";
+const branchGuidanceFiles = Object.freeze([
+  "AGENTS.md",
+  "CONTRIBUTING.md",
+  "docs/runbooks/agent-workflow.md",
+  ".agents/skills/work-on-coach/SKILL.md",
+]);
 
 export function claudeAdapterBody(skillName) {
   return `\nRead [the canonical skill](../../../.agents/skills/${skillName}/SKILL.md) completely and follow it.\n`;
@@ -242,6 +249,21 @@ function validateLocalInstructionIgnore(project, errors) {
   }
 }
 
+function validateNeutralBranchGuidance(project, errors) {
+  for (const relativePath of branchGuidanceFiles) {
+    if (!validateRepositoryFile(project, relativePath, errors)) {
+      continue;
+    }
+    const content = project.readText(relativePath);
+    if (!content.includes(neutralBranchConvention)) {
+      errors.push(`${relativePath}: must use the vendor-neutral branch convention`);
+    }
+    if (content.includes("codex/<short-topic>")) {
+      errors.push(`${relativePath}: must not prescribe the retired vendor-specific branch convention`);
+    }
+  }
+}
+
 export function verifySkillsAtRoot(repositoryRoot = fromRoot()) {
   const project = repositoryReader(repositoryRoot);
   const errors = [];
@@ -250,6 +272,7 @@ export function verifySkillsAtRoot(repositoryRoot = fromRoot()) {
   validateGeminiSettings(project, errors);
   validateClaudeSkillAdapters(project, canonicalMetadata, errors);
   validateLocalInstructionIgnore(project, errors);
+  validateNeutralBranchGuidance(project, errors);
   return errors;
 }
 

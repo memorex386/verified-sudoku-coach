@@ -162,13 +162,23 @@ function createAgentDiscoveryFixture() {
   };
 
   writeFixture(".gitignore", "CLAUDE.local.md\n");
-  writeFixture("AGENTS.md", "# Canonical agent guidance\n");
+  writeFixture(
+    "AGENTS.md",
+    "# Canonical agent guidance\n\nUse `work/<work-package-id>-<short-topic>`.\n",
+  );
+  writeFixture(
+    "CONTRIBUTING.md",
+    "# Contributing\n\nUse `work/<work-package-id>-<short-topic>`.\n",
+  );
   writeFixture("CLAUDE.md", "@AGENTS.md\n");
   writeFixture(
     ".gemini/settings.json",
     `${JSON.stringify({ context: { fileName: "AGENTS.md" } }, null, 2)}\n`,
   );
-  writeFixture("docs/runbooks/agent-workflow.md", "# Agent workflow\n");
+  writeFixture(
+    "docs/runbooks/agent-workflow.md",
+    "# Agent workflow\n\nUse `work/<work-package-id>-<short-topic>`.\n",
+  );
 
   for (const skillName of canonicalSkillNames) {
     const description = `Exercise the ${skillName} workflow through canonical policy.`;
@@ -181,6 +191,9 @@ function createAgentDiscoveryFixture() {
         "---",
         "",
         "Follow the [agent workflow](../../../docs/runbooks/agent-workflow.md).",
+        skillName === "work-on-coach"
+          ? "Use `work/<work-package-id>-<short-topic>`."
+          : "",
         "",
       ].join("\n"),
     );
@@ -246,6 +259,15 @@ test("agent discovery verifier fails closed on instruction and discovery changes
     assert.ok(errors.some((error) => error.includes("canonical import")));
     assert.ok(errors.some((error) => error.includes("context.fileName")));
     assert.ok(errors.some((error) => error.includes("missing Claude skill adapter")));
+
+    writeFixture("CONTRIBUTING.md", "Use `codex/<short-topic>`.\n");
+    const branchErrors = verifySkillsAtRoot(repositoryRoot);
+    assert.ok(branchErrors.some((error) => error.includes(
+      "must use the vendor-neutral branch convention",
+    )));
+    assert.ok(branchErrors.some((error) => error.includes(
+      "must not prescribe the retired vendor-specific branch convention",
+    )));
   } finally {
     fs.rmSync(repositoryRoot, { recursive: true, force: true });
   }
