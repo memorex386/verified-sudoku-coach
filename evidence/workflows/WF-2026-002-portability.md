@@ -74,6 +74,11 @@ for this workflow record; that absence is explicit rather than replaced with a g
   and risk facts and described attempt caps without an executable state machine. Those findings
   blocked acceptance and drove the authenticated event, raw-evidence normalizer, persistent
   lineage ledger, compare-and-swap result store, and terminal-state implementation.
+- Controller review then found a remaining preclassified-eligibility path, missing assessment and
+  repair capability checks, persisted-state phase forgery, malformed-equal CAS acceptance, and no
+  explicit renewal after a repair-created head. Integration remained blocked until classification
+  moved inside the controller, state decoding failed closed, stage grants were enforced, and a new
+  exact-head work order became mandatory.
 - Review found a vendor-specific future branch example and renumbered work-package test drift.
   Machine checks now lock the neutral convention and the amended dependency graph.
 

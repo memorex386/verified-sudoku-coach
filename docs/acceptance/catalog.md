@@ -69,14 +69,20 @@ Owner: `WP-2026-002`
 A machine-readable policy and pure finite-state controller separate analysis, patch publication,
 merge, release, and production credentials. Dependency handling compares an authenticated event
 envelope with current base/head SHAs, derives manifest/diff/check risks, computes a canonical
-failure identity, and returns any prior terminal result through a result-store port before it
-classifies deterministically. Fake-store conformance proves replay behavior; a host must provide
+failure identity inside the controller, and returns any prior terminal result through a result-store
+port before it classifies deterministically. Preclassified eligibility is not an input. Fake-store
+conformance proves replay behavior; a host must provide
 durable compare-and-swap persistence before live use. Controller-owned, monotonic lineage counters
 survive repair-created SHAs and changed failure fingerprints. The controller permits at most one
 inexpensive diagnosis, one stronger escalation, one repair, and one recognized-infrastructure rerun
 before a terminal result. Every error, timeout, and attempt-exhaustion path terminates. Shadow mode
 cannot merge. Future release execution permits at most one deployment and one rollback, then verifies
 and stops; stateful/irreversible changes are ineligible.
+
+Exact state decoding rejects malformed, cross-workflow, wrong-policy, illegal-phase, and
+counter-inconsistent persisted values even when their CAS revision matches. Model and repair stages
+require separate capabilities. A repair-created head invalidates the work order; continuation
+requires a newly authenticated exact-head event and work order before CI, approval, or merge.
 
 ## VSC-EVID-003 — Portable repository handoff
 

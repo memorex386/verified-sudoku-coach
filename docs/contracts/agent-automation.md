@@ -83,11 +83,19 @@ broker's credential. A changed head produces `stale`, and a new run must receive
 
 Dependency facts and failure identity are derived, not trusted booleans. The controller compares a
 candidate with `TrustedPullRequestEventV1`, parses exact before/after manifests and bounded
-diff/check evidence, calculates sorted risk/outcome codes, then hashes that canonical value. The
+diff/check evidence, calculates sorted risk/outcome codes, then hashes that canonical value inside
+the same controller entrypoint. No caller may submit a preclassified `eligible` event. The
 controller uses a result-store port to return the prior terminal result for the same
 repository/PR/base/head/fingerprint/policy tuple. Tests use a fake store; a live trigger adapter must
 provide durable compare-and-swap persistence for both replay results and monotonic lineage counters
 before activation.
+
+Loaded state is untrusted storage input. Exact decoding rechecks workflow kind, policy digest,
+lineage, phase, attempt counters, base/head identity, and legal transition before any effect; a
+matching compare-and-swap revision cannot legitimize malformed or cross-workflow state. Model
+assessment and repair each require their own declared work-order capability. When repair publishes
+a new head, the old work order becomes stale and the controller requires a freshly authenticated,
+exact-head work order before CI, approval, or merge can continue.
 
 Extension installation is a human-reviewed supply-chain change. Manifests and entrypoints are
 version/digest pinned, license reviewed, and tested with no credentials before registration.
