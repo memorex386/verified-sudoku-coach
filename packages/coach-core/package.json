@@ -5,13 +5,19 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./src/index.ts",
-      "import": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
     }
   },
   "license": "Apache-2.0",
   "dependencies": {
     "@verified-sudoku/domain": "*",
     "@verified-sudoku/proof-engine": "*"
-  }
+  },
+  "files": [
+    "dist/*.js",
+    "dist/*.d.ts"
+  ]
 }

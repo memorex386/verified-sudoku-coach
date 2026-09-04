@@ -400,6 +400,9 @@ and file lists, validates committed API/declaration hashes, and scans browser-sa
 provider, key, Node-only, source-map, absolute-path, and undeclared-file leakage. Real pinned
 Chromium executes the portable fingerprint vectors; an undeclared local browser is not accepted.
 
+The implemented checkpoint and its explicit claim limits are documented in
+[packed consumer conformance](package-conformance.md).
+
 ## Validation ownership
 
 Zod owns exact wire shape and local collection bounds. Boundary codecs own topology-relative

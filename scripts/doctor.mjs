@@ -53,6 +53,7 @@ const expectedFoundationScripts = {
   test: "node --test scripts/validation.test.mjs && npm run test:domain && npm run test:contracts",
   "test:contracts": "tsc -b packages/boundary-codecs --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs",
   "test:domain": "tsc -b packages/domain --pretty false && node scripts/verify-domain-api.mjs && node --test packages/domain/test/domain.test.mjs",
+  "pack:smoke": "tsc -b --pretty false && node --test scripts/package-conformance.test.mjs && node scripts/verify-package-conformance.mjs",
   typecheck: "tsc -b --pretty false",
   "work-packages:check": "node scripts/generate-work-package-registry.mjs --check",
   "work-packages:generate": "node scripts/generate-work-package-registry.mjs",
@@ -74,6 +75,7 @@ const expectedVerifyCommand = [
   "npm run skills:check",
   "npm test",
   "npm run typecheck",
+  "npm run pack:smoke",
 ].join(" && ");
 
 export function validateFoundationVerificationScripts(manifest) {
