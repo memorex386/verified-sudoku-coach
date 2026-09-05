@@ -9,6 +9,10 @@ The staged implementation and its current claim limits are recorded in
 The [artifact boundary checkpoint](../contracts/fixture-artifacts.md) implements exact schemas
 and unverified artifact readers; file regeneration and proof/private acceptance remain separate.
 
+The [local tutor amendment](../product/plans/VSC-PLAN-2026-09-05.3.md) reuses generation for a
+separate local singles-only puzzle. The showcase selection and private acceptance rules below
+still govern `showcase-v1`; they are not claims made for that local puzzle.
+
 ## Seed and bounded search
 
 The generator accepts only `vsc-fixture/v1:<attempt>`, where `attempt` is canonical decimal

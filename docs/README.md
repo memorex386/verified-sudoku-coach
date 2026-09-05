@@ -5,7 +5,7 @@ without private conversation history.
 
 ## Source-of-truth order
 
-1. The [current accepted plan record](product/plans/VSC-PLAN-2026-09-04.2.md),
+1. The [current accepted plan record](product/plans/VSC-PLAN-2026-09-05.3.md),
    [product charter](product/charter.md), and [acceptance catalog](acceptance/catalog.md) define
    approved intent, value, scope, claims, and release gates.
 2. [Architecture](architecture/principles.md), [contracts](contracts/versioning.md), accepted
@@ -42,7 +42,7 @@ Gemini, and open-weight names identify adapters or provenance; none is a core au
 | --- | --- |
 | Understand the proposal | [Product charter](product/charter.md) |
 | Preview the coaching interaction | [Visual-storytelling design reference and offline walkthrough](product/concepts/coach-interaction.md) — scripted concept, not implementation evidence |
-| Resolve the accepted plan version | [Current plan amendment](product/plans/VSC-PLAN-2026-09-04.2.md) and its linked predecessor |
+| Resolve the accepted plan version | [Local tutor amendment](product/plans/VSC-PLAN-2026-09-05.3.md) and its linked predecessor |
 | Understand system boundaries | [System](architecture/system.md) and [trust boundaries](architecture/trust-boundaries.md) |
 | Add an agent/provider or automation | [Interoperability](architecture/interoperability.md), [automation contracts](contracts/agent-automation.md), and ADR-0007/0008 |
 | Understand proof scope and ordering | [Proof policy](architecture/proof-policy.md) |

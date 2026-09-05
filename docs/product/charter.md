@@ -1,6 +1,6 @@
 # Product charter
 
-- Accepted plan: [VSC-PLAN-2026-09-03.1](plans/VSC-PLAN-2026-09-03.1.md)
+- Accepted plan: [VSC-PLAN-2026-09-05.3](plans/VSC-PLAN-2026-09-05.3.md)
 - Status authority: Generated [work-package registry](../work-packages/)
 - Evidence: Planned / unmeasured
 - Audience: Invite-only cohort of 8–12 adult hiring reviewers, engineers, or recruiters; public
@@ -19,7 +19,14 @@ the timing, question, and depth of a calm Socratic lesson. Demonstrate the engin
 clearly as the eventual experience: explicit boundaries, versioned prompts/contracts, adversarial
 evaluation, privacy controls, failure handling, and honest evidence.
 
-## Planned first experience
+## Immediate milestone
+
+Build the [local playable tutor](plans/VSC-PLAN-2026-09-05.3.md) first: one generated unique puzzle,
+verified naked/hidden singles, explicit progressive hints and the saved bottom-sheet interaction.
+Try the deterministic experience before adding one on-demand model. The broader release below
+is deferred and retains its acceptance gates; local play is not a pilot or production release.
+
+## Deferred release experience
 
 - One independently generated 9x9 Classic Sudoku showcase targeting approximately 20 minutes and
   exposing locked candidates plus a naked pair early; timing remains unmeasured until observed.

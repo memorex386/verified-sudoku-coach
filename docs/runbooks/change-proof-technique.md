@@ -11,7 +11,10 @@ This runbook governs any detector, verifier, application rule, or canonical orde
    proof may be applied.
 3. Add generated positive and near-miss examples, then tamper every proof field. Cover stale board,
    empty/no-op elimination, transformation invariance, path replay, and deterministic ordering.
-4. Regenerate the public fixture from its seed. Run the private corpus only through the exact
+4. Regenerate the public fixture from its seed. The accepted
+   [local tutor amendment](../product/plans/VSC-PLAN-2026-09-05.3.md) allows only its isolated
+   naked/hidden-single milestone to proceed using generated proof tests before private conformance.
+   For private integration or full-engine/showcase acceptance, run the private corpus only through the exact
    aggregate conformance command recorded in the active private work package; if that command is
    absent, stop and refine the package. Never copy puzzle rows or private source here.
 5. Treat any frozen-baseline change as a ruleset/version decision, including a higher solve count.
