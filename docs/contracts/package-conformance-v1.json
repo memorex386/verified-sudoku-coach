@@ -14,8 +14,8 @@
     {
       "name": "@verified-sudoku/domain",
       "version": "0.0.0",
-      "sha256": "bdc508bb7da2ecd5fadb7bcaee1c34c8e0c7ed48c7e14dc7e2a970797d6684cd",
-      "integrity": "sha512-Q4QxMcUrxYE60Rr60KIt/jR1CiaFAdTR3ssJIybWIKPCJ8CMyNeTRs511U8k7i3JNJiD9rTD/0RBxOtQud7hNA==",
+      "sha256": "f5a8acb8b7a07549e0afa4c5f47293a869c6cb38b4bd43d5fc49682f2851aa36",
+      "integrity": "sha512-FMBoG2ZYDfeCThg08i4BmjkxJmyblUhnPgCddm47aoFUI615XJ+cAY6XoLePUZW5ggnXkFrnfaFRkvSDL70M9Q==",
       "files": [
         {
           "name": "package/dist/canonical.d.ts",
@@ -31,7 +31,7 @@
         },
         {
           "name": "package/dist/hash.js",
-          "sha256": "f91bf049b64e390c33370b27cf9043fd9f57e1d6435ff04a8d253a1bf611a87e"
+          "sha256": "5984020289aa1df49135f3dc1efe8fd9d9e7365750fffe95141bdad4bf76cc5d"
         },
         {
           "name": "package/dist/index.d.ts",
@@ -66,8 +66,8 @@
     {
       "name": "@verified-sudoku/contracts",
       "version": "0.0.0",
-      "sha256": "1c0f90f9442a7aadf84c2f0cab6135872512e70385b3429af5c6555f927250e8",
-      "integrity": "sha512-Hv2J5RURIYgi8KNQgXM9M+aaityR6CAdoUi87hn4I+b2yak05He+x3XaJX+8IFGtzIBwzAmsjjCfyTQzJHu7rQ==",
+      "sha256": "4bdcca65a4515a85b9473b79d8287faa97d642cb74d7ec8521712344041135ca",
+      "integrity": "sha512-oSuDcjXMqFQXAwfRoQlFhOUIsUfrVZRnLPi086ShvEkAsUuFyx+vzFAWQ57oqMfqS9xrJnSDlHZeyqEqn6dpwA==",
       "files": [
         {
           "name": "package/dist/board.d.ts",
@@ -78,12 +78,20 @@
           "sha256": "e51c6987226b7e64d8377abf148600d8b0d188a54c08dbbf352b53e356c8156f"
         },
         {
+          "name": "package/dist/fixtures.d.ts",
+          "sha256": "52c0c0fa4e07c70a563a2b4e8baf6d69184f16da0540ccf8c1b891bb6df34ba8"
+        },
+        {
+          "name": "package/dist/fixtures.js",
+          "sha256": "801fb68a236bee947d46885ebea8c42ecfcc163ac3eccbd66761223cd10ddc7f"
+        },
+        {
           "name": "package/dist/index.d.ts",
-          "sha256": "cebc1b8f641abe9aa2690cf2b83043ed3808702aaa1192f1ae2c0c283ae3124e"
+          "sha256": "ba7b4e86019d328b3ce5ffdf0fd950f8ee9b70f6ef4083a0a9a41bfaa8436518"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "156d54fe3c0a68879ddc9be14b2608ccb347a10d00f5dbaa5dc5c7183a909c4d"
+          "sha256": "5d76a9cd9bca152c1913ea78f9cf4303c9bbec3443c131399d11f7b2039ac940"
         },
         {
           "name": "package/dist/proof.d.ts",
@@ -150,8 +158,8 @@
     {
       "name": "@verified-sudoku/boundary-codecs",
       "version": "0.0.0",
-      "sha256": "ca01c8e12e184ef9eae9266f763290004cea940e32bd243c72104b1dfd24e783",
-      "integrity": "sha512-gFreF+EgZDhzhW52+ZSOStynEi+Bg+BlcI/wyHFECY2wxs2wnx26Nt0m5XcsUeY8TE5d6VbHQuLwBNPFvuSTNw==",
+      "sha256": "0744b782ef2b439680c375c1bed292ce275d1f48a8e53262c846f751c2b18c5d",
+      "integrity": "sha512-Ht3QO8YH9dC4tpzFgyqbt6tiu/QVdw08UrgAgli228bNEZLHnqgLxpI1vr3+XEb3ED16QzOGJrtGLnP7tgcfzw==",
       "files": [
         {
           "name": "package/dist/board.d.ts",
@@ -162,20 +170,28 @@
           "sha256": "10c4061aba25e849f3e6d3799689e72aec983c36804c27dcf41f11995a5cdde1"
         },
         {
+          "name": "package/dist/fixtures.d.ts",
+          "sha256": "7dcd28999f44e8b81c7f035f548612fab659abdbdedee0b2382acefed20163b2"
+        },
+        {
+          "name": "package/dist/fixtures.js",
+          "sha256": "f15045657e0d617af6b99f7408eeb2d0642fc169fdd11746cc3b05101c697320"
+        },
+        {
           "name": "package/dist/index.d.ts",
-          "sha256": "ca6ae906309ba5c259b64a00c48483aec781b7a57cd57c918431a84086ca35d3"
+          "sha256": "7859bd9ca3f17c87faf0821e323467f90d0bca6a5ea53804d368814afc4f41f4"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "ea26f6030fccde482be647e0f10b6ab9332559a69658a206b28cb7fc7f20ffd9"
+          "sha256": "f2fd9d7c0acabac9f53c5b4cffb2f39cb44b0e397c7623a9c2c1ae784971c9e4"
         },
         {
           "name": "package/dist/json.d.ts",
-          "sha256": "69a5d2784175c972ee6304b62438fb5f17f6ef28dbcfb9b1fd8ccb43919df58b"
+          "sha256": "1a118da02a352fce6da6a6f36704beb017f62058682dce5ae2c1cf90577b1547"
         },
         {
           "name": "package/dist/json.js",
-          "sha256": "11937003692b700b0bc97677dfe8c84e29a321d9406f3256ea806e521a388847"
+          "sha256": "bfdf9dc8b09781bb3ca23af91ff3c57941082c230690d9741147d403bcc93cf6"
         },
         {
           "name": "package/dist/proof.d.ts",
@@ -256,6 +272,12 @@
         "logical": "sha256:68559a4ee5e9e58261545e872298c1fa98b1955f27fa17b1dc7f49ed91ea00b4"
       }
     ],
+    "artifactFraming": [
+      "unverified",
+      "unverified",
+      "unverified"
+    ],
+    "collisionProjection": "sha256:c87402d9931cd9ceaed839bdfe4a6ff284eecfb53658bb1a1b5ccd6c07e87f9c",
     "codecRoundTrip": "sha256:a220bc6216095dd8ac31997b9c3cb4bba2f11e94ac107aa161be005d9b84243f",
     "proofFraming": "unverified",
     "exports": [
@@ -278,12 +300,15 @@
         "behaviorIdentityV1Schema",
         "boardActionV1Schema",
         "boardStateV1Schema",
+        "fixtureManifestV1Schema",
+        "fixtureRegistryV1Schema",
         "proofPathV1Schema",
         "proofStepV1Schema",
         "puzzleDefinitionV1Schema",
         "replayArtifactV1Schema",
         "topologyV1Schema",
         "traceEnvelopeV1Schema",
+        "uniquenessReceiptV1Schema",
         "unitRefV1Schema"
       ],
       [
@@ -291,10 +316,13 @@
         "decodeBoard",
         "decodeBoardAction",
         "decodePuzzle",
+        "decodeUnverifiedFixtureManifest",
+        "decodeUnverifiedFixtureRegistry",
         "decodeUnverifiedProofPath",
         "decodeUnverifiedProofStep",
         "decodeUnverifiedReplay",
         "decodeUnverifiedTrace",
+        "decodeUnverifiedUniquenessReceipt",
         "encodeBoard",
         "encodePuzzle"
       ],

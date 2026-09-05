@@ -80,3 +80,7 @@ proof-bearing success values still require independent proof verification.
 
 Packed Node and Angular/Chromium compatibility is now checked separately by
 [packed consumer conformance](package-conformance.md), without expanding proof authority.
+
+The [fixture artifact checkpoint](fixture-artifacts.md) adds three schemas and canonical-file
+decoders. Their receipts, manifests and registries remain explicitly unverified until the separate
+solver, artifact and proof checks run.

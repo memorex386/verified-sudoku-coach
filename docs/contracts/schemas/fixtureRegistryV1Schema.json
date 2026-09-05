@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "string",
+      "const": "vsc.fixture-registry"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "fixtures": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string",
+              "const": "fixtures/classic-9x9/showcase-v1/manifest.json"
+            },
+            "hash": {
+              "type": "string",
+              "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+            }
+          },
+          "required": [
+            "path",
+            "hash"
+          ],
+          "additionalProperties": false
+        }
+      ],
+      "items": false,
+      "minItems": 1,
+      "maxItems": 1
+    }
+  },
+  "required": [
+    "schemaId",
+    "version",
+    "fixtures"
+  ],
+  "additionalProperties": false
+}

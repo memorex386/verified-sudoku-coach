@@ -199,6 +199,48 @@ Fixture-tooling validation on Windows, 2026-09-04:
 - `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
 - `git diff --check`: PASS — no whitespace errors.
 
+The maintainer resumed the authorized merge after pausing for a progress review.
+[PR #10](https://github.com/memorex386/verified-sudoku-coach/pull/10) merged at
+`1b0d0426de4ce48df822143d810e0025bb37adb2`, preserving reviewed head
+`e1a1b7841a17db02f81e833b43da0365a17580d1` after Windows, Ubuntu, dependency review and CodeQL passed.
+The fixture transform checkpoint implements all fourteen 9x9 grid transforms and the public
+exact/digit-D4 key protocol. It corrects rejection of the pre-specified `fixture-digit-d4` hash
+projection without changing existing hashes. No private comparison or proof transformation is claimed.
+
+Fixture-transform validation on Windows, 2026-09-05:
+
+- `npm ci --ignore-scripts`: PASS — unchanged dependencies, zero reported vulnerabilities.
+- `npm run test:fixture-tools`: PASS — sixteen tests, including exact transform order, 28
+  transformed grids checked with exact cover, 32 digit/D4 cases and independent hash vectors.
+- `npm run test:domain`: PASS — fourteen tests and unchanged declaration snapshot; numeric-name
+  and trailing-whitespace regressions cover the narrow hash-name correction.
+- `npm run pack:smoke`: PASS — updated domain archive integrity and a new matching Node/Chromium
+  collision-projection result; existing board/logical/codec fingerprints remain unchanged.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 163 tests, strict
+  compilation, API/schema snapshots and every foundation/package gate.
+- `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
+Historical artifact-branch evidence: PR #10 subsequently merged at `1b0d0426de4ce48df822143d810e0025bb37adb2`, preserving head
+`e1a1b7841a17db02f81e833b43da0365a17580d1`. At that checkpoint, the fixture-transform work was in open
+[PR #11](https://github.com/memorex386/verified-sudoku-coach/pull/11), reviewed head
+`9fc2a28ca6c8c5d5e932d6048f7ac4a2340405b6`; its merge was not yet authorized.
+The [fixture artifact boundary checkpoint](../contracts/fixture-artifacts.md) proceeds independently
+from main after PR #10: exact schemas, canonical-file decoders and compatibility evidence for
+receipts/manifests/registry, all explicitly unverified. No showcase artifact is produced.
+
+Fixture-artifact boundary validation on Windows, 2026-09-05:
+
+- `npm ci --ignore-scripts`: PASS — unchanged dependencies, zero reported vulnerabilities.
+- `npm run test:contracts`: PASS — 28 tests, thirteen JSON Schema snapshots, checked API/export
+  snapshots and original board/fixture compatibility examples.
+- `npm run pack:smoke`: PASS — repeatable tarballs and all three artifact decoders exercised in
+  clean Node and strict Angular AOT/pinned Chromium consumers, retaining unverified results.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 165 tests, strict
+  compilation and every foundation/package gate. This independent branch excludes PR #11's tests.
+- `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -217,7 +259,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Review the coach design-reference documentation PR; keep implementation PRs #11 and #12 separate and proof-technique work gated on private conformance evidence.
+- Complete the authorized design-reference merge, then implement immutable player board actions in a fresh WP-2026-003 worktree.
 
 ## Checkpoints
 
@@ -265,6 +307,27 @@ not count as implementation of those services.
 - 2026-09-04 — Full local CI-base-ref verification passed all 156 tests and existing package
   conformance. The fixture-tooling slice is ready for its review PR; it does not establish
   showcase selection, proof soundness, private collision clearance or private corpus parity.
+- 2026-09-05 — Maintainer resumed WP-2026-003. Merged PR #10's checked head and created a fresh
+  worktree from updated main. Implemented fourteen ordered fixture grid transforms, digit/D4
+  normalization and public collision-key calculations. Corrected the domain hash-name guard for
+  the already-specified `fixture-digit-d4` projection, retaining rejection of other numeric names
+  and trailing whitespace. No private material, technique code or live-product behavior changed.
+- 2026-09-05 — Full local CI-base-ref verification passed all 163 tests, unchanged API/schema
+  declarations and updated packed Node/Chromium evidence. The fixture-transform implementation
+  stops at its review PR; private collision clearance and proof-technique gates remain unfinished.
+- 2026-09-05 — Continued the next independent WP-2026-003 slice from main after PR #10, leaving
+  PR #11 open without merge authorization. Implemented exact receipt/manifest/registry schemas,
+  bounded canonical-file decoders returning unverified claims, compatibility snapshots and
+  adversarial tests. No private data, technique verifier, solver acceptance or live-product change
+  was introduced. Integrating both open slices must preserve their checkpoints and rerun combined
+  snapshot/verification checks.
+- 2026-09-05 — Full local CI-base-ref verification passed all 165 tests on this independent
+  artifact-contract branch, plus matching Node/Chromium and regenerated API/schema compatibility
+  evidence. It stops at its review PR; no uniqueness/proof acceptance or private clearance is claimed.
+- 2026-09-05 — Maintainer authorized PRs #11, #12 and #13. PR #11 merged at
+  `efb37dceeed46044269927d523c7d71aeb9a343d`. Reconciled both consumer probes and appended
+  both implementation histories; combined package evidence is regenerated before PR #12 merges.
+- 2026-09-05 — Combined PR #11/#12 validation passed: all 172 tests, strict compilation, regenerated packed Node/Angular/Chromium snapshot, registry and whitespace checks. Await fresh CI on this reconciled head before the authorized merge.
 - 2026-09-05 — At the maintainer's explicit request, paused implementation to preserve the
   [coach interaction concept](../product/concepts/coach-interaction.md) and portable offline
   walkthrough for future agents. This documentation-only handoff is outside the package's proof
@@ -278,3 +341,7 @@ not count as implementation of those services.
   offline concept loading, synchronized clues, eight slashes, pause, answer/retry, conflict
   recovery, 320/360/736px light/dark layouts, and reduced-motion completion. These are prototype
   checks, not accessibility certification, proof acceptance, or measured coaching outcomes.
+- 2026-09-05 — Reconciled the design handoff with authorized implementation PRs #11/#12,
+  retaining all prior checkpoints and the combined package snapshot. The next core slice applies
+  player board actions; it does not authorize techniques before private conformance is available.
+- 2026-09-05 — Reconciled design-reference validation passed all 172 tests and packed Node/Angular/Chromium checks with the PR #12 integration head as base. Registry and whitespace checks passed; no runtime code was added by the design reference.

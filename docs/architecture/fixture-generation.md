@@ -6,6 +6,8 @@ model quality.
 
 The staged implementation and its current claim limits are recorded in
 [fixture tooling](fixture-tools.md). That checkpoint is not an accepted showcase.
+The [artifact boundary checkpoint](../contracts/fixture-artifacts.md) implements exact schemas
+and unverified artifact readers; file regeneration and proof/private acceptance remain separate.
 
 ## Seed and bounded search
 
