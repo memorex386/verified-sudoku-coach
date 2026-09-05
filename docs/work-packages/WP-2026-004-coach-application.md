@@ -40,6 +40,10 @@ prompts' interface documentation without provider prompts, and directly affected
 
 ## Affected interfaces
 
+Design input: [coach interaction concept](../product/concepts/coach-interaction.md), including
+progressive guidance and synchronized verified-reference storytelling. It does not change this
+package's Draft status, pure-core boundary, or acceptance contract.
+
 `CoachObservationV1`, `ObserverDecisionV1`, `TeacherPlanV1`, `LessonViewV1`,
 `CoachTurnResultV1`, `CoachErrorV1`, model/repository/budget/trace/telemetry/clock/ID/catalog ports,
 `BehaviorIdentityV1`, `TraceEnvelopeV1`, commands, events, effects, `decide`, and `evolve`.

@@ -45,6 +45,11 @@ and private docs. This file receives metadata only.
 
 ## Affected interfaces
 
+Design input: [coach interaction concept](../product/concepts/coach-interaction.md) and its offline
+walkthrough preserve the maintainer-reviewed bottom sheet and visual-storytelling direction.
+Use them when specifying presentation; they are not private source, release evidence, or authority
+to expose coaching in ordinary game routes. This package remains Draft.
+
 `CoachFacade`, board interaction/lifecycle port, mutable-game to immutable-public mapper, Coach HTTP
 client, `HintEngine` compatibility adapter, dedicated session storage/routes, TTS/accessibility UI,
 recap/survey, allowlisted analytics, and the information-page replay-link configuration.

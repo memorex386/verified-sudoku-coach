@@ -8,7 +8,7 @@ base_branch: main
 accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-ARCH-002, VSC-ARCH-003, VSC-PROOF-001, VSC-PROOF-002
-updated: 2026-09-04
+updated: 2026-09-05
 ---
 
 # Contracts and deterministic proof engine
@@ -217,7 +217,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Review the fixture-tooling implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
+- Review the coach design-reference documentation PR; keep implementation PRs #11 and #12 separate and proof-technique work gated on private conformance evidence.
 
 ## Checkpoints
 
@@ -265,3 +265,16 @@ not count as implementation of those services.
 - 2026-09-04 — Full local CI-base-ref verification passed all 156 tests and existing package
   conformance. The fixture-tooling slice is ready for its review PR; it does not establish
   showcase selection, proof soundness, private collision clearance or private corpus parity.
+- 2026-09-05 — At the maintainer's explicit request, paused implementation to preserve the
+  [coach interaction concept](../product/concepts/coach-interaction.md) and portable offline
+  walkthrough for future agents. This documentation-only handoff is outside the package's proof
+  implementation scope; it does not add coaching to core or start later Draft packages. PR #10
+  is merged; independent implementation PRs #11 and #12 remain open and are not included here.
+  Preserve their checkpoints when reconciling those branches with this documentation change.
+- 2026-09-05 — Design-reference validation: `npm ci --ignore-scripts`,
+  `npm run work-packages:generate`, `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main`,
+  and `git diff --check` passed. All 156 existing tests and packed Node/Angular/Chromium
+  conformance passed on the main-after-PR-10 base. Separate local Chromium checks passed for
+  offline concept loading, synchronized clues, eight slashes, pause, answer/retry, conflict
+  recovery, 320/360/736px light/dark layouts, and reduced-motion completion. These are prototype
+  checks, not accessibility certification, proof acceptance, or measured coaching outcomes.
