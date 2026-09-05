@@ -54,7 +54,7 @@ const expectedFoundationScripts = {
   "test:contracts": "tsc -b packages/boundary-codecs --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs packages/boundary-codecs/test/fixture-contracts.test.mjs",
   "test:domain": "tsc -b packages/domain --pretty false && node scripts/verify-domain-api.mjs && node --test packages/domain/test/domain.test.mjs",
   "pack:smoke": "tsc -b --pretty false && node --test scripts/package-conformance.test.mjs && node scripts/verify-package-conformance.mjs",
-  "test:fixture-tools": "tsc -b packages/testing --pretty false && node --test packages/testing/test/fixtures.test.mjs",
+  "test:fixture-tools": "tsc -b packages/testing --pretty false && node --test packages/testing/test/fixtures.test.mjs packages/testing/test/transforms.test.mjs",
   typecheck: "tsc -b --pretty false",
   "work-packages:check": "node scripts/generate-work-package-registry.mjs --check",
   "work-packages:generate": "node scripts/generate-work-package-registry.mjs",

@@ -34,6 +34,11 @@ DTO adapters must still enforce the tighter per-contract byte/depth bounds. `sha
 `fingerprint` adds the named V1 zero-byte prefix. Notes/revision affect full board-state identity,
 not board or initial logical identity. Changed entries rebuild initial candidates.
 
+Projection names are lowercase alphabetic words separated by hyphens, plus the exact
+`fixture-digit-d4` name already specified by the fixture protocol. Other numeric names and trailing
+whitespace remain rejected. Adding this previously rejected name changes no existing fingerprint
+bytes; fixture-transform tests and packed Node/Chromium consumers cover the correction.
+
 The [API snapshot](domain-api-v1.json) records every generated declaration and a declaration digest.
 `npm run test:domain` builds the package, checks that snapshot, then tests standard SHA vectors,
 Node crypto agreement, canonical rejection, topology properties, candidate-oracle agreement,

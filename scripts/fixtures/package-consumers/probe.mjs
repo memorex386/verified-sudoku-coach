@@ -51,6 +51,7 @@ export function probe() {
   const canonical = domain.canonicalJson({ z: [1, null, true], a: "\n\u0000" });
   check(canonical === '{"a":"\\n\\u0000","z":[1,null,true]}');
   return { canonical, hashes, vectors, artifactFraming: artifacts.map((result) => result.value.verification),
+    collisionProjection: domain.fingerprint("fixture-digit-d4", "0".repeat(81)),
     codecRoundTrip: board.value.board.stateFingerprint,
     proofFraming: framed.value.verification, exports: [domain, contracts, codecs, proof, coach]
     .map((value) => Object.keys(value).filter((key) => key !== "__esModule").sort()) };
