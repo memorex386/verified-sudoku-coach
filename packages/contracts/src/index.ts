@@ -3,3 +3,5 @@ export { topologyV1Schema, behaviorIdentityV1Schema, puzzleDefinitionV1Schema, b
 export { unitRefV1Schema, proofStepV1Schema, proofPathV1Schema,
   type UnitRefV1, type ProofStepV1, type ProofPathV1 } from "./proof.js";
 export { traceEnvelopeV1Schema, replayArtifactV1Schema, type TraceEnvelopeV1, type ReplayArtifactV1 } from "./trace.js";
+export { uniquenessReceiptV1Schema, fixtureManifestV1Schema, fixtureRegistryV1Schema,
+  type UniquenessReceiptV1, type FixtureManifestV1, type FixtureRegistryV1 } from "./fixtures.js";

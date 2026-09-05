@@ -96,6 +96,7 @@ try {
     const fixture = fromRoot("scripts/fixtures/package-consumers");
     fs.copyFileSync(path.join(fixture, "probe.mjs"), path.join(consumer, "probe.mjs"));
     fs.writeFileSync(path.join(consumer, "examples.mjs"), `export const examples = ${JSON.stringify(readJson("docs/contracts/examples/board-proof-v1.json"))};\n`);
+    fs.writeFileSync(path.join(consumer, "fixture-examples.mjs"), `export const fixtureExamples = ${JSON.stringify(readJson("docs/contracts/examples/fixture-artifacts-v1.json"))};\n`);
     // Both require() and import() must reject deep package paths in the installed consumer.
     fs.writeFileSync(path.join(consumer, "exports.cjs"), `const assert = require('node:assert/strict');
       (async () => { for (const name of ${JSON.stringify(packages.map((p) => p.manifest.name))}) {

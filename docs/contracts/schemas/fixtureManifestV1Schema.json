@@ -1,0 +1,360 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "string",
+      "const": "vsc.fixture-manifest"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "fixtureId": {
+      "type": "string",
+      "const": "showcase-v1"
+    },
+    "fixtureVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "classification": {
+      "type": "string",
+      "const": "public-synthetic"
+    },
+    "license": {
+      "type": "string",
+      "const": "Apache-2.0"
+    },
+    "seed": {
+      "type": "string",
+      "pattern": "^vsc-fixture\\/v1:(?:0|[1-9][0-9]{0,5})(?![\\s\\S])"
+    },
+    "attempt": {
+      "maximum": 999999,
+      "$ref": "#/$defs/__schema0"
+    },
+    "searchStart": {
+      "type": "number",
+      "const": 0
+    },
+    "searchEnd": {
+      "type": "number",
+      "const": 999999
+    },
+    "generatorId": {
+      "type": "string",
+      "const": "classic-symmetric"
+    },
+    "generatorVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "generatorSourceDigest": {
+      "$ref": "#/$defs/__schema1"
+    },
+    "prng": {
+      "type": "string",
+      "const": "xoshiro128-starstar/v1"
+    },
+    "seedDerivation": {
+      "type": "string",
+      "const": "sha256-le128/v1"
+    },
+    "topology": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "classic"
+        },
+        "size": {
+          "type": "number",
+          "const": 9
+        },
+        "boxRows": {
+          "type": "number",
+          "const": 3
+        },
+        "boxColumns": {
+          "type": "number",
+          "const": 3
+        }
+      },
+      "required": [
+        "type",
+        "size",
+        "boxRows",
+        "boxColumns"
+      ],
+      "additionalProperties": false
+    },
+    "givensCount": {
+      "type": "integer",
+      "minimum": 27,
+      "maximum": 30,
+      "$ref": "#/$defs/__schema0"
+    },
+    "puzzle": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "const": "fixtures/classic-9x9/showcase-v1/puzzle.json"
+        },
+        "hash": {
+          "$ref": "#/$defs/__schema1"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ],
+      "additionalProperties": false
+    },
+    "uniquenessReceipt": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "const": "fixtures/classic-9x9/showcase-v1/uniqueness-receipt.json"
+        },
+        "hash": {
+          "$ref": "#/$defs/__schema1"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ],
+      "additionalProperties": false
+    },
+    "solverVersion": {
+      "type": "string",
+      "const": "1.0.0"
+    },
+    "solutionCount": {
+      "type": "number",
+      "const": 1
+    },
+    "rulesetVersion": {
+      "type": "string",
+      "const": "classic-six/v1"
+    },
+    "proofEngineVersion": {
+      "type": "string",
+      "maxLength": 64,
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?(?![\\s\\S])"
+    },
+    "proofPath": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "const": "fixtures/classic-9x9/showcase-v1/proof-path.json"
+        },
+        "hash": {
+          "$ref": "#/$defs/__schema1"
+        }
+      },
+      "required": [
+        "path",
+        "hash"
+      ],
+      "additionalProperties": false
+    },
+    "outcome": {
+      "type": "string",
+      "const": "solved"
+    },
+    "stepCount": {
+      "$ref": "#/$defs/__schema2"
+    },
+    "techniqueCounts": {
+      "type": "object",
+      "properties": {
+        "naked-single": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "hidden-single": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "locked-pointing": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "locked-claiming": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "naked-pair": {
+          "$ref": "#/$defs/__schema2"
+        },
+        "hidden-pair": {
+          "$ref": "#/$defs/__schema2"
+        }
+      },
+      "required": [
+        "naked-single",
+        "hidden-single",
+        "locked-pointing",
+        "locked-claiming",
+        "naked-pair",
+        "hidden-pair"
+      ],
+      "additionalProperties": false
+    },
+    "firstLockedStep": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "$ref": "#/$defs/__schema0"
+    },
+    "firstNakedPairStep": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 20,
+      "$ref": "#/$defs/__schema0"
+    },
+    "selectionFilter": {
+      "type": "string",
+      "const": "early-locked-pair/v1"
+    },
+    "transformSuite": {
+      "type": "string",
+      "const": "classic-transforms/v1"
+    },
+    "familyId": {
+      "type": "string",
+      "const": "showcase-v1"
+    },
+    "partition": {
+      "type": "string",
+      "const": "showcase"
+    },
+    "transforms": {
+      "minItems": 14,
+      "maxItems": 14,
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/__schema3"
+      }
+    },
+    "collisionScheme": {
+      "type": "string",
+      "const": "digit-d4/v1"
+    },
+    "publicExactKeyHash": {
+      "$ref": "#/$defs/__schema1"
+    },
+    "publicNormalizedKeyHash": {
+      "$ref": "#/$defs/__schema1"
+    },
+    "limitations": {
+      "type": "array",
+      "prefixItems": [
+        {
+          "type": "string",
+          "const": "nonuniform"
+        },
+        {
+          "type": "string",
+          "const": "selection-biased"
+        },
+        {
+          "type": "string",
+          "const": "solve-time-unmeasured"
+        }
+      ],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    }
+  },
+  "required": [
+    "schemaId",
+    "version",
+    "fixtureId",
+    "fixtureVersion",
+    "classification",
+    "license",
+    "seed",
+    "attempt",
+    "searchStart",
+    "searchEnd",
+    "generatorId",
+    "generatorVersion",
+    "generatorSourceDigest",
+    "prng",
+    "seedDerivation",
+    "topology",
+    "givensCount",
+    "puzzle",
+    "uniquenessReceipt",
+    "solverVersion",
+    "solutionCount",
+    "rulesetVersion",
+    "proofEngineVersion",
+    "proofPath",
+    "outcome",
+    "stepCount",
+    "techniqueCounts",
+    "firstLockedStep",
+    "firstNakedPairStep",
+    "selectionFilter",
+    "transformSuite",
+    "familyId",
+    "partition",
+    "transforms",
+    "collisionScheme",
+    "publicExactKeyHash",
+    "publicNormalizedKeyHash",
+    "limitations"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "__schema1": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+    },
+    "__schema2": {
+      "maximum": 810,
+      "$ref": "#/$defs/__schema0"
+    },
+    "__schema3": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "enum": [
+            "d4-0",
+            "d4-1",
+            "d4-2",
+            "d4-3",
+            "d4-4",
+            "d4-5",
+            "d4-6",
+            "d4-7",
+            "digit-cycle",
+            "band-swap",
+            "stack-swap",
+            "row-swap",
+            "column-swap",
+            "composition"
+          ]
+        },
+        "puzzleFingerprint": {
+          "$ref": "#/$defs/__schema1"
+        }
+      },
+      "required": [
+        "id",
+        "puzzleFingerprint"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

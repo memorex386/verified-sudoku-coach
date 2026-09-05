@@ -221,6 +221,26 @@ Fixture-transform validation on Windows, 2026-09-05:
 - `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
 - `git diff --check`: PASS — no whitespace errors.
 
+Historical artifact-branch evidence: PR #10 subsequently merged at `1b0d0426de4ce48df822143d810e0025bb37adb2`, preserving head
+`e1a1b7841a17db02f81e833b43da0365a17580d1`. At that checkpoint, the fixture-transform work was in open
+[PR #11](https://github.com/memorex386/verified-sudoku-coach/pull/11), reviewed head
+`9fc2a28ca6c8c5d5e932d6048f7ac4a2340405b6`; its merge was not yet authorized.
+The [fixture artifact boundary checkpoint](../contracts/fixture-artifacts.md) proceeds independently
+from main after PR #10: exact schemas, canonical-file decoders and compatibility evidence for
+receipts/manifests/registry, all explicitly unverified. No showcase artifact is produced.
+
+Fixture-artifact boundary validation on Windows, 2026-09-05:
+
+- `npm ci --ignore-scripts`: PASS — unchanged dependencies, zero reported vulnerabilities.
+- `npm run test:contracts`: PASS — 28 tests, thirteen JSON Schema snapshots, checked API/export
+  snapshots and original board/fixture compatibility examples.
+- `npm run pack:smoke`: PASS — repeatable tarballs and all three artifact decoders exercised in
+  clean Node and strict Angular AOT/pinned Chromium consumers, retaining unverified results.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 165 tests, strict
+  compilation and every foundation/package gate. This independent branch excludes PR #11's tests.
+- `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -239,7 +259,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Review the fixture-transform implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
+- Complete combined validation and CI for authorized PR #12, then integrate the authorized design-reference PR #13.
 
 ## Checkpoints
 
@@ -295,3 +315,16 @@ not count as implementation of those services.
 - 2026-09-05 — Full local CI-base-ref verification passed all 163 tests, unchanged API/schema
   declarations and updated packed Node/Chromium evidence. The fixture-transform implementation
   stops at its review PR; private collision clearance and proof-technique gates remain unfinished.
+- 2026-09-05 — Continued the next independent WP-2026-003 slice from main after PR #10, leaving
+  PR #11 open without merge authorization. Implemented exact receipt/manifest/registry schemas,
+  bounded canonical-file decoders returning unverified claims, compatibility snapshots and
+  adversarial tests. No private data, technique verifier, solver acceptance or live-product change
+  was introduced. Integrating both open slices must preserve their checkpoints and rerun combined
+  snapshot/verification checks.
+- 2026-09-05 — Full local CI-base-ref verification passed all 165 tests on this independent
+  artifact-contract branch, plus matching Node/Chromium and regenerated API/schema compatibility
+  evidence. It stops at its review PR; no uniqueness/proof acceptance or private clearance is claimed.
+- 2026-09-05 — Maintainer authorized PRs #11, #12 and #13. PR #11 merged at
+  `efb37dceeed46044269927d523c7d71aeb9a343d`. Reconciled both consumer probes and appended
+  both implementation histories; combined package evidence is regenerated before PR #12 merges.
+- 2026-09-05 — Combined PR #11/#12 validation passed: all 172 tests, strict compilation, regenerated packed Node/Angular/Chromium snapshot, registry and whitespace checks. Await fresh CI on this reconciled head before the authorized merge.

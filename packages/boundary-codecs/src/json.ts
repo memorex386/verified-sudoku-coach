@@ -7,6 +7,7 @@ export type DeepReadonly<T> = T extends readonly (infer U)[] ? readonly DeepRead
 export const limits = Object.freeze({
   identity: [4096, 3], action: [4096, 5], puzzle: [16384, 6], board: [32768, 6],
   step: [32768, 8], path: [2097152, 10], trace: [8388608, 12], replay: [8388608, 12],
+  receipt: [1024, 2], fixtureManifest: [32768, 5], fixtureRegistry: [1024, 3],
 } as const);
 export type ContractKind = keyof typeof limits;
 class DecodeFailure extends Error {
