@@ -8,7 +8,7 @@ base_branch: main
 accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-ARCH-002, VSC-ARCH-003, VSC-PROOF-001, VSC-PROOF-002
-updated: 2026-09-04
+updated: 2026-09-05
 ---
 
 # Contracts and deterministic proof engine
@@ -199,6 +199,28 @@ Fixture-tooling validation on Windows, 2026-09-04:
 - `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
 - `git diff --check`: PASS — no whitespace errors.
 
+The maintainer resumed the authorized merge after pausing for a progress review.
+[PR #10](https://github.com/memorex386/verified-sudoku-coach/pull/10) merged at
+`1b0d0426de4ce48df822143d810e0025bb37adb2`, preserving reviewed head
+`e1a1b7841a17db02f81e833b43da0365a17580d1` after Windows, Ubuntu, dependency review and CodeQL passed.
+The fixture transform checkpoint implements all fourteen 9x9 grid transforms and the public
+exact/digit-D4 key protocol. It corrects rejection of the pre-specified `fixture-digit-d4` hash
+projection without changing existing hashes. No private comparison or proof transformation is claimed.
+
+Fixture-transform validation on Windows, 2026-09-05:
+
+- `npm ci --ignore-scripts`: PASS — unchanged dependencies, zero reported vulnerabilities.
+- `npm run test:fixture-tools`: PASS — sixteen tests, including exact transform order, 28
+  transformed grids checked with exact cover, 32 digit/D4 cases and independent hash vectors.
+- `npm run test:domain`: PASS — fourteen tests and unchanged declaration snapshot; numeric-name
+  and trailing-whitespace regressions cover the narrow hash-name correction.
+- `npm run pack:smoke`: PASS — updated domain archive integrity and a new matching Node/Chromium
+  collision-projection result; existing board/logical/codec fingerprints remain unchanged.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 163 tests, strict
+  compilation, API/schema snapshots and every foundation/package gate.
+- `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -217,7 +239,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Review the fixture-tooling implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
+- Review the fixture-transform implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
 
 ## Checkpoints
 
@@ -265,3 +287,11 @@ not count as implementation of those services.
 - 2026-09-04 — Full local CI-base-ref verification passed all 156 tests and existing package
   conformance. The fixture-tooling slice is ready for its review PR; it does not establish
   showcase selection, proof soundness, private collision clearance or private corpus parity.
+- 2026-09-05 — Maintainer resumed WP-2026-003. Merged PR #10's checked head and created a fresh
+  worktree from updated main. Implemented fourteen ordered fixture grid transforms, digit/D4
+  normalization and public collision-key calculations. Corrected the domain hash-name guard for
+  the already-specified `fixture-digit-d4` projection, retaining rejection of other numeric names
+  and trailing whitespace. No private material, technique code or live-product behavior changed.
+- 2026-09-05 — Full local CI-base-ref verification passed all 163 tests, unchanged API/schema
+  declarations and updated packed Node/Chromium evidence. The fixture-transform implementation
+  stops at its review PR; private collision clearance and proof-technique gates remain unfinished.

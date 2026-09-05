@@ -42,7 +42,8 @@ export function probe() {
   check(framed.ok && framed.value.verification === "unverified");
   const canonical = domain.canonicalJson({ z: [1, null, true], a: "\n\u0000" });
   check(canonical === '{"a":"\\n\\u0000","z":[1,null,true]}');
-  return { canonical, hashes, vectors, codecRoundTrip: board.value.board.stateFingerprint,
+  return { canonical, hashes, vectors, collisionProjection: domain.fingerprint("fixture-digit-d4", "0".repeat(81)),
+    codecRoundTrip: board.value.board.stateFingerprint,
     proofFraming: framed.value.verification, exports: [domain, contracts, codecs, proof, coach]
     .map((value) => Object.keys(value).filter((key) => key !== "__esModule").sort()) };
 }

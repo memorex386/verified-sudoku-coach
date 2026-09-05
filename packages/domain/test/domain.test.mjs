@@ -59,7 +59,9 @@ test("canonical decoding rejects lossy and executable representations without ca
 test("typed fingerprints use the exact zero-byte domain separator", () => {
   assert.equal(fingerprint("board", { b: 2, a: 1 }), independentFingerprint("board", '{"a":1,"b":2}'));
   assert.notEqual(fingerprint("board", {}), fingerprint("board-state", {}));
-  for (const invalid of ["", "Board", "board/v1", "board\0", "a--b", "board\n"]) assert.throws(() => fingerprint(invalid, {}));
+  assert.equal(fingerprint("fixture-digit-d4", "0".repeat(81)), independentFingerprint("fixture-digit-d4", JSON.stringify("0".repeat(81))));
+  for (const invalid of ["", "Board", "board/v1", "board\0", "a--b", "board\n", "board4",
+    "fixture-digit-d5", "fixture-digit-d4\n"]) assert.throws(() => fingerprint(invalid, {}));
 });
 
 test("empty 6x6 puzzle and logical projection match independently calculated fixed hashes", () => {
