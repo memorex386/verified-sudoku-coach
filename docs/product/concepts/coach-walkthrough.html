@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'none'; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Sudoku coach interaction concept</title>
+<style>html{color-scheme:light dark}body{margin:0;padding:16px;background:light-dark(#fff,#121a25)}</style>
+</head>
+<body>
+<style>
+#coach-concept{--sw-bg:light-dark(#f5f8fc,#17212e);--sw-panel:light-dark(#fff,#202e40);--sw-ink:light-dark(#19314b,#edf4ff);--sw-muted:light-dark(#596e85,#b4c4d8);--sw-line:light-dark(#d1dce8,#465a73);--sw-blue:light-dark(#1264c1,#94c5ff);--sw-soft:light-dark(#e4f0ff,#294565);--sw-focus:light-dark(#c6e2ff,#355e88);--sw-error:light-dark(#a72e39,#ffb9bc);--sw-error-bg:light-dark(#ffe7e7,#602d39);font-family:system-ui,sans-serif;color:var(--sw-ink);max-width:420px;margin:0 auto}
+#coach-concept *{box-sizing:border-box}#coach-concept button{font:inherit;cursor:pointer;color:inherit}#coach-concept .sw-demo{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 2px;font-size:12px;color:var(--sw-muted)}#coach-concept .sw-demo button{background:var(--sw-panel);border:1px solid var(--sw-line);border-radius:20px;padding:9px 13px;color:var(--sw-blue)}
+#coach-concept .sw-phone{background:var(--sw-bg);border:1px solid var(--sw-line);border-radius:24px;overflow:hidden;box-shadow:0 12px 32px light-dark(#19314b14,#0003)}#coach-concept .sw-header{display:flex;align-items:center;justify-content:space-between;padding:19px 20px 12px}#coach-concept .sw-brand{font-size:19px;font-weight:500;letter-spacing:-.5px}#coach-concept .sw-tag{font-size:11px;color:var(--sw-muted);letter-spacing:1px;text-transform:uppercase;margin-top:3px}#coach-concept .sw-symbol{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:50%;background:var(--sw-soft);color:var(--sw-blue)}#coach-concept .sw-symbol svg{width:19px;height:19px}
+#coach-concept .sw-meta{display:flex;justify-content:space-between;padding:8px 20px 13px;font-size:13px;color:var(--sw-muted)}#coach-concept .sw-board-wrap{padding:0 16px}#coach-concept .sw-board{display:grid;grid-template-columns:repeat(9,1fr);border:2px solid var(--sw-ink);background:var(--sw-panel);border-radius:4px;overflow:hidden}#coach-concept .sw-cell{aspect-ratio:1;border:0;border-right:1px solid var(--sw-line);border-bottom:1px solid var(--sw-line);background:var(--sw-panel);padding:0;font-size:clamp(18px,5.7vw,25px);position:relative;transition:background .25s,color .25s}#coach-concept .sw-cell:nth-child(3n){border-right:2px solid var(--sw-ink)}#coach-concept .sw-cell:nth-child(9n){border-right:0}#coach-concept .sw-cell:nth-child(n+19):nth-child(-n+27),#coach-concept .sw-cell:nth-child(n+46):nth-child(-n+54){border-bottom:2px solid var(--sw-ink)}#coach-concept .sw-cell:nth-child(n+73){border-bottom:0}#coach-concept .sw-cell.sw-related{background:var(--sw-soft)}#coach-concept .sw-cell.sw-selected{background:var(--sw-focus);box-shadow:inset 0 0 0 2px var(--sw-blue)}#coach-concept .sw-cell.sw-error{background:var(--sw-error-bg);color:var(--sw-error);text-decoration:underline}#coach-concept .sw-cell.sw-entered{color:var(--sw-blue)}#coach-concept .sw-notes{display:grid;grid-template-columns:repeat(3,1fr);font-size:11px;color:var(--sw-muted);line-height:1.1;padding:2px}#coach-concept .sw-board-caption{min-height:35px;display:flex;align-items:center;justify-content:center;color:var(--sw-muted);font-size:12px;text-align:center;padding:6px}
+#coach-concept .sw-game-controls{padding:0 16px 15px}#coach-concept .sw-tools{display:flex;justify-content:center;gap:25px;margin-bottom:12px}#coach-concept .sw-tools button{display:flex;align-items:center;gap:6px;border:0;background:transparent;color:var(--sw-muted);padding:8px 2px;font-size:12px}#coach-concept .sw-tools svg{width:16px;height:16px}#coach-concept .sw-pad{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}#coach-concept .sw-pad button{padding:9px 0;background:var(--sw-panel);border:1px solid var(--sw-line);border-radius:7px;color:var(--sw-blue);font-size:21px}
+#coach-concept .sw-sheet{background:var(--sw-panel);border-top:1px solid var(--sw-line);border-radius:22px 22px 0 0;padding:9px 20px 19px;box-shadow:0 -5px 18px light-dark(#19314b09,#0002)}#coach-concept .sw-handle{width:32px;height:4px;border-radius:3px;background:var(--sw-line);margin:0 auto 12px}#coach-concept .sw-sheet-top{display:flex;align-items:center;gap:10px}#coach-concept .sw-coach-name{font-size:14px;font-weight:500}#coach-concept .sw-status{font-size:12px;color:var(--sw-muted);margin-top:3px}#coach-concept .sw-entry{margin-left:auto;border:0;background:var(--sw-soft);border-radius:18px;padding:10px 12px;color:var(--sw-blue);font-size:12px}#coach-concept .sw-content{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}#coach-concept .sw-content>div{overflow:hidden}#coach-concept .sw-sheet.sw-open .sw-content{grid-template-rows:1fr}#coach-concept .sw-message{font-size:16px;line-height:1.5;margin:17px 0 13px}#coach-concept .sw-actions{display:flex;gap:8px;flex-wrap:wrap}#coach-concept .sw-actions button{border:1px solid var(--sw-line);background:var(--sw-panel);border-radius:12px;padding:11px 14px;font-size:13px}#coach-concept .sw-actions button.sw-primary{background:var(--sw-blue);color:light-dark(#fff,#14283e);border-color:var(--sw-blue)}#coach-concept .sw-foot{display:flex;justify-content:center;gap:25px;padding:13px;border-top:1px solid var(--sw-line);font-size:12px;color:var(--sw-muted)}#coach-concept .sw-foot span:first-child{color:var(--sw-blue)}#coach-concept .sw-scenes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:13px 0}#coach-concept .sw-scenes button{padding:8px 10px;border:1px solid var(--sw-line);border-radius:20px;background:var(--sw-panel);font-size:12px;color:var(--sw-muted)}#coach-concept .sw-scenes button[aria-pressed=true]{background:var(--sw-soft);color:var(--sw-blue);border-color:var(--sw-blue)}
+#coach-concept .sw-cell.sw-clue-seen{background:light-dark(#e1f2ec,#25493f)}#coach-concept .sw-cell.sw-clue-now{background:light-dark(#ffe6a4,#70521d);box-shadow:inset 0 0 0 2px light-dark(#aa7213,#edbc63)}
+#coach-concept .sw-candidates{padding:0 0 12px}#coach-concept .sw-candidates[hidden]{display:none}#coach-concept .sw-candidate-label{font-size:12px;color:var(--sw-muted);margin-bottom:7px;text-align:center}#coach-concept .sw-candidate-digits{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}#coach-concept .sw-candidate-digits span{position:relative;text-align:center;padding:5px 0;background:var(--sw-panel);border-radius:6px;color:var(--sw-ink);font-size:15px}#coach-concept .sw-candidate-digits span.sw-ruled-out{color:var(--sw-muted);background:var(--sw-soft)}#coach-concept .sw-ruled-out:after{content:'';position:absolute;width:2px;height:23px;left:50%;top:3px;background:var(--sw-muted);transform:rotate(35deg)}#coach-concept .sw-story-controls{display:flex;gap:12px;margin:0 0 10px}#coach-concept .sw-story-controls button{border:0;background:transparent;color:var(--sw-blue);font-size:12px;padding:7px 0}#coach-concept .sw-story-controls[hidden]{display:none}#coach-concept .sw-message.sw-story-text{min-height:120px}
+@media(prefers-reduced-motion:reduce){#coach-concept *{transition:none!important}}
+</style>
+<div id="coach-concept" aria-label="Sudoku World coach concept">
+ <div class="sw-demo"><span>INTERACTION CONCEPT · SIMULATED AI</span><button type="button" id="sw-play">Play walkthrough</button></div>
+ <div class="sw-phone">
+  <div class="sw-header"><div><div class="sw-brand">Sudoku World</div><div class="sw-tag">Classic · Practice</div></div><span class="sw-symbol" aria-hidden="true">▦</span></div>
+  <div class="sw-meta"><span>Easy</span><span>04:32</span><span>At your pace</span></div>
+  <div class="sw-board-wrap"><div class="sw-board" id="sw-board" role="group" aria-label="Example Sudoku board"></div><div class="sw-board-caption" id="sw-caption" aria-live="polite"></div></div>
+  <div class="sw-game-controls"><div class="sw-tools"><button type="button" id="sw-undo">Undo</button><button type="button" id="sw-notes">Notes</button><button type="button" id="sw-mistake">Try a mistake</button></div><div class="sw-pad" id="sw-pad" aria-label="Number pad"></div></div>
+  <section class="sw-sheet" id="sw-sheet" aria-label="Coach bottom sheet"><div class="sw-handle"></div><div class="sw-sheet-top"><span class="sw-symbol" aria-hidden="true">✦</span><div><div class="sw-coach-name">Your coach</div><div class="sw-status" id="sw-status"></div></div><button type="button" class="sw-entry" id="sw-entry">Get help</button></div><div class="sw-content"><div><div class="sw-message" id="sw-message" aria-live="polite"></div><div class="sw-actions" id="sw-actions"></div></div></div></section>
+  <div class="sw-foot"><span>Play</span><span>Journey</span><span>Friends</span></div>
+ </div>
+ <div class="sw-scenes" aria-label="Walkthrough scenes"><button type="button" data-scene="idle">1 · Playing</button><button type="button" data-scene="nudge">2 · Ask</button><button type="button" data-scene="reason">3 · Explore</button><button type="button" data-scene="success">4 · Progress</button><button type="button" data-scene="mistake">5 · Mistake</button></div>
+</div>
+<script>
+(()=>{
+ const root=document.getElementById('coach-concept');
+ const el=id=>root.querySelector('#sw-'+id);
+ // Standalone example puzzle. All coach dialogue is scripted; there is no AI call.
+ const puzzle='530070000600195000098000060800060003400803001700020006060000280000419005000080079';
+ const settings={entry:'Labeled button',mistakes:'Gentle invitation'};
+ let scene='idle',selected=40,entry='',showNotes=false,playing=false,timer=null;
+ let storyTimer=null,storyPaused=false,storyPosition=0;
+ const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const candidateStrip=document.createElement('div');candidateStrip.className='sw-candidates';candidateStrip.hidden=true;
+ const candidateLabel=document.createElement('div');candidateLabel.className='sw-candidate-label';candidateLabel.textContent='Checking digits for the middle square · / = ruled out';
+ const candidateDigits=document.createElement('div');candidateDigits.className='sw-candidate-digits';candidateDigits.setAttribute('aria-label','Digits being checked, separate from player notes');
+ for(let n=1;n<=9;n++){const digit=document.createElement('span');digit.textContent=n;digit.dataset.digit=n;candidateDigits.append(digit);}
+ candidateStrip.append(candidateLabel,candidateDigits);el('caption').after(candidateStrip);
+ const storyControls=document.createElement('div');storyControls.className='sw-story-controls';storyControls.hidden=true;
+ const pauseStory=document.createElement('button');pauseStory.type='button';pauseStory.textContent='Pause explanation';
+ const finishStory=document.createElement('button');finishStory.type='button';finishStory.textContent='Show all';
+ storyControls.append(pauseStory,finishStory);el('message').after(storyControls);
+ const references=[44,41,36,39,49,31,4,13];
+ const storyText='The row rules out 1, 3, 4 and 8. The column also rules out 2, 6, 7 and 9. Which digit is left?';
+ function paintStory(){
+  const written=storyText.slice(0,storyPosition);el('message').textContent=written;
+  const mentioned=[...written].filter(c=>/[1-9]/.test(c));
+  const cells=el('board').children;references.forEach((index,i)=>{cells[index].classList.toggle('sw-clue-seen',i<mentioned.length);cells[index].classList.toggle('sw-clue-now',i===mentioned.length-1&&storyPosition<storyText.length);});
+  for(const digit of candidateDigits.children){const ruledOut=mentioned.includes(digit.dataset.digit);digit.classList.toggle('sw-ruled-out',ruledOut);digit.setAttribute('aria-label',digit.dataset.digit+(ruledOut?' ruled out':' not yet ruled out'));}
+  if(storyPosition===storyText.length){pauseStory.hidden=true;finishStory.textContent='Replay explanation';el('message').setAttribute('aria-live','polite');el('message').setAttribute('aria-label',storyText);el('caption').textContent='Highlighted clues rule out eight digits. Which one remains?';}
+ }
+ function tickStory(){if(scene!=='reason'||storyPaused)return;storyPosition++;paintStory();if(storyPosition<storyText.length)storyTimer=setTimeout(tickStory,/[1-9]/.test(storyText[storyPosition-1])?650:27);}
+ function startStory(){clearTimeout(storyTimer);storyPosition=reducedMotion?storyText.length:0;storyPaused=false;pauseStory.hidden=reducedMotion;pauseStory.textContent='Pause explanation';finishStory.textContent='Show all';el('message').setAttribute('aria-live','off');el('message').setAttribute('aria-label',storyText);paintStory();if(!reducedMotion)storyTimer=setTimeout(tickStory,350);}
+ pauseStory.onclick=()=>{stop();storyPaused=!storyPaused;pauseStory.textContent=storyPaused?'Continue explanation':'Pause explanation';clearTimeout(storyTimer);if(!storyPaused)tickStory();};
+ finishStory.onclick=()=>{stop();clearTimeout(storyTimer);if(storyPosition===storyText.length){startStory();return;}storyPosition=storyText.length;paintStory();};
+ const scenes={
+  idle:{status:'Here when you need a nudge',message:'',caption:'Select a square, or ask your coach for a nudge.'},
+  thinking:{status:'Checking the board…',message:'',caption:'Looking for one useful next step.'},
+  nudge:{status:'One small step',message:'Let’s focus on the middle square. What could fit here when you check its row, column and box?',caption:'Focus: row 5, column 5',actions:[['Highlight what matters','reason'],['I’ll try it','quiet']]},
+  reason:{status:'Look at the highlighted clues',message:'The row rules out 1, 3, 4 and 8. The column also rules out 2, 6, 7 and 9. Which digit is left?',caption:'Highlighted: the selected square’s row, column and box',actions:[['5','success'],['9','answerWrong'],['A smaller hint','nudge']]},
+  answerWrong:{status:'Let’s check that together',message:'There’s already a 9 in this column. Compare the highlighted 9 with the middle square, then try again.',caption:'A 9 would repeat in column 5',actions:[['Try again','reason']]},
+  success:{status:'That’s it · 5 fits here',message:'You found the only remaining candidate. This is a naked single. Ready to keep going?',caption:'5 placed in row 5, column 5',actions:[['Keep playing','done']]},
+  done:{status:'Nice progress. You’re in control.',message:'',caption:'Your coach steps back while you play.'},
+  quiet:{status:'Take your time',message:'',caption:'Try a number in the highlighted middle square.'},
+  mistake:{status:'Want to check that move?',message:'',caption:'A 9 repeats in column 5. Your move is still yours to undo.'},
+  repair:{status:'Let’s take a look',message:'These two 9s share a column. Want to undo your last entry and explore what could fit instead?',caption:'Underlined cells: repeated 9s in column 5',actions:[['Undo & get a nudge','nudge'],['I’ll handle it','quiet']]}
+ };
+ function stop(){clearTimeout(timer);playing=false;el('play').textContent='Play walkthrough';}
+ function go(next){scene=next;selected=40;if(['nudge','reason','idle'].includes(next))entry='';if(['success','done'].includes(next))entry='5';if(['mistake','repair'].includes(next))entry='9';render();}
+ function ask(){stop();go('thinking');timer=setTimeout(()=>go('nudge'),1100);}
+ function render(){
+  clearTimeout(storyTimer);candidateStrip.hidden=scene!=='reason';storyControls.hidden=scene!=='reason';el('message').classList.toggle('sw-story-text',scene==='reason');el('message').removeAttribute('aria-label');el('message').setAttribute('aria-live','polite');
+  const s=scenes[scene],focus=['nudge','reason','answerWrong','success','quiet','mistake','repair'].includes(scene);
+  el('board').replaceChildren();
+  for(let i=0;i<81;i++){
+   const b=document.createElement('button');b.type='button';b.className='sw-cell';const r=Math.floor(i/9),c=i%9;let val=puzzle[i]==='0'?'':puzzle[i];if(i===40&&entry)val=entry;
+   const related=r===4||c===4||(r>=3&&r<=5&&c>=3&&c<=5);
+   if(focus&&related&&scene!=='nudge')b.classList.add('sw-related');if(i===selected)b.classList.add('sw-selected');if(i===40&&entry)b.classList.add('sw-entered');
+   if(['answerWrong','mistake','repair'].includes(scene)&&(i===13||i===40))b.classList.add('sw-error');
+   b.textContent=val;b.setAttribute('aria-label',`Row ${r+1}, column ${c+1}: ${val||'empty'}${i===selected?', selected':''}`);
+   if(showNotes&&!val&&i===40){const notes=document.createElement('span');notes.className='sw-notes';for(let n=1;n<=9;n++){const p=document.createElement('span');p.textContent=n===5?'5':'·';notes.append(p);}b.append(notes);}
+   b.onclick=()=>{stop();selected=i;render();el('caption').textContent=puzzle[i]!=='0'?'This is a given clue.':'Selected row '+(r+1)+', column '+(c+1)+'. This walkthrough demonstrates the middle square.';};el('board').append(b);
+  }
+  el('caption').textContent=s.caption;el('status').textContent=s.status;el('message').textContent=s.message;
+  el('sheet').classList.toggle('sw-open',!!s.message);el('entry').textContent=s.message?'Minimize':scene==='mistake'?'Show me':scene==='thinking'?'Cancel':settings.entry==='Icon only'?'✦':'Get help';el('entry').setAttribute('aria-label',s.message?'Minimize coach':scene==='thinking'?'Cancel hint':'Get coach assistance');
+  el('actions').replaceChildren();(s.actions||[]).forEach(([label,next],i)=>{const b=document.createElement('button');b.type='button';b.textContent=label;if(!i)b.className='sw-primary';b.onclick=()=>{stop();go(next);};el('actions').append(b);});
+  root.querySelectorAll('[data-scene]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.scene===scene)));
+  el('notes').setAttribute('aria-pressed',String(showNotes));
+  if(scene==='reason')startStory();
+ }
+ function mistake(){stop();go(settings.mistakes==='Open explanation'?'repair':'mistake');}
+ el('entry').onclick=()=>{if(scenes[scene].message||scene==='thinking'){stop();scene=entry==='5'?'done':'quiet';render();}else if(scene==='mistake'){stop();go('repair');}else ask();};
+ el('mistake').onclick=mistake;el('undo').onclick=()=>{stop();entry='';go('idle');};el('notes').onclick=()=>{showNotes=!showNotes;render();};
+ for(let n=1;n<=9;n++){const b=document.createElement('button');b.type='button';b.textContent=n;b.setAttribute('aria-label','Enter '+n);b.onclick=()=>{stop();if(selected!==40){el('caption').textContent='For this guided example, select the middle square (row 5, column 5).';return;}if(n===5)go('success');else if(n===9)mistake();else{el('caption').textContent='This example’s middle square accepts 5. Ask the coach to explore why.';}};el('pad').append(b);}
+ root.querySelectorAll('[data-scene]').forEach(b=>b.onclick=()=>{stop();go(b.dataset.scene);});
+ el('play').onclick=()=>{if(playing){stop();return;}stop();playing=true;el('play').textContent='Pause walkthrough';const sequence=['idle','thinking','nudge','reason','success','done','mistake','repair'];let step=0;function advance(){if(!playing)return;go(sequence[step]);step++;if(step<sequence.length)timer=setTimeout(advance,sequence[step-1]==='thinking'?1400:sequence[step-1]==='reason'?12500:4200);else stop();}advance();};
+ render();
+})();
+</script>
+</body>
+</html>

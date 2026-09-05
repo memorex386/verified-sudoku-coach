@@ -259,7 +259,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Complete combined validation and CI for authorized PR #12, then integrate the authorized design-reference PR #13.
+- Complete the authorized design-reference merge, then implement immutable player board actions in a fresh WP-2026-003 worktree.
 
 ## Checkpoints
 
@@ -328,3 +328,20 @@ not count as implementation of those services.
   `efb37dceeed46044269927d523c7d71aeb9a343d`. Reconciled both consumer probes and appended
   both implementation histories; combined package evidence is regenerated before PR #12 merges.
 - 2026-09-05 — Combined PR #11/#12 validation passed: all 172 tests, strict compilation, regenerated packed Node/Angular/Chromium snapshot, registry and whitespace checks. Await fresh CI on this reconciled head before the authorized merge.
+- 2026-09-05 — At the maintainer's explicit request, paused implementation to preserve the
+  [coach interaction concept](../product/concepts/coach-interaction.md) and portable offline
+  walkthrough for future agents. This documentation-only handoff is outside the package's proof
+  implementation scope; it does not add coaching to core or start later Draft packages. PR #10
+  is merged; independent implementation PRs #11 and #12 remain open and are not included here.
+  Preserve their checkpoints when reconciling those branches with this documentation change.
+- 2026-09-05 — Design-reference validation: `npm ci --ignore-scripts`,
+  `npm run work-packages:generate`, `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main`,
+  and `git diff --check` passed. All 156 existing tests and packed Node/Angular/Chromium
+  conformance passed on the main-after-PR-10 base. Separate local Chromium checks passed for
+  offline concept loading, synchronized clues, eight slashes, pause, answer/retry, conflict
+  recovery, 320/360/736px light/dark layouts, and reduced-motion completion. These are prototype
+  checks, not accessibility certification, proof acceptance, or measured coaching outcomes.
+- 2026-09-05 — Reconciled the design handoff with authorized implementation PRs #11/#12,
+  retaining all prior checkpoints and the combined package snapshot. The next core slice applies
+  player board actions; it does not authorize techniques before private conformance is available.
+- 2026-09-05 — Reconciled design-reference validation passed all 172 tests and packed Node/Angular/Chromium checks with the PR #12 integration head as base. Registry and whitespace checks passed; no runtime code was added by the design reference.
