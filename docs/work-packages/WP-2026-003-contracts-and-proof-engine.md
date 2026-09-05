@@ -262,13 +262,13 @@ acceptance and private conformance. Chromium/Angular and packed-consumer checks 
 the implemented domain and wire-boundary surfaces.
 Proof/trace codecs check framing and integrity; replay also executes player actions and checks
 recorded boards and rejection reasons. All proof/trace/replay results remain explicitly `unverified`.
-`test:domain`, `test:contracts`, `test:fixture-tools` and `pack:smoke` are executable; `test:proof`, `fixtures:check`
-and `proof:hashes` remain required before Done. Packed empty proof-engine/coach-core exports do
-not count as implementation of those services.
+`test:domain`, `test:contracts`, `test:fixture-tools`, local-only `test:proof` and `pack:smoke` are
+executable. Full six-technique proof coverage, `fixtures:check` and `proof:hashes` remain required
+before Done. The proof engine implements local single hints; coach-core remains unimplemented.
 
 ## Next action
 
-- Implement and independently test naked/hidden-single hints for `local-singles/v1`, then connect them to the local tutor flow.
+- Select the generated singles-solvable local puzzle and connect verified hints to the playable bottom-sheet tutor.
 
 ## Checkpoints
 
@@ -397,3 +397,16 @@ not count as implementation of those services.
   generation, `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main` (182 tests and unchanged
   packed Node/Angular/Chromium evidence), and `git diff --check`. This is a documentation-only
   scope change; the local tutor and its two technique implementations remain to be built.
+- 2026-09-05 — Continued above the approved local-plan branch (PR #18), without merging it.
+  Implemented [local singles](../contracts/local-singles.md): ordered proposals, an independently
+  callable verifier and opaque state-bound capabilities for naked/hidden singles. Added five
+  focused proof tests, including independent coordinate reasoning and valid non-first proposals,
+  tampering, stale/forged capabilities, notes, contradictions and player-placement sequences.
+  Node/Chromium consumer probes now exercise single verification. No proof application, elimination,
+  model, private data or UI is added in this slice; the next step is the playable hint flow.
+- 2026-09-05 — Local-singles validation passed: five `test:proof` tests, architecture/lint,
+  strict compilation, registry and whitespace checks. Full `npm run verify` with
+  `WORK_PACKAGE_BASE_REF=origin/work/WP-2026-003-local-tutor-plan` passed all 187 tests and packed
+  Node/Angular/Chromium checks; the proof-engine package snapshot was regenerated. This slice
+  exposes verified local hint facts only. The playable puzzle/UI and full proof/private gates
+  remain unfinished; no merge or live behavior was authorized by these checks.

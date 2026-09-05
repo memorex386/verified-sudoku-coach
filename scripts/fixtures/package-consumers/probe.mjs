@@ -33,7 +33,19 @@ export function probe() {
     const stale = domain.applyPlayerAction(placed.board, board.revision, board.stateFingerprint,
       { type: "clear-value", cellId: "r1c1" });
     check(stale.type === "rejected" && stale.code === "stale");
-    vectors.push({ size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint,
+    const givens = Array.from({ length: size * size }, (_, i) => ({ cellId: `r${Math.floor(i / size) + 1}c${i % size + 1}`,
+      digit: 1 + (3 * (Math.floor(i / size) % puzzle.topology.boxRows) + Math.floor(Math.floor(i / size) / puzzle.topology.boxRows) + i % size) % size })).slice(1);
+    const singleBoard = domain.createBoard(domain.createPuzzle(puzzle.topology, givens), 0, [], []);
+    const proposed = proof.proposeSingle(singleBoard);
+    check(proposed.type === "proposal");
+    const capability = proof.verifySingle(singleBoard, proposed.proposal);
+    check(capability !== null);
+    const single = proof.readVerifiedSingle(singleBoard, capability);
+    check(single.cellId === "r1c1" && single.digit === 1 && single.technique === "naked-single");
+    check(proof.readVerifiedSingle(singleBoard, {}) === null);
+    check(proof.verifySingle(singleBoard, { ...proposed.proposal, digit: 2 }) === null);
+    check(proof.proposeSingle(board).type === "unsupported");
+    vectors.push({ size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint, single,
       playerActions: { noted: noteAction.board.stateFingerprint, placed: placed.board.stateFingerprint,
         logical: domain.initialLogicalState(placed.board).fingerprint, stale: stale.code } });
   }

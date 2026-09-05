@@ -118,16 +118,40 @@
     {
       "name": "@verified-sudoku/proof-engine",
       "version": "0.0.0",
-      "sha256": "e533a607c1eb5e17fcf24ef00939692fc1e03495eb54345f4accab985d038b79",
-      "integrity": "sha512-+xJClEF2DhhVuDsUjhVnJZdTi4QT2Qr2/Hs6HwGqXrl47TrCNbbVZsDQg/ln8FFV05AdphJzLg7okxugDMXZLg==",
+      "sha256": "31a87b10eeeb33bc5550d44438afe24786ef0dacfdf6b4c7d06a200cab5d7b71",
+      "integrity": "sha512-igQFSFKDS2Ssf/UlKN1VuLo9YJkA1wVeS7V4I3oHVluE89yIu9J8Vfbz8AlbFqC16Z7pS7h7T6d4TMNudgUgeQ==",
       "files": [
         {
           "name": "package/dist/index.d.ts",
-          "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+          "sha256": "e83a5185c1da597127af965a0aa3dd49d65c0a287a8005f457b72f67eb602d48"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "03c1fcd28cc56d5df697ca156189cb55b62d9885b9dcc7b9054e8fedf0997ca9"
+          "sha256": "ed6d4e365baa34a0f37f3430724561de05cae0f29b0188e9139b8c21f84cc09d"
+        },
+        {
+          "name": "package/dist/single-detector.d.ts",
+          "sha256": "6da169a5fbe3b5052181b98f1c01c1a76dbffe2f5dfe2e9db37964b855de5796"
+        },
+        {
+          "name": "package/dist/single-detector.js",
+          "sha256": "b1f02b0cc3fe82db0afdf190ecb21ce3cdd5aa4a5d86fa32a5737b9bd5e9cc0c"
+        },
+        {
+          "name": "package/dist/single-state.d.ts",
+          "sha256": "dd3aa3de9d210f30c9fbc502aa928ee7144aaa29d114cbbe88064cf467859279"
+        },
+        {
+          "name": "package/dist/single-state.js",
+          "sha256": "10591c418f8f789d1fc6f803d75d214f77c3993efb0787d30e088f8e5f824ada"
+        },
+        {
+          "name": "package/dist/single-verifier.d.ts",
+          "sha256": "17aaad285d2f179465108b5a18e641bea937635a63f28cdd032f4ba16c3d58a5"
+        },
+        {
+          "name": "package/dist/single-verifier.js",
+          "sha256": "1d1f44adcad69d6bbcdd989d1ac528d69e3d02963c0b14f207120273e4bf77b9"
         },
         {
           "name": "package/package.json",
@@ -265,6 +289,14 @@
         "size": 6,
         "puzzle": "sha256:212aa81cf4edf5339c9537f2c101de1e806990e1451d15eaa6d57c1b943216ae",
         "logical": "sha256:56e54ca427519c34d123f37d87f0eab39db998952d4e6c5db46529b269d6715e",
+        "single": {
+          "profile": "local-singles/v1",
+          "stateFingerprint": "sha256:7f97d698098f8a92847d10fc0f3de99b3dc0147e48fa85734d083766fc679c3d",
+          "technique": "naked-single",
+          "cellId": "r1c1",
+          "digit": 1,
+          "unit": null
+        },
         "playerActions": {
           "noted": "sha256:9be170f0a794f47ec76c6fd6c132a0e02bdda08c96e9160ab861f5231d71b5e8",
           "placed": "sha256:9979983b9b436c182a496441f441b747413cb8e827554b266fa0c058945600b1",
@@ -276,6 +308,14 @@
         "size": 9,
         "puzzle": "sha256:ecedebf4d14f5d1e8172276529082878fddab23c2f7031365f786460b652435b",
         "logical": "sha256:68559a4ee5e9e58261545e872298c1fa98b1955f27fa17b1dc7f49ed91ea00b4",
+        "single": {
+          "profile": "local-singles/v1",
+          "stateFingerprint": "sha256:19e42a084ed6f5f8ab7da023b6d525b25412c585c51e358ee9d6cbd052badb91",
+          "technique": "naked-single",
+          "cellId": "r1c1",
+          "digit": 1,
+          "unit": null
+        },
         "playerActions": {
           "noted": "sha256:1c0a7591790ec62fc99a9d2df856c60062c80fd60b9f4a275f4d2b3e158c315a",
           "placed": "sha256:60e3137bc28906ad199fe4ed7fbcdf781c24102d331f0c9c9ffc5549c1f9e63b",
@@ -343,7 +383,11 @@
         "encodeBoard",
         "encodePuzzle"
       ],
-      [],
+      [
+        "proposeSingle",
+        "readVerifiedSingle",
+        "verifySingle"
+      ],
       []
     ]
   }
