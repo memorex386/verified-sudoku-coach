@@ -159,6 +159,14 @@ of `{path,hash}` for all tracked `.ts`/`.mjs` files under `packages/domain/src`,
 Generation code lives only in those directories; hash changes force regeneration. This avoids a
 circular source-commit field. Every path is repository-relative and allowlisted.
 
+Run `npm run typecheck` then `node scripts/fixture-source-digest.mjs` to print this digest.
+The read-only command uses tracked paths from Git and current file bytes, including unstaged edits
+and exact line endings. Untracked files are outside the specified projection; stage new source
+files before generating evidence. Missing files, unresolved merge stages and source links fail
+with `invalid-generator-source`. Run on a quiescent checkout; it does not lock concurrent writes.
+This is only the source projection, not fixture regeneration or acceptance. The existing release
+contract still binds the complete commit and lockfile. Three focused tests run in `test:fixture-tools`.
+
 ## Transform and collision protocol
 
 The 9x9 metamorphic suite covers all eight D4 transforms, deterministic digit permutations, band

@@ -260,7 +260,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Review the replay-action implementation PR; keep technique work gated on the private conformance command and linked evidence.
+- Review the source-digest implementation PR, preserving the separate PR #16 checkpoints when integrating; keep technique work gated on private conformance evidence.
 
 ## Checkpoints
 
@@ -378,3 +378,16 @@ not count as implementation of those services.
   foundation, 20 domain, 32 contracts, 16 fixture-tooling and two package-inspection tests), plus
   matching packed Node/Angular/Chromium results. `git diff --check` passed. This slice stops at
   its implementation PR; complete proof replay and private compatibility remain unfinished.
+- 2026-09-05 — Continued an independent fixture-source slice from main after merged PR #15
+  (`a8f9ae0c6ac03c9a5146f4074c7ba2d7f5134b5a`). PR #16's uniqueness-check head
+  `908e38ae3bd07e92d16117a97912a864bf4c52ef` passed all CI but remains open without new
+  merge authorization. Added the [source-digest command](../architecture/fixture-generation.md#canonical-artifacts)
+  and three isolated-Git tests, binding exact tracked source bytes while rejecting missing or
+  linked inputs. No generator algorithm, proof technique, runtime package, private material or
+  live-product behavior changed. Integration must preserve both branches' checkpoints and tests;
+  this branch's evidence does not include PR #16's four uniqueness-check tests.
+- 2026-09-05 — At the maintainer's request, reduced the source-digest slice to the specified
+  projection, three focused tests and required wiring/docs. `npm run verify` with
+  `WORK_PACKAGE_BASE_REF=origin/main` passed all 185 tests and unchanged packed Node/Angular/Chromium
+  evidence. `npm run test:fixture-tools` passed 19 tests; the source-digest command, architecture,
+  registry and whitespace checks passed. No new source-admission policy or fixture acceptance added.
