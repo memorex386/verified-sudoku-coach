@@ -3,6 +3,8 @@
 WP-2026-003's first slice implements the initial-state portion of
 [Sudoku and proof V1](sudoku-proof-v1.md). It does not implement wire DTO decoding, board actions,
 technique detection/verification/application, uniqueness, or final package distribution.
+The later [player-action checkpoint](player-actions.md) adds immutable placement, clearing, and
+note changes; the historical first-slice limitations above do not describe that newer API.
 
 ## Construction and authority
 

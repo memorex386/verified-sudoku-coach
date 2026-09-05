@@ -248,7 +248,7 @@ an experience measurement; generation labels it curated rather than claiming dif
 duration. The private aggregate conformance command does not yet exist in Sudoku World; domain,
 schema, and codec work may proceed, but the proof-technique runbook blocks detector/verifier changes
 until the private counterpart and its linked evidence package are executable.
-The domain slice is only an initial-state API. Technique application and replay retention of
+The domain now includes initial state and immutable player-action application. Technique application and replay retention of
 verified eliminations remain unimplemented, as do generated showcase fixtures, executable replay
 acceptance and private conformance. Chromium/Angular and packed-consumer checks cover only
 the implemented domain and wire-boundary surfaces.
@@ -259,7 +259,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Complete the authorized design-reference merge, then implement immutable player board actions in a fresh WP-2026-003 worktree.
+- Review the immutable player-action implementation PR; keep technique work gated on the private conformance command and linked evidence.
 
 ## Checkpoints
 
@@ -345,3 +345,21 @@ not count as implementation of those services.
   retaining all prior checkpoints and the combined package snapshot. The next core slice applies
   player board actions; it does not authorize techniques before private conformance is available.
 - 2026-09-05 — Reconciled design-reference validation passed all 172 tests and packed Node/Angular/Chromium checks with the PR #12 integration head as base. Registry and whitespace checks passed; no runtime code was added by the design reference.
+- 2026-09-05 — Maintainer authorized PRs #11, #12 and #13 after the design review. All merged
+  after CI passed: #11 at `efb37dceeed46044269927d523c7d71aeb9a343d`, #12 at
+  `72816f8889d60a03c7f6fec9ed6bea2aee71e5f1`, and #13 at
+  `9e26438d1e466fc669f931b3ef7f82e610799803`. Reconciled snapshots and append-only histories;
+  combined validation passed 172 tests. Began the next slice in a fresh dedicated worktree from
+  updated main, incorporating the merged design reference before final validation.
+- 2026-09-05 — Implemented [immutable player actions](../contracts/player-actions.md): place,
+  replace, clear, and note mutation with typed stale/invalid results, exact revision increments,
+  copied/frozen outputs, and no-op/given protection. The action takes no logical candidate masks
+  and creates no verified placement. Added six domain tests and packed-consumer action vectors;
+  codecs, wire schemas, techniques, provider behavior and live product remain unchanged.
+- 2026-09-05 — Player-action validation passed: `npm ci --ignore-scripts` (unchanged dependencies,
+  zero reported vulnerabilities), `npm run test:domain` (20 tests), `npm run architecture:check`,
+  `npm run lint`, `npm run typecheck`, `npm run work-packages:generate`, and `git diff --check`.
+  Regenerated the domain declaration and packed-consumer snapshots. Final `npm run verify` with
+  `WORK_PACKAGE_BASE_REF=origin/main` passed all 178 tests and matching packed Node/Angular/Chromium
+  action fingerprints. This slice stops at its implementation PR; no technique, uniqueness,
+  complete replay, private compatibility, provider or live-product acceptance is claimed.

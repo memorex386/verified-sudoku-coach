@@ -6,6 +6,13 @@ export type ValueInput = Readonly<{ cellId: string; digit: number }>;
 export type NoteInput = Readonly<{ cellId: string; digits: readonly number[] }>;
 export type CellValue = Readonly<{ cellId: CellId; digit: Digit }>;
 export type CellNotes = Readonly<{ cellId: CellId; digits: readonly Digit[] }>;
+export type PlayerAction =
+  | Readonly<{ type: "place-value"; cellId: string; digit: number }>
+  | Readonly<{ type: "clear-value"; cellId: string }>
+  | Readonly<{ type: "replace-notes"; cellId: string; digits: readonly number[] }>;
+export type PlayerActionResult =
+  | Readonly<{ type: "accepted"; board: Board }>
+  | Readonly<{ type: "rejected"; code: "stale" | "invalid-action"; stateFingerprint: Fingerprint }>;
 declare const puzzleBrand: unique symbol;
 declare const boardBrand: unique symbol;
 declare const logicalBrand: unique symbol;
@@ -100,6 +107,52 @@ export function createBoard(puzzle: Puzzle, revision: number, entries: readonly 
     stateFingerprint: fingerprint("board-state", { ...projection, revision, notes: copiedNotes }) }) as Board;
   boards.add(board);
   return board;
+}
+
+/** Applies player input, never a verified Sudoku placement. Command deduplication is external. */
+export function applyPlayerAction(board: Board, expectedRevision: number,
+  expectedStateFingerprint: Fingerprint, action: PlayerAction): PlayerActionResult {
+  if (!boards.has(board)) throw new Error("untrusted-board");
+  const reject = (code: "stale" | "invalid-action"): PlayerActionResult =>
+    Object.freeze({ type: "rejected", code, stateFingerprint: board.stateFingerprint });
+  if (!Number.isSafeInteger(expectedRevision) || Object.is(expectedRevision, -0) || expectedRevision < 0 ||
+    typeof expectedStateFingerprint !== "string" || !/^sha256:[0-9a-f]{64}(?![\s\S])/.test(expectedStateFingerprint)) {
+    return reject("invalid-action");
+  }
+  if (expectedRevision !== board.revision || expectedStateFingerprint !== board.stateFingerprint) return reject("stale");
+  if (board.revision === Number.MAX_SAFE_INTEGER) return reject("invalid-action");
+  try {
+    canonicalJson(action); // Reject accessors/exotic objects without invoking their properties.
+    if (action === null || typeof action !== "object" || Array.isArray(action)) return reject("invalid-action");
+    const target = cellId(board.puzzle.topology, action.cellId);
+    if (board.puzzle.givens.some((value) => value.cellId === target)) return reject("invalid-action");
+    const existing = board.entries.find((value) => value.cellId === target);
+    let entries: readonly ValueInput[] = board.entries;
+    let notes: readonly NoteInput[] = board.notes;
+    if (action.type === "place-value") {
+      exactKeys(action, ["cellId", "digit", "type"]);
+      const value = digit(board.puzzle.topology, action.digit);
+      if (existing?.digit === value) return reject("invalid-action");
+      entries = [...entries.filter((entry) => entry.cellId !== target), { cellId: target, digit: value }];
+      notes = notes.filter((note) => note.cellId !== target);
+    } else if (action.type === "clear-value") {
+      exactKeys(action, ["cellId", "type"]);
+      if (!existing) return reject("invalid-action");
+      entries = entries.filter((entry) => entry.cellId !== target);
+    } else if (action.type === "replace-notes") {
+      exactKeys(action, ["cellId", "digits", "type"]);
+      if (existing || !Array.isArray(action.digits) || action.digits.length > board.puzzle.topology.size) return reject("invalid-action");
+      const previous = notes.find((note) => note.cellId === target)?.digits ?? [];
+      if (canonicalJson(previous) === canonicalJson(action.digits)) return reject("invalid-action");
+      notes = notes.filter((note) => note.cellId !== target);
+      if (action.digits.length) notes = [...notes, { cellId: target, digits: action.digits }];
+    } else return reject("invalid-action");
+    const order = (a: { cellId: string }, b: { cellId: string }): number => a.cellId < b.cellId ? -1 : a.cellId > b.cellId ? 1 : 0;
+    const next = createBoard(board.puzzle, board.revision + 1, [...entries].sort(order), [...notes].sort(order));
+    return Object.freeze({ type: "accepted", board: next });
+  } catch {
+    return reject("invalid-action");
+  }
 }
 
 /** Initial candidates derive from fixed values only. No external masks or proof application. */

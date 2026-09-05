@@ -193,6 +193,8 @@ entry; clearing an empty cell is invalid. Notes cannot be set on a filled cell. 
 or note set with the identical value is invalid. An accepted mutation increments revision exactly
 once; revision exhaustion rejects as `invalid-action`. Staleness is checked before action semantics.
 Command deduplication belongs to the application, not domain constructors.
+The [player-action checkpoint](player-actions.md) implements these mutations in the domain without
+constructing verified proofs or executing a complete replay.
 
 ## Authoritative logical state
 

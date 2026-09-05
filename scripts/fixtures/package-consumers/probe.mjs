@@ -23,7 +23,19 @@ export function probe() {
       check(puzzle.puzzleFingerprint === "sha256:212aa81cf4edf5339c9537f2c101de1e806990e1451d15eaa6d57c1b943216ae");
       check(logical.fingerprint === "sha256:56e54ca427519c34d123f37d87f0eab39db998952d4e6c5db46529b269d6715e");
     }
-    vectors.push({ size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint });
+    const noteAction = domain.applyPlayerAction(board, board.revision, board.stateFingerprint,
+      { type: "replace-notes", cellId: "r1c1", digits: [1, 2] });
+    check(noteAction.type === "accepted");
+    check(domain.initialLogicalState(noteAction.board).fingerprint === logical.fingerprint);
+    const placed = domain.applyPlayerAction(noteAction.board, noteAction.board.revision, noteAction.board.stateFingerprint,
+      { type: "place-value", cellId: "r1c1", digit: 2 });
+    check(placed.type === "accepted" && placed.board.notes.length === 0 && placed.board.revision === 2);
+    const stale = domain.applyPlayerAction(placed.board, board.revision, board.stateFingerprint,
+      { type: "clear-value", cellId: "r1c1" });
+    check(stale.type === "rejected" && stale.code === "stale");
+    vectors.push({ size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint,
+      playerActions: { noted: noteAction.board.stateFingerprint, placed: placed.board.stateFingerprint,
+        logical: domain.initialLogicalState(placed.board).fingerprint, stale: stale.code } });
   }
   const hashes = [0, 3, 55, 56, 63, 64, 65, 119, 120, 1024].map((length) => {
     const bytes = Uint8Array.from({ length }, (_, i) => (i * 131 + 17) % 256);
