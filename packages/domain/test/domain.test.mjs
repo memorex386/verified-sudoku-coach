@@ -4,12 +4,106 @@ import test from "node:test";
 import {
   canonicalJson, canonicalBytes, sha256, fingerprint,
   createTopology, cellId, digit, cells, units, peers,
-  createPuzzle, createBoard, initialLogicalState,
+  createPuzzle, createBoard, initialLogicalState, applyPlayerAction,
 } from "../dist/index.js";
 
 const ascii = (value) => Uint8Array.from(value, (character) => character.charCodeAt(0));
 const nodeHash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const independentFingerprint = (name, json) => `sha256:${nodeHash(Buffer.from(`vsc/${name}/v1\0${json}`))}`;
+const apply = (board, action) => applyPlayerAction(board, board.revision, board.stateFingerprint, action);
+const accepted = (result) => { assert.equal(result.type, "accepted"); assert.ok(Object.isFrozen(result)); return result.board; };
+const rejected = (board, action, code = "invalid-action") => {
+  assert.deepEqual(apply(board, action), { type: "rejected", code, stateFingerprint: board.stateFingerprint });
+};
+
+for (const size of [6, 9]) {
+  test(`${size}x${size} player actions place, replace, clear and preserve immutable ordered state`, () => {
+    const puzzle = createPuzzle(createTopology(size), [{ cellId: "r1c1", digit: 1 }]);
+    const start = createBoard(puzzle, 0, [{ cellId: "r2c2", digit: 2 }],
+      [{ cellId: "r1c2", digits: [2, 3] }, { cellId: "r3c3", digits: [3, 4] }]);
+    const before = canonicalJson(start);
+    const placed = accepted(apply(start, { type: "place-value", cellId: "r1c2", digit: 3 }));
+    assert.deepEqual(placed, createBoard(puzzle, 1, [{ cellId: "r1c2", digit: 3 }, { cellId: "r2c2", digit: 2 }],
+      [{ cellId: "r3c3", digits: [3, 4] }]));
+    const replaced = accepted(apply(placed, { type: "place-value", cellId: "r1c2", digit: 4 }));
+    const cleared = accepted(apply(replaced, { type: "clear-value", cellId: "r1c2" }));
+    assert.deepEqual(cleared, createBoard(puzzle, 3, start.entries, [{ cellId: "r3c3", digits: [3, 4] }]));
+    assert.equal(canonicalJson(start), before);
+    assert.equal(placed.puzzle, puzzle);
+    assert.ok(Object.isFrozen(placed.entries[0]));
+    // Player input may be contradictory. Accepting input is not authorizing a logical deduction.
+    const conflicting = accepted(apply(start, { type: "place-value", cellId: "r1c2", digit: 1 }));
+    assert.equal(conflicting.entries[0].digit, 1);
+    rejected(start, { type: "place-value", cellId: `r${size + 1}c1`, digit: 1 });
+    rejected(start, { type: "place-value", cellId: "r1c2", digit: size + 1 });
+  });
+}
+
+test("player notes copy inputs, never alter candidates, and empty replacement clears notes", () => {
+  const board = createBoard(createPuzzle(createTopology(9), []), 0, [], []);
+  const digits = [1, 3, 9];
+  const noted = accepted(apply(board, { type: "replace-notes", cellId: "r1c1", digits }));
+  digits.push(2);
+  assert.deepEqual(noted.notes, [{ cellId: "r1c1", digits: [1, 3, 9] }]);
+  assert.deepEqual(initialLogicalState(noted), initialLogicalState(board));
+  assert.equal(noted.boardFingerprint, board.boardFingerprint);
+  assert.notEqual(noted.stateFingerprint, board.stateFingerprint);
+  const cleared = accepted(apply(noted, { type: "replace-notes", cellId: "r1c1", digits: [] }));
+  assert.equal(cleared.revision, 2);
+  assert.deepEqual(cleared.notes, []);
+  assert.deepEqual(initialLogicalState(cleared), initialLogicalState(board));
+  assert.ok(Object.isFrozen(noted.notes[0].digits));
+});
+
+test("player action no-ops, givens, filled notes, malformed input and revision exhaustion reject", () => {
+  const puzzle = createPuzzle(createTopology(6), [{ cellId: "r1c1", digit: 1 }]);
+  const board = createBoard(puzzle, 0, [{ cellId: "r1c2", digit: 2 }], [{ cellId: "r1c3", digits: [3] }]);
+  for (const action of [null, [], {}, { type: "help", cellId: "r1c4" },
+    { type: "place-value", cellId: "r1c2", digit: 2 }, { type: "clear-value", cellId: "r1c4" },
+    { type: "replace-notes", cellId: "r1c2", digits: [1] },
+    { type: "replace-notes", cellId: "r1c3", digits: [3] },
+    { type: "replace-notes", cellId: "r1c4", digits: [] },
+    { type: "clear-value", cellId: "r1c2", extra: true },
+    ...["place-value", "clear-value", "replace-notes"].map(type => ({ type, cellId: "r1c1", digit: 2, digits: [2] })),
+    ...[[2, 1], [1, 1], [7], [0], new Array(1), "1", [-0], [1.5]].map(digits => ({ type: "replace-notes", cellId: "r1c4", digits })),
+  ]) rejected(board, action);
+  const exhausted = createBoard(puzzle, Number.MAX_SAFE_INTEGER, [], []);
+  rejected(exhausted, { type: "place-value", cellId: "r1c2", digit: 2 });
+  const last = createBoard(puzzle, Number.MAX_SAFE_INTEGER - 1, [], []);
+  assert.equal(accepted(apply(last, { type: "place-value", cellId: "r1c2", digit: 2 })).revision, Number.MAX_SAFE_INTEGER);
+  assert.throws(() => apply({ ...board }, { type: "clear-value", cellId: "r1c2" }), /untrusted-board/);
+});
+
+test("staleness precedes action semantics and never invokes action accessors", () => {
+  const board = createBoard(createPuzzle(createTopology(6), []), 1, [], []);
+  let calls = 0;
+  const hostile = { type: "place-value", cellId: "r1c1", get digit() { calls++; return 1; } };
+  const expect = code => ({ type: "rejected", code, stateFingerprint: board.stateFingerprint });
+  assert.deepEqual(applyPlayerAction(board, 0, board.stateFingerprint, hostile), expect("stale"));
+  assert.deepEqual(applyPlayerAction(board, 1, `sha256:${"0".repeat(64)}`, hostile), expect("stale"));
+  assert.deepEqual(apply(board, hostile), expect("invalid-action"));
+  assert.equal(calls, 0);
+  for (const revision of [-0, -1, 1.5, "1", Number.MAX_SAFE_INTEGER + 1])
+    assert.deepEqual(applyPlayerAction(board, revision, board.stateFingerprint, hostile), expect("invalid-action"));
+  assert.deepEqual(applyPlayerAction(board, 1, board.stateFingerprint + "\n", hostile), expect("invalid-action"));
+});
+
+test("action sequences agree with a coordinate-array model and reject replay against newer state", () => {
+  const puzzle = createPuzzle(createTopology(9), []);
+  let board = createBoard(puzzle, 0, [], []);
+  const model = Array(81).fill(0);
+  for (let step = 0; step < 162; step++) {
+    const index = (step * 17) % 81, cell = `r${Math.floor(index / 9) + 1}c${index % 9 + 1}`;
+    const action = step < 81 ? { type: "place-value", cellId: cell, digit: 1 + step % 9 } : { type: "clear-value", cellId: cell };
+    const prior = board;
+    board = accepted(apply(prior, action));
+    model[index] = step < 81 ? action.digit : 0;
+    const expected = model.flatMap((value, i) => value ? [{ cellId: `r${Math.floor(i / 9) + 1}c${i % 9 + 1}`, digit: value }] : []);
+    assert.deepEqual(board, createBoard(puzzle, step + 1, expected, []));
+    assert.equal(applyPlayerAction(board, prior.revision, prior.stateFingerprint, action).code, "stale");
+  }
+  assert.equal(board.entries.length, 0);
+});
 
 test("SHA-256 fixed standard vectors and padding/block boundaries", () => {
   for (const [input, expected] of [

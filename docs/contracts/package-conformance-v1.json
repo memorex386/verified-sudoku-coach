@@ -14,8 +14,8 @@
     {
       "name": "@verified-sudoku/domain",
       "version": "0.0.0",
-      "sha256": "f5a8acb8b7a07549e0afa4c5f47293a869c6cb38b4bd43d5fc49682f2851aa36",
-      "integrity": "sha512-FMBoG2ZYDfeCThg08i4BmjkxJmyblUhnPgCddm47aoFUI615XJ+cAY6XoLePUZW5ggnXkFrnfaFRkvSDL70M9Q==",
+      "sha256": "0d5ab909206e5ceb9410e5bc69335ad5e926803f5c580e15c28de5bd780d105d",
+      "integrity": "sha512-CUjLQePxxMkcaYIr0QOjCW/zM6dmE1CfW2WInPGOnErKziZ9+TU6ipV8rH5azNJx4ISCfjI6BAL/3k+kXZFsjg==",
       "files": [
         {
           "name": "package/dist/canonical.d.ts",
@@ -35,19 +35,19 @@
         },
         {
           "name": "package/dist/index.d.ts",
-          "sha256": "b1ab3975eab42a1e4de824678e27b4ccd55732712353ffd994c5c5fbb36e4787"
+          "sha256": "aeaf58370dae19dc25fa6029495edbe5177ebff95dd1350ec4435176889e3b33"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "8d2a65a460136bc9d41fe7d747c359b293bcb2b3c124ba00ec5bbb8204e290c1"
+          "sha256": "4d771280bc0f69a54124a25da08cb6ce6a0c6be7c57ac15a63c0fe50164df175"
         },
         {
           "name": "package/dist/state.d.ts",
-          "sha256": "516a208f0aa9fed0d592180c41d5d06a5b421ba15d8eb9ae86ed2c404798769a"
+          "sha256": "533dc7a46cdab5467a2aa19e04a6fbf9c13e4b5c52713aef87e6c9eb2cd11677"
         },
         {
           "name": "package/dist/state.js",
-          "sha256": "7ed2fba00247d10167df64a9306c2ca16238ed990ed9044afe86049f120e555c"
+          "sha256": "a4ccce9059dd3fc6215ef82bba6fb82a430650c5f9e3c37c44996e9eabca9116"
         },
         {
           "name": "package/dist/topology.d.ts",
@@ -264,12 +264,24 @@
       {
         "size": 6,
         "puzzle": "sha256:212aa81cf4edf5339c9537f2c101de1e806990e1451d15eaa6d57c1b943216ae",
-        "logical": "sha256:56e54ca427519c34d123f37d87f0eab39db998952d4e6c5db46529b269d6715e"
+        "logical": "sha256:56e54ca427519c34d123f37d87f0eab39db998952d4e6c5db46529b269d6715e",
+        "playerActions": {
+          "noted": "sha256:9be170f0a794f47ec76c6fd6c132a0e02bdda08c96e9160ab861f5231d71b5e8",
+          "placed": "sha256:9979983b9b436c182a496441f441b747413cb8e827554b266fa0c058945600b1",
+          "logical": "sha256:bc508849bb9437cb61c7df049de340a7a0bf515ebc42890b21118b3af626c409",
+          "stale": "stale"
+        }
       },
       {
         "size": 9,
         "puzzle": "sha256:ecedebf4d14f5d1e8172276529082878fddab23c2f7031365f786460b652435b",
-        "logical": "sha256:68559a4ee5e9e58261545e872298c1fa98b1955f27fa17b1dc7f49ed91ea00b4"
+        "logical": "sha256:68559a4ee5e9e58261545e872298c1fa98b1955f27fa17b1dc7f49ed91ea00b4",
+        "playerActions": {
+          "noted": "sha256:1c0a7591790ec62fc99a9d2df856c60062c80fd60b9f4a275f4d2b3e158c315a",
+          "placed": "sha256:60e3137bc28906ad199fe4ed7fbcdf781c24102d331f0c9c9ffc5549c1f9e63b",
+          "logical": "sha256:565077bf20ded3d85eb8da8cc34b28cd698a5e1b3037a4f64bfb9e231ef47685",
+          "stale": "stale"
+        }
       }
     ],
     "artifactFraming": [
@@ -282,6 +294,7 @@
     "proofFraming": "unverified",
     "exports": [
       [
+        "applyPlayerAction",
         "canonicalBytes",
         "canonicalJson",
         "cellId",

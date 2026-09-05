@@ -53,6 +53,7 @@ reruns, full proof-path verification, earliest qualifying attempt evidence, tran
 private aggregate collision/conformance evidence. `fixtures:check` remains unfinished and cannot
 be replaced with these decoder tests. No private data or source was accessed.
 
-This slice is based on main after PR #10 and is independent of the open transform PR #11.
-Integrating both must preserve both work-package checkpoints and regenerate/check the combined
-package snapshot; passing either branch alone is not evidence for an untested combined head.
+This slice originally branched from main after PR #10 independently of transform PR #11.
+PRs #11 and #12 are now integrated with both work-package checkpoints preserved and the combined
+package snapshot regenerated and verified. Passing either original branch alone was not evidence
+for that combined head; the work package records the separate integration validation.
