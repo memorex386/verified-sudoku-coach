@@ -252,6 +252,8 @@ The domain now includes initial state and immutable player-action application. T
 verified eliminations remain unimplemented, as do generated showcase fixtures, executable replay
 acceptance and private conformance. Chromium/Angular and packed-consumer checks cover only
 the implemented domain and wire-boundary surfaces.
+The testing workspace now checks canonical public uniqueness receipts by rerunning the independent
+exact solver; this supplies uniqueness-only evidence, not an accepted showcase or proof capability.
 Proof/trace codecs check framing and integrity; replay also executes player actions and checks
 recorded boards and rejection reasons. All proof/trace/replay results remain explicitly `unverified`.
 `test:domain`, `test:contracts`, `test:fixture-tools` and `pack:smoke` are executable; `test:proof`, `fixtures:check`
@@ -260,7 +262,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Review the replay-action implementation PR; keep technique work gated on the private conformance command and linked evidence.
+- Review the uniqueness-receipt implementation PR; keep technique work gated on the private conformance command and linked evidence.
 
 ## Checkpoints
 
@@ -378,3 +380,19 @@ not count as implementation of those services.
   foundation, 20 domain, 32 contracts, 16 fixture-tooling and two package-inspection tests), plus
   matching packed Node/Angular/Chromium results. `git diff --check` passed. This slice stops at
   its implementation PR; complete proof replay and private compatibility remain unfinished.
+- 2026-09-05 — Maintainer authorized PR #15 integration and the next unblocked slice. All CI
+  checks passed on `db6ec7e0b148313483fd9d8827d109009922616b`; PR #15 merged at
+  `a8f9ae0c6ac03c9a5146f4074c7ba2d7f5134b5a`. Continued in a fresh dedicated worktree from
+  updated main. Implemented the [independent uniqueness check](../contracts/fixture-artifacts.md#independent-uniqueness-check)
+  in fixture tooling, composing exact artifact decoding and the existing separate counting solver.
+  Four tests cover true/false claims, exact-cover agreement, canonical/schema/bounds failures,
+  topology/provenance scope, hash/reference tampering and immutable minimal results. No technique,
+  proof capability, showcase acceptance, private data, provider or live-product behavior changed.
+- 2026-09-05 — Uniqueness-check validation passed: `npm ci --ignore-scripts` (unchanged
+  dependencies, zero reported vulnerabilities), `npm run test:fixture-tools` (20 tests), registry
+  generation and `git diff --check`. Full `npm run verify` with
+  `WORK_PACKAGE_BASE_REF=origin/main` passed all 186 tests (112 foundation, 20 domain, 32 contracts,
+  20 fixture-tooling and two package-inspection), strict compilation, architecture and policy
+  gates, unchanged runtime API/schema snapshots and packed Node/Angular/Chromium conformance.
+  This slice stops at its implementation PR; uniqueness-only results do not complete fixture,
+  proof, private conformance or coaching acceptance.

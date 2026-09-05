@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createHash } from "node:crypto";
-import { fixtureAttempt, fixtureRandom, boundedDraw, countSolutions, generationPlan, generateCandidate, transformGrid } from "../dist/index.js";
+import { fixtureAttempt, fixtureRandom, boundedDraw, countSolutions, generationPlan, generateCandidate, transformGrid, checkUniquenessReceipt } from "../dist/index.js";
+import { canonicalJson, createPuzzle, createTopology } from "@verified-sudoku/domain";
+import { decodePuzzle, decodeUnverifiedUniquenessReceipt } from "@verified-sudoku/boundary-codecs";
 import { exactCoverCount } from "./exact-cover.mjs";
 
 const seed = "vsc-fixture/v1:0";
@@ -133,4 +135,88 @@ test("all D4 coordinate maps, inverses and uniqueness agree independently", () =
     assert.equal(transformGrid(transformed, [0, 3, 2, 1, 4, 5, 6, 7][t]), candidateZero);
   }
   for (const t of [-1, -0, 8, 0.5, NaN, "0"]) assert.throws(() => transformGrid(complete, t));
+});
+
+// Original generated/formula states; these files are not accepted showcase fixtures.
+function uniquenessFiles(grid) {
+  const givens = [...grid].flatMap((digit, i) => digit === "0" ? [] :
+    [{ cellId: `r${Math.floor(i / 9) + 1}c${i % 9 + 1}`, digit: Number(digit) }]);
+  const domain = createPuzzle(createTopology(9), givens);
+  const puzzle = { schemaId: "vsc.puzzle-definition", version: 1, puzzleId: "puz_0000000000000000",
+    topology: domain.topology, givens, puzzleFingerprint: domain.puzzleFingerprint,
+    provenance: { kind: "generated", generatorId: "uniqueness-test", generatorVersion: "1.0.0", seed: "uniqueness-test/v1" } };
+  const receipt = { schemaId: "vsc.uniqueness-receipt", version: 1,
+    puzzleFingerprint: domain.puzzleFingerprint, solverVersion: "1.0.0", solutionCount: 1 };
+  return { puzzle, receipt };
+}
+const checkFiles = ({ puzzle, receipt }) => checkUniquenessReceipt(canonicalJson(puzzle), canonicalJson(receipt));
+
+test("uniqueness receipt reruns generated givens and returns only immutable scoped evidence", () => {
+  for (const grid of [candidateZero, transformGrid(candidateZero, 1), complete, `0${complete.slice(1)}`]) {
+    assert.equal(exactCoverCount(grid), 1);
+    const files = uniquenessFiles(grid), before = canonicalJson(files);
+    const result = checkFiles(files);
+    assert.deepEqual(result, { ok: true, value: { scope: "uniqueness-only",
+      puzzleFingerprint: files.puzzle.puzzleFingerprint, solverVersion: "1.0.0", solutionCount: 1 } });
+    assert.ok(Object.isFrozen(result) && Object.isFrozen(result.value));
+    assert.equal(canonicalJson(files), before);
+    assert.deepEqual(checkFiles(files), result);
+  }
+});
+
+test("well-framed uniqueness claims fail when exact cover finds zero or multiple solutions", () => {
+  const unsatisfiable = new Array(81).fill("0");
+  for (let i = 0; i < 8; i++) unsatisfiable[i] = String(i + 1);
+  unsatisfiable[35] = "9";
+  for (const [grid, count] of [[unsatisfiable.join(""), 0], ["0".repeat(81), 2],
+    [complete.slice(0, 27) + "0".repeat(54), 2]]) {
+    assert.equal(exactCoverCount(grid), count);
+    const files = uniquenessFiles(grid);
+    const context = decodePuzzle(canonicalJson(files.puzzle));
+    assert.equal(context.ok, true);
+    const framed = decodeUnverifiedUniquenessReceipt(canonicalJson(files.receipt), context.value);
+    assert.equal(framed.ok, true);
+    assert.equal(framed.value.verification, "unverified");
+    assert.deepEqual(checkFiles(files), { ok: false, code: "semantic" });
+    assert.ok(Object.isFrozen(checkFiles(files)));
+  }
+});
+
+test("uniqueness check enforces canonical bytes, exact bounded schemas and public 9x9 scope", () => {
+  const files = uniquenessFiles(candidateZero);
+  const puzzleText = canonicalJson(files.puzzle), receiptText = canonicalJson(files.receipt);
+  for (const bad of [null, {}, puzzleText + "\n", JSON.stringify(files.puzzle), " ".repeat(16385)]) {
+    assert.equal(checkUniquenessReceipt(bad, receiptText).ok, false);
+  }
+  for (const bad of [null, {}, receiptText + "\n", JSON.stringify(files.receipt), " ".repeat(1025),
+    receiptText.replace('"version":1', '"version":1,"version":1'),
+    canonicalJson({ ...files.receipt, solution: complete }),
+    canonicalJson({ ...files.receipt, version: 2 }),
+    canonicalJson({ ...files.receipt, solverVersion: "2.0.0" }),
+    canonicalJson({ ...files.receipt, solutionCount: 2 })]) {
+    assert.equal(checkUniquenessReceipt(puzzleText, bad).ok, false);
+  }
+  const host = { ...files.puzzle, provenance: { kind: "host-catalog", catalogVersion: "1.0.0",
+    sourceFingerprint: files.puzzle.puzzleFingerprint } };
+  assert.deepEqual(checkFiles({ ...files, puzzle: host }), { ok: false, code: "semantic" });
+  const small = createPuzzle(createTopology(6), []);
+  assert.deepEqual(checkFiles({ puzzle: { ...files.puzzle, topology: small.topology, givens: [],
+    puzzleFingerprint: small.puzzleFingerprint }, receipt: { ...files.receipt, puzzleFingerprint: small.puzzleFingerprint } }),
+  { ok: false, code: "reference" });
+});
+
+test("uniqueness check binds receipt and givens without treating hashes or provenance as proof", () => {
+  const files = uniquenessFiles(candidateZero);
+  const changed = uniquenessFiles(complete);
+  assert.deepEqual(checkFiles({ puzzle: files.puzzle, receipt: changed.receipt }), { ok: false, code: "reference" });
+  assert.deepEqual(checkFiles({ puzzle: { ...files.puzzle, givens: [] }, receipt: files.receipt }),
+    { ok: false, code: "fingerprint" });
+  // Recomputing both hashes for a different, ambiguous puzzle cannot preserve the claim.
+  assert.deepEqual(checkFiles(uniquenessFiles("0".repeat(81))), { ok: false, code: "semantic" });
+  const renamed = { ...files.puzzle, puzzleId: "puz_1111111111111111",
+    provenance: { ...files.puzzle.provenance, seed: "not-regenerated" } };
+  assert.equal(checkFiles({ ...files, puzzle: renamed }).ok, true);
+  // Uniqueness is about topology/givens, not generator provenance, puzzle ID or showcase filters.
+  const conflicting = { ...files.puzzle, givens: [{ cellId: "r1c1", digit: 1 }, { cellId: "r1c2", digit: 1 }] };
+  assert.deepEqual(checkFiles({ ...files, puzzle: conflicting }), { ok: false, code: "semantic" });
 });
