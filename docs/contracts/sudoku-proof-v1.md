@@ -194,7 +194,9 @@ or note set with the identical value is invalid. An accepted mutation increments
 once; revision exhaustion rejects as `invalid-action`. Staleness is checked before action semantics.
 Command deduplication belongs to the application, not domain constructors.
 The [player-action checkpoint](player-actions.md) implements these mutations in the domain without
-constructing verified proofs or executing a complete replay.
+constructing verified proofs or executing a complete replay. The
+[replay-action checkpoint](replay-actions.md) additionally checks recorded player transitions while
+keeping all proof paths explicitly unverified.
 
 ## Authoritative logical state
 

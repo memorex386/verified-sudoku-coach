@@ -1,5 +1,5 @@
 import { traceEnvelopeV1Schema, replayArtifactV1Schema, type TraceEnvelopeV1, type ReplayArtifactV1 } from "@verified-sudoku/contracts";
-import { fingerprint } from "@verified-sudoku/domain";
+import { fingerprint, canonicalJson, applyPlayerAction, type Fingerprint } from "@verified-sudoku/domain";
 import { actionShape, boardValue, puzzleValue } from "./board.js";
 import { pathValue, stepValue, unverified, type Unverified } from "./proof.js";
 import { attempt, parseSchema, requireCondition, type DecodeResult } from "./json.js";
@@ -39,7 +39,7 @@ export function decodeUnverifiedTrace(input: unknown): DecodeResult<Unverified<T
     return unverified(dto);
   });
 }
-/** Framing and references only. Executing actions and verifying path deductions is a later gate. */
+/** Executes player actions and checks framing. Path deductions remain explicitly unverified. */
 export function decodeUnverifiedReplay(input: unknown): DecodeResult<Unverified<ReplayArtifactV1>> {
   return attempt(() => {
     const dto = parseSchema(input, "replay", replayArtifactV1Schema);
@@ -51,13 +51,18 @@ export function decodeUnverifiedReplay(input: unknown): DecodeResult<Unverified<
     for (const [i, record] of dto.records.entries()) {
       requireCondition(record.sequence === i + 1 && !ids.has(record.action.commandId)); ids.add(record.action.commandId);
       actionShape(record.action, puzzle);
+      const applied = applyPlayerAction(current.board, record.action.expectedRevision,
+        record.action.expectedStateFingerprint as Fingerprint, record.action.action);
       if (record.result.type === "accepted") {
-        requireCondition(record.action.expectedRevision === current.dto.revision &&
-          record.action.expectedStateFingerprint === current.dto.stateFingerprint);
-        requireCondition(current.dto.revision < Number.MAX_SAFE_INTEGER && record.result.board.revision === current.dto.revision + 1);
-        current = boardValue(record.result.board, puzzle);
+        requireCondition(applied.type === "accepted");
+        const next = boardValue(record.result.board, puzzle);
+        requireCondition(canonicalJson(applied.board) === canonicalJson(next.board));
+        current = next;
         pathValue(record.result.proofPath, puzzle, current);
-      } else requireCondition(record.result.stateFingerprint === current.dto.stateFingerprint);
+      } else {
+        requireCondition(applied.type === "rejected" && applied.code === record.result.code);
+        requireCondition(record.result.stateFingerprint === current.dto.stateFingerprint);
+      }
     }
     const { replayFingerprint, ...projection } = dto;
     requireCondition(replayFingerprint === fingerprint("replay", projection), "fingerprint");

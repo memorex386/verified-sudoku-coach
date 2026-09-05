@@ -252,14 +252,15 @@ The domain now includes initial state and immutable player-action application. T
 verified eliminations remain unimplemented, as do generated showcase fixtures, executable replay
 acceptance and private conformance. Chromium/Angular and packed-consumer checks cover only
 the implemented domain and wire-boundary surfaces.
-Proof/trace/replay codecs check framing and integrity only and return explicit `unverified` data.
+Proof/trace codecs check framing and integrity; replay also executes player actions and checks
+recorded boards and rejection reasons. All proof/trace/replay results remain explicitly `unverified`.
 `test:domain`, `test:contracts`, `test:fixture-tools` and `pack:smoke` are executable; `test:proof`, `fixtures:check`
 and `proof:hashes` remain required before Done. Packed empty proof-engine/coach-core exports do
 not count as implementation of those services.
 
 ## Next action
 
-- Review the immutable player-action implementation PR; keep technique work gated on the private conformance command and linked evidence.
+- Review the replay-action implementation PR; keep technique work gated on the private conformance command and linked evidence.
 
 ## Checkpoints
 
@@ -363,3 +364,17 @@ not count as implementation of those services.
   `WORK_PACKAGE_BASE_REF=origin/main` passed all 178 tests and matching packed Node/Angular/Chromium
   action fingerprints. This slice stops at its implementation PR; no technique, uniqueness,
   complete replay, private compatibility, provider or live-product acceptance is claimed.
+- 2026-09-05 — Maintainer authorized PR #14 integration and the next unblocked slice. All CI
+  checks passed on `26b2ea97a4163c8141922359d9382374d82e5c75`; PR #14 merged at
+  `0a7ed72ab66502afffe33fc8c6679c49c9dec253`. Continued in a fresh dedicated worktree from
+  updated main. Implemented [replay-action checks](../contracts/replay-actions.md), executing
+  player transitions and comparing recorded boards and rejection reasons. Four adversarial tests
+  cover rehashed false transitions, mixed actions, rejection precedence and the 500-record bound;
+  packed consumers check an altered action. Proof paths remain explicitly unverified, and the
+  private aggregate command and linked evidence still block technique work.
+- 2026-09-05 — Replay-action validation passed: `npm run test:contracts` (32 tests), strict
+  compilation, regenerated API and packed-consumer snapshots, docs, lint and registry checks.
+  Final `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main` passed all 182 tests (112
+  foundation, 20 domain, 32 contracts, 16 fixture-tooling and two package-inspection tests), plus
+  matching packed Node/Angular/Chromium results. `git diff --check` passed. This slice stops at
+  its implementation PR; complete proof replay and private compatibility remain unfinished.

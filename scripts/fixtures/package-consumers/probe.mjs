@@ -53,6 +53,15 @@ export function probe() {
   const framed = codecs.decodeUnverifiedProofStep(JSON.stringify(examples.step), board.value);
   // The example deduction is deliberately false: framing must never promote it to verified.
   check(framed.ok && framed.value.verification === "unverified");
+  const replay = codecs.decodeUnverifiedReplay(JSON.stringify(examples.replay));
+  check(replay.ok && replay.value.verification === "unverified");
+  const alteredReplay = JSON.parse(JSON.stringify(examples.replay));
+  alteredReplay.records[0].action.action.digit = 4;
+  const replayProjection = { ...alteredReplay };
+  delete replayProjection.replayFingerprint;
+  alteredReplay.replayFingerprint = domain.fingerprint("replay", replayProjection);
+  const alteredResult = codecs.decodeUnverifiedReplay(JSON.stringify(alteredReplay));
+  check(!alteredResult.ok && alteredResult.code === "semantic");
   const fixturePuzzle = codecs.decodePuzzle(domain.canonicalJson(fixtureExamples.puzzle));
   check(fixturePuzzle.ok);
   const artifacts = [codecs.decodeUnverifiedUniquenessReceipt(domain.canonicalJson(fixtureExamples.receipt), fixturePuzzle.value),
@@ -63,6 +72,7 @@ export function probe() {
   const canonical = domain.canonicalJson({ z: [1, null, true], a: "\n\u0000" });
   check(canonical === '{"a":"\\n\\u0000","z":[1,null,true]}');
   return { canonical, hashes, vectors, artifactFraming: artifacts.map((result) => result.value.verification),
+    replayActions: { status: replay.value.verification, alteredActionRejected: alteredResult.code },
     collisionProjection: domain.fingerprint("fixture-digit-d4", "0".repeat(81)),
     codecRoundTrip: board.value.board.stateFingerprint,
     proofFraming: framed.value.verification, exports: [domain, contracts, codecs, proof, coach]

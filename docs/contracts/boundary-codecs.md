@@ -30,8 +30,9 @@ or Zod diagnostics. Successful results and nested DTOs are frozen.
 - `decodeUnverifiedTrace(text)` checks Gregorian timestamps, lifecycle bounds, ordered unique event
   IDs, envelope identity and nested payload identities/hashes. It does not establish event causality.
 - `decodeUnverifiedReplay(text)` checks generated provenance, identities, record sequence,
-  revision/fingerprint framing, referenced boards and proof-path integrity. It does not execute
-  player actions, judge rejection reasons, or prove outcome/deduction validity.
+  revision/fingerprint framing, referenced boards and proof-path integrity. It now also
+  [executes player actions](replay-actions.md), compares complete result boards, and checks rejection
+  reasons. It does not prove outcome/deduction validity.
 
 Every proof/trace/replay decoder returns `{verification:"unverified",dto}` inside its success value.
 These are inert wire data for later verification, never capabilities for application, factual
