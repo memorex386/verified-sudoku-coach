@@ -53,9 +53,10 @@ mutating it. An application passes its validated action, expected revision, and 
 fingerprint to this domain function. Puzzle ID/fingerprint routing and command-ID deduplication
 remain external responsibilities; arbitrary wire objects must not skip the codec.
 
-The new result is an internal domain union, not a change to ReplayArtifactV1. Executable replay,
-unique-puzzle certification, proof verification/application, and the private aggregate conformance
-command remain unfinished. No codec, proof-engine, or coach-core implementation is added here.
+The result is an internal domain union, not a change to ReplayArtifactV1. The subsequent
+[replay-action checkpoint](replay-actions.md) uses it to check recorded player transitions.
+Complete proof replay, unique-puzzle certification, proof verification/application, and the private
+aggregate conformance command remain unfinished.
 The [visual-storytelling reference](../product/concepts/coach-interaction.md) remains future UI input.
 
 ## Validation

@@ -217,3 +217,96 @@ test("committed compatibility examples match the constructed synthetic source", 
   assert.deepEqual(artifact, JSON.parse(canonicalJson(examples)));
   assert.equal(success(codec.decodeBehaviorIdentity(json(identity))).hash, fingerprint("behavior-identity", identity));
 });
+
+const sealReplay = value => sealEnvelope(value, "replay", "replayFingerprint");
+const decodeReplay = value => codec.decodeUnverifiedReplay(json(sealReplay(value)));
+
+test("replay rejects rehashed boards that do not follow the recorded player action", () => {
+  const wrongBoards = [
+    makeBoard(1, [...board.entries, { cellId: "r1c3", digit: 4 }], []),
+    makeBoard(1, [...board.entries, { cellId: "r1c3", digit: 3 }], [{ cellId: "r1c4", digits: [4] }]),
+    makeBoard(1, [{ cellId: "r1c2", digit: 4 }, { cellId: "r1c3", digit: 3 }], []),
+    makeBoard(1, board.entries, board.notes),
+  ];
+  for (const next of wrongBoards) {
+    const candidate = copy(replay);
+    candidate.records = [{ sequence: 1, action: copy(action),
+      result: { type: "accepted", board: next, proofPath: makePath(next, []) } }];
+    reject(decodeReplay(candidate), "semantic");
+  }
+  for (const mutation of [{ type: "place-value", cellId: "r1c2", digit: 2 },
+    { type: "clear-value", cellId: "r1c3" }, { type: "place-value", cellId: "r1c1", digit: 3 }]) {
+    const candidate = copy(replay); candidate.records = [candidate.records[0]];
+    candidate.records[0].action.action = mutation;
+    reject(decodeReplay(candidate), "semantic");
+  }
+});
+
+test("replay executes note, placement, replacement and clear transitions without trusting proof outcomes", () => {
+  const candidate = { ...copy(replay), records: [] };
+  const changes = [
+    [{ type: "replace-notes", cellId: "r1c3", digits: [1, 3, 5] }, makeBoard(1, board.entries, [{ cellId: "r1c3", digits: [1, 3, 5] }])],
+    [{ type: "place-value", cellId: "r1c3", digit: 3 }, makeBoard(2, [...board.entries, { cellId: "r1c3", digit: 3 }], [])],
+    [{ type: "place-value", cellId: "r1c3", digit: 4 }, makeBoard(3, [...board.entries, { cellId: "r1c3", digit: 4 }], [])],
+    [{ type: "clear-value", cellId: "r1c3" }, makeBoard(4, board.entries, [])],
+    [{ type: "replace-notes", cellId: "r1c4", digits: [2] }, makeBoard(5, board.entries, [{ cellId: "r1c4", digits: [2] }])],
+    [{ type: "replace-notes", cellId: "r1c4", digits: [] }, makeBoard(6, board.entries, [])],
+  ];
+  let prior = board;
+  for (const [i, [mutation, next]] of changes.entries()) {
+    candidate.records.push({ sequence: i + 1,
+      action: { ...copy(action), commandId: `cmd_${String(i).padStart(16, "0")}`,
+        expectedRevision: prior.revision, expectedStateFingerprint: prior.stateFingerprint, action: mutation },
+      result: { type: "accepted", board: next, proofPath: makePath(next, []) } });
+    prior = next;
+  }
+  const result = success(decodeReplay(candidate));
+  assert.equal(result.verification, "unverified");
+  assert.deepEqual(result.dto.records.at(-1).result.board, prior);
+  assert.ok(Object.isFrozen(result.dto.records[0].result.board.notes[0].digits));
+  assert.equal(candidate.initialBoard.revision, 0);
+  const invalid = copy(candidate); invalid.records[0].result.board = makeBoard(1, board.entries, [{ cellId: "r1c3", digits: [3] }]);
+  invalid.records[0].result.proofPath = makePath(invalid.records[0].result.board, []);
+  reject(decodeReplay(invalid), "semantic");
+});
+
+test("replay rejection reasons must match execution, including stale precedence and exhaustion", () => {
+  const rejectedReplay = (initial, mutation, expectedRevision, code) => ({ ...copy(replay), initialBoard: initial,
+    records: [{ sequence: 1, action: { ...copy(action), expectedRevision,
+      expectedStateFingerprint: initial.stateFingerprint, action: mutation },
+      result: { type: "rejected", code, stateFingerprint: initial.stateFingerprint } }] });
+  for (const mutation of [{ type: "place-value", cellId: "r1c1", digit: 3 },
+    { type: "place-value", cellId: "r1c2", digit: 2 }, { type: "clear-value", cellId: "r1c3" },
+    { type: "replace-notes", cellId: "r1c2", digits: [3] },
+    { type: "replace-notes", cellId: "r1c3", digits: [3, 4] }]) {
+    success(decodeReplay(rejectedReplay(board, mutation, 0, "invalid-action")));
+    reject(decodeReplay(rejectedReplay(board, mutation, 0, "stale")), "semantic");
+    success(decodeReplay(rejectedReplay(board, mutation, 1, "stale")));
+    reject(decodeReplay(rejectedReplay(board, mutation, 1, "invalid-action")), "semantic");
+  }
+  for (const code of ["stale", "invalid-action"]) reject(decodeReplay(rejectedReplay(board, action.action, 0, code)), "semantic");
+  const exhausted = makeBoard(Number.MAX_SAFE_INTEGER);
+  success(decodeReplay(rejectedReplay(exhausted, action.action, exhausted.revision, "invalid-action")));
+  success(decodeReplay(rejectedReplay(exhausted, action.action, 0, "stale")));
+});
+
+test("500-record replay keeps rejected records from advancing state and retains proof distrust", () => {
+  const candidate = { ...copy(replay), records: [] };
+  for (let i = 0; i < 499; i++) candidate.records.push({ sequence: i + 1,
+    action: { ...copy(action), commandId: `cmd_${String(i).padStart(16, "0")}`, expectedRevision: 1 },
+    result: { type: "rejected", code: "stale", stateFingerprint: board.stateFingerprint } });
+  const last = copy(replay.records[0]); last.sequence = 500; last.action.commandId = "cmd_0000000000000499";
+  const next = last.result.board;
+  const falseStep = sealStep({ ...copy(step), sourceBoardRevision: next.revision,
+    sourceBoardFingerprint: next.boardFingerprint, beforeStateFingerprint: makePath(next, []).initialStateFingerprint,
+    premises: { technique: "naked-single", targetCellId: "r1c4", candidateDigits: [4] },
+    conclusions: [{ kind: "place", cellId: "r1c4", digit: 4 }] });
+  const nextContext = success(codec.decodeBoard(json(next), puzzleContext));
+  assert.notEqual(initialLogicalState(nextContext.board).candidates.find(item => item.cellId === "r1c4").mask, 1 << 3);
+  last.result.proofPath = makePath(next, [falseStep]);
+  candidate.records.push(last);
+  const result = success(decodeReplay(candidate));
+  assert.equal(result.verification, "unverified");
+  assert.deepEqual(Object.keys(result).sort(), ["dto", "verification"]);
+  assert.equal(result.dto.records.at(-1).result.board.revision, 1);
+});

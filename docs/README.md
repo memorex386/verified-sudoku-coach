@@ -50,6 +50,7 @@ Gemini, and open-weight names identify adapters or provenance; none is a core au
 | Change an interface | [Contract versioning](contracts/versioning.md) and [change matrix](change-matrix.md) |
 | Find a public interface owner | [Contract catalog](contracts/catalog.md) |
 | Implement board/proof V1 | [Sudoku and proof contracts V1](contracts/sudoku-proof-v1.md) and [fixture generation](architecture/fixture-generation.md) |
+| Check recorded player transitions | [Replay-action checkpoint](contracts/replay-actions.md) — proof paths remain unverified |
 | Apply immutable player input | [Player-action checkpoint](contracts/player-actions.md) — separate from verified proof application |
 | Inspect runtime AI registration | [Runtime manifest contract](contracts/runtime-manifest.md) |
 | Change a proof technique | [Proof-technique runbook](runbooks/change-proof-technique.md) |

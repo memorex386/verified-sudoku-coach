@@ -158,8 +158,8 @@
     {
       "name": "@verified-sudoku/boundary-codecs",
       "version": "0.0.0",
-      "sha256": "0744b782ef2b439680c375c1bed292ce275d1f48a8e53262c846f751c2b18c5d",
-      "integrity": "sha512-Ht3QO8YH9dC4tpzFgyqbt6tiu/QVdw08UrgAgli228bNEZLHnqgLxpI1vr3+XEb3ED16QzOGJrtGLnP7tgcfzw==",
+      "sha256": "7be584af50b857a7afcb1f56425b21c591a21dd2c1cba2b4da4e65dba1b99542",
+      "integrity": "sha512-BA9efDwHbhRy7CIKf8ykbJzMVZA39rPbolMHsxsaBGOULtLTbctHUmsyJykFvZNUl0X2zBPK5LY47f9sWoxHjw==",
       "files": [
         {
           "name": "package/dist/board.d.ts",
@@ -203,11 +203,11 @@
         },
         {
           "name": "package/dist/trace.d.ts",
-          "sha256": "214202bbfcf4cd47983cbfc019a2ea509fb6f6b54f427899fbd87be67dcde359"
+          "sha256": "bff6f5d549c6b0e23396b0f0214d757a61e3ea6835328b00be5bdaaabdc2c521"
         },
         {
           "name": "package/dist/trace.js",
-          "sha256": "bcc9cd7ff545b638446da3357035fb185796a46a287df86733cbfb296f879a84"
+          "sha256": "953e2b14988941e51d13c8c42e2275abdeea436f20042df2409a84bc849c8cc6"
         },
         {
           "name": "package/package.json",
@@ -289,6 +289,10 @@
       "unverified",
       "unverified"
     ],
+    "replayActions": {
+      "status": "unverified",
+      "alteredActionRejected": "semantic"
+    },
     "collisionProjection": "sha256:c87402d9931cd9ceaed839bdfe4a6ff284eecfb53658bb1a1b5ccd6c07e87f9c",
     "codecRoundTrip": "sha256:a220bc6216095dd8ac31997b9c3cb4bba2f11e94ac107aa161be005d9b84243f",
     "proofFraming": "unverified",
