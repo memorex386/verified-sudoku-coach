@@ -3,3 +3,5 @@ export { fixtureAttempt, fixtureRandom, boundedDraw } from "./fixtures/random.js
 export { countSolutions } from "./fixtures/solver.js";
 export { generationPlan, generateCandidate, transformGrid,
   type GenerationPlan, type FixtureCandidate } from "./fixtures/generator.js";
+export { classicTransformSuite, normalizeDigits, normalizeDigitD4, fixtureCollisionKeys,
+  type ClassicTransformId, type FixtureTransform } from "./fixtures/transforms.js";

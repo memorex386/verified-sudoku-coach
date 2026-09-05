@@ -14,8 +14,8 @@
     {
       "name": "@verified-sudoku/domain",
       "version": "0.0.0",
-      "sha256": "bdc508bb7da2ecd5fadb7bcaee1c34c8e0c7ed48c7e14dc7e2a970797d6684cd",
-      "integrity": "sha512-Q4QxMcUrxYE60Rr60KIt/jR1CiaFAdTR3ssJIybWIKPCJ8CMyNeTRs511U8k7i3JNJiD9rTD/0RBxOtQud7hNA==",
+      "sha256": "f5a8acb8b7a07549e0afa4c5f47293a869c6cb38b4bd43d5fc49682f2851aa36",
+      "integrity": "sha512-FMBoG2ZYDfeCThg08i4BmjkxJmyblUhnPgCddm47aoFUI615XJ+cAY6XoLePUZW5ggnXkFrnfaFRkvSDL70M9Q==",
       "files": [
         {
           "name": "package/dist/canonical.d.ts",
@@ -31,7 +31,7 @@
         },
         {
           "name": "package/dist/hash.js",
-          "sha256": "f91bf049b64e390c33370b27cf9043fd9f57e1d6435ff04a8d253a1bf611a87e"
+          "sha256": "5984020289aa1df49135f3dc1efe8fd9d9e7365750fffe95141bdad4bf76cc5d"
         },
         {
           "name": "package/dist/index.d.ts",
@@ -256,6 +256,7 @@
         "logical": "sha256:68559a4ee5e9e58261545e872298c1fa98b1955f27fa17b1dc7f49ed91ea00b4"
       }
     ],
+    "collisionProjection": "sha256:c87402d9931cd9ceaed839bdfe4a6ff284eecfb53658bb1a1b5ccd6c07e87f9c",
     "codecRoundTrip": "sha256:a220bc6216095dd8ac31997b9c3cb4bba2f11e94ac107aa161be005d9b84243f",
     "proofFraming": "unverified",
     "exports": [
