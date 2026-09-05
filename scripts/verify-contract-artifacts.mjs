@@ -6,6 +6,7 @@ import * as schemas from "@verified-sudoku/contracts";
 import * as codecs from "@verified-sudoku/boundary-codecs";
 import { canonicalJson } from "@verified-sudoku/domain";
 import { examples } from "../packages/boundary-codecs/test/examples.mjs";
+import { fixturePuzzle, fixtureExamples } from "../packages/boundary-codecs/test/fixture-examples.mjs";
 import { fromRoot } from "./lib/project.mjs";
 
 const write = process.argv.includes("--write");
@@ -29,6 +30,7 @@ for (const [name, schema] of Object.entries(schemas)) {
 assert.deepEqual(fs.readdirSync(fromRoot("docs/contracts/schemas")).sort(),
   Object.keys(schemas).map((name) => `${name}.json`).sort(), "Unexpected or stale schema artifact");
 artifact("docs/contracts/examples/board-proof-v1.json", `${canonicalJson(examples)}\n`);
+artifact("docs/contracts/examples/fixture-artifacts-v1.json", `${canonicalJson({ puzzle: fixturePuzzle, ...fixtureExamples })}\n`);
 const api = {};
 for (const name of ["contracts", "boundary-codecs"]) {
   api[name] = Object.fromEntries(fs.readdirSync(fromRoot(`packages/${name}/dist`)).filter((file) => file.endsWith(".d.ts")).sort().map((file) =>

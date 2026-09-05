@@ -8,7 +8,7 @@ base_branch: main
 accepted_plan: VSC-PLAN-2026-09-04.2
 data_classification: Public
 acceptance: VSC-ARCH-002, VSC-ARCH-003, VSC-PROOF-001, VSC-PROOF-002
-updated: 2026-09-04
+updated: 2026-09-05
 ---
 
 # Contracts and deterministic proof engine
@@ -199,6 +199,26 @@ Fixture-tooling validation on Windows, 2026-09-04:
 - `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
 - `git diff --check`: PASS — no whitespace errors.
 
+PR #10 subsequently merged at `1b0d0426de4ce48df822143d810e0025bb37adb2`, preserving head
+`e1a1b7841a17db02f81e833b43da0365a17580d1`. The fixture-transform work is in open
+[PR #11](https://github.com/memorex386/verified-sudoku-coach/pull/11), reviewed head
+`9fc2a28ca6c8c5d5e932d6048f7ac4a2340405b6`; its merge remains unauthorized.
+The [fixture artifact boundary checkpoint](../contracts/fixture-artifacts.md) proceeds independently
+from main after PR #10: exact schemas, canonical-file decoders and compatibility evidence for
+receipts/manifests/registry, all explicitly unverified. No showcase artifact is produced.
+
+Fixture-artifact boundary validation on Windows, 2026-09-05:
+
+- `npm ci --ignore-scripts`: PASS — unchanged dependencies, zero reported vulnerabilities.
+- `npm run test:contracts`: PASS — 28 tests, thirteen JSON Schema snapshots, checked API/export
+  snapshots and original board/fixture compatibility examples.
+- `npm run pack:smoke`: PASS — repeatable tarballs and all three artifact decoders exercised in
+  clean Node and strict Angular AOT/pinned Chromium consumers, retaining unverified results.
+- `npm run verify`: PASS with `WORK_PACKAGE_BASE_REF=origin/main` — all 165 tests, strict
+  compilation and every foundation/package gate. This independent branch excludes PR #11's tests.
+- `npm run work-packages:generate`: PASS — one active package and exactly one review next action.
+- `git diff --check`: PASS — no whitespace errors.
+
 ## Known limitations and blockers
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
@@ -217,7 +237,7 @@ not count as implementation of those services.
 
 ## Next action
 
-- Review the fixture-tooling implementation PR and obtain explicit merge authorization; keep proof-technique work gated on the private conformance command and linked evidence.
+- Review the fixture-artifact boundary implementation PR and obtain explicit merge authorization; retain the separate open PR #11 and private conformance gate.
 
 ## Checkpoints
 
@@ -265,3 +285,12 @@ not count as implementation of those services.
 - 2026-09-04 — Full local CI-base-ref verification passed all 156 tests and existing package
   conformance. The fixture-tooling slice is ready for its review PR; it does not establish
   showcase selection, proof soundness, private collision clearance or private corpus parity.
+- 2026-09-05 — Continued the next independent WP-2026-003 slice from main after PR #10, leaving
+  PR #11 open without merge authorization. Implemented exact receipt/manifest/registry schemas,
+  bounded canonical-file decoders returning unverified claims, compatibility snapshots and
+  adversarial tests. No private data, technique verifier, solver acceptance or live-product change
+  was introduced. Integrating both open slices must preserve their checkpoints and rerun combined
+  snapshot/verification checks.
+- 2026-09-05 — Full local CI-base-ref verification passed all 165 tests on this independent
+  artifact-contract branch, plus matching Node/Chromium and regenerated API/schema compatibility
+  evidence. It stops at its review PR; no uniqueness/proof acceptance or private clearance is claimed.
