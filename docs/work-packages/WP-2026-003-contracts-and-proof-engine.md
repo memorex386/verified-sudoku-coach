@@ -427,3 +427,11 @@ before Done. The proof engine implements local single hints; coach-core renders 
   Regenerated coach-core package evidence includes naked/hidden lesson consumers. Visually checked
   the explanation at 320px and 390px. No dependencies were added; this stops at a review PR and
   a local preview. Maintainer experience feedback and full proof/private gates remain outstanding.
+- 2026-09-05 — Maintainer tried and accepted the local tutor and authorized its stack merge.
+  Pre-merge CI exposed a test-only browser launch mismatch: CI installs full pinned Chromium,
+  while the new test requested the separate headless-shell binary. Use the existing consumer's
+  executable path and register cleanup before launch so startup failures cannot strand the server.
+  Runtime UI behavior is unchanged; merge remains pending successful checks on the corrected head.
+- 2026-09-05 — Corrected tutor launch passed full `npm run verify` with the local-singles base:
+  all 190 tests and matching packed Node/Chromium checks. Registry and whitespace checks passed.
+  Awaiting CI on the corrected head before executing the authorized merge.

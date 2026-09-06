@@ -58,8 +58,11 @@ test("lesson facts reference verified clues, freeze output and reject stale/forg
   assert.ok(naked); // Hidden singles also covered by the dedicated synthetic proof cases.
 });
 
-test("local browser supports hints, notes, clear/undo, interruption, keyboard and full completion", { timeout: 90000 }, async () => {
-  const server = await startTutor(0), browser = await chromium.launch();
+test("local browser supports hints, notes, clear/undo, interruption, keyboard and full completion", { timeout: 90000 }, async (t) => {
+  const server = await startTutor(0);
+  t.after(() => server.close());
+  const browser = await chromium.launch({ headless: true, executablePath: chromium.executablePath() });
+  t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const errors = [], requests = [];
   page.on("pageerror", error => errors.push(error.message));
@@ -110,5 +113,5 @@ test("local browser supports hints, notes, clear/undo, interruption, keyboard an
     }
     assert.deepEqual(errors, []);
     assert.ok(requests.every(url => url.startsWith(server.url + "/")));
-  } finally { await browser.close(); await server.close(); }
+  } finally { await browser.close(); }
 });
