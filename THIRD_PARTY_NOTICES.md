@@ -32,3 +32,7 @@ Future dependency additions must include automated dependency/license review, up
 the generated release notice, and record any bundled assets, fonts, puzzles, model responses, or
 code with their source and license. Generated project puzzles and synthetic recordings are governed
 by [source and data provenance](docs/provenance/source-and-data.md).
+
+The local Node gateway uses development-only `@types/node` 22.20.1 and its `undici-types`
+transitive dependency, both MIT-licensed. Versions and integrity are pinned in the lockfile;
+installed licenses remain with npm. No provider SDK or additional runtime dependency is added.

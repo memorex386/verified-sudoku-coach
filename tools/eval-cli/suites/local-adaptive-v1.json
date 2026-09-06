@@ -1,0 +1,153 @@
+{
+  "schemaId": "vsc.local-adaptive-suite",
+  "version": "1.0.0",
+  "provenance": "Synthetic authored decisions; never sampled provider output",
+  "partition": "frozen-regression; no held-out/live claim",
+  "cases": [
+    {
+      "id": "nudge",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "nudge",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": true
+    },
+    {
+      "id": "compare",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "compare",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": true
+    },
+    {
+      "id": "explain",
+      "preference": "explain",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "explain",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": true
+    },
+    {
+      "id": "pause",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "pause",
+        "acknowledgement": "listen",
+        "followUp": "none"
+      },
+      "accepted": true
+    },
+    {
+      "id": "wrong-state",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "recover",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": false
+    },
+    {
+      "id": "unknown-reference",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "r1c1",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": false
+    },
+    {
+      "id": "over-reveal",
+      "preference": "nudge",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "explain",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": false
+    },
+    {
+      "id": "invented-prose",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "nudge",
+        "acknowledgement": "listen",
+        "followUp": "try",
+        "message": "place a value"
+      },
+      "accepted": false
+    },
+    {
+      "id": "pause-question",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "pause",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": false
+    },
+    {
+      "id": "future-version",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 2,
+        "option": "nudge",
+        "acknowledgement": "listen",
+        "followUp": "try"
+      },
+      "accepted": false
+    },
+    {
+      "id": "unknown-ack",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "nudge",
+        "acknowledgement": "solved",
+        "followUp": "try"
+      },
+      "accepted": false
+    },
+    {
+      "id": "unknown-follow-up",
+      "preference": "balanced",
+      "decision": {
+        "schemaId": "vsc.local-coach-decision",
+        "version": 1,
+        "option": "nudge",
+        "acknowledgement": "listen",
+        "followUp": "place"
+      },
+      "accepted": false
+    }
+  ]
+}

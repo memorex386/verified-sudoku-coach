@@ -1,5 +1,50 @@
 {
   "schemaVersion": 1,
-  "status": "no-runtime-ai-registered",
-  "registrations": []
+  "status": "registered",
+  "registrations": [
+    {
+      "id": "local-adaptive-teacher-v1",
+      "role": "teacher",
+      "approvalStatus": "candidate",
+      "providerProfileId": "openai-responses-v1",
+      "providerProfileSha256": "5ad233b6fb62179788ea4335a64054f7af5c915795cf6965fb35f4ed5f56617b",
+      "requestedModel": "gpt-5.6-terra",
+      "modelProfileVersion": "1.0.0",
+      "inferenceSettings": {
+        "outputMode": "strict-json-schema",
+        "providerSettings": {
+          "reasoning": {
+            "effort": "medium"
+          },
+          "service_tier": "auto",
+          "store": false
+        },
+        "samplingPolicy": "provider-default-no-parameters",
+        "toolPolicy": "none"
+      },
+      "runtimeBehaviorVersion": "1.0.0",
+      "maxOutputTokens": 768,
+      "timeoutMs": 10000,
+      "responseStoragePolicy": "request-not-to-store",
+      "automaticRetry": false,
+      "failurePolicy": "visible-pause",
+      "promptPath": "ai/prompts/local-adaptive-teacher-v1.md",
+      "promptSha256": "661361853d0959734872f3cf8c7f87fe5c598971182408a066faa46bbee34036",
+      "promptVersion": "1.0.0",
+      "schemaPath": "packages/contracts/schemas/local-adaptive-v1.json",
+      "schemaSha256": "1e915c9e9c263a98b6a3aa686cb05bd31ed8b219b318a379502d202f8868b117",
+      "schemaVersion": "1.0.0",
+      "rendererManifestPath": "packages/coach-core/renderers/local-adaptive-v1.json",
+      "rendererManifestSha256": "3bc72edffff3f9f42cff8d4e352f96e38db0dfd13c41a35e610d54a24910513a",
+      "rendererVersion": "1.0.0",
+      "proofPolicyPath": "packages/proof-engine/policies/local-adaptive-v1.json",
+      "proofPolicySha256": "6d0bd1e8c2f61b6b06700019ba884fc11b713a3fed49cbd45cba79980d1d70d6",
+      "proofPolicyVersion": "1.0.0",
+      "evalSuiteManifestPath": "tools/eval-cli/suites/local-adaptive-v1.json",
+      "evalSuiteManifestSha256": "a954599b304bc4151568855dc268313e26c6af9104503edcf49fc05586186ca1",
+      "evalSuiteVersion": "1.0.0",
+      "comparisonReportPath": "docs/evaluation/reports/local-adaptive-v1.json",
+      "comparisonReportSha256": "8328e2b0ac95c0a17969a8ab33830f6e2185bca5ad560ae92c19d6daa759eb90"
+    }
+  ]
 }

@@ -71,3 +71,11 @@ Hashes use normalized UTF-8 text as read by the repository verifier. Live report
 record the real provider, adapter, requested and returned model IDs, relevant requested and
 returned provider metadata, and complete outcome accounting, but raw requests/responses never
 enter the manifest or public report.
+
+## Local adaptive candidate
+
+The accepted [local milestone](../product/local-adaptive-milestone.md) introduces
+`local-adaptive-teacher-v1` before WP-2026-005. It remains candidate-only; ADR-0009 permits
+its explicitly enabled, bounded owner evaluation shell without cohort approval. All six artifact
+hashes and provider selection are checked at gateway startup. The frozen report covers synthetic
+validator decisions, with no prior adaptive model baseline or live quality claim.

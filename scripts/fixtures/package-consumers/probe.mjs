@@ -53,7 +53,13 @@ export function probe() {
     const hiddenLesson = coach.localLesson(singleBoard, hiddenCapability, 2);
     check(hiddenLesson.beats[0].text.includes("only row 1, column 1 can contain 1"));
     check(hiddenLesson.beats[0].cells.length === size);
-    vectors.push({ lesson, hiddenLesson, size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint, single,
+    const adaptiveChoice = { schemaId: "vsc.local-coach-decision", version: 1, option: "explain", acknowledgement: "listen", followUp: "understood" };
+    check(codecs.decodeLocalCoachChoice(adaptiveChoice, singleBoard, "balanced") !== null);
+    check(codecs.decodeLocalCoachChoice(adaptiveChoice, singleBoard, "nudge") === null);
+    check(codecs.decodeLocalCoachChoice({ ...adaptiveChoice, option: "invented" }, singleBoard, "balanced") === null);
+    const optionIds = coach.localCoachOptions(singleBoard).map(option => option.id);
+    check(optionIds.join(",") === "nudge,compare,explain,pause");
+    vectors.push({ optionIds, lesson, hiddenLesson, size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint, single,
       playerActions: { noted: noteAction.board.stateFingerprint, placed: placed.board.stateFingerprint,
         logical: domain.initialLogicalState(placed.board).fingerprint, stale: stale.code } });
   }

@@ -5,7 +5,7 @@ export type DecodeResult<T> = { readonly ok: true; readonly value: T } | { reado
 export type DeepReadonly<T> = T extends readonly (infer U)[] ? readonly DeepReadonly<U>[] :
   T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } : T;
 export const limits = Object.freeze({
-  identity: [4096, 3], action: [4096, 5], puzzle: [16384, 6], board: [32768, 6],
+  localCoach: [32768, 8], identity: [4096, 3], action: [4096, 5], puzzle: [16384, 6], board: [32768, 6],
   step: [32768, 8], path: [2097152, 10], trace: [8388608, 12], replay: [8388608, 12],
   receipt: [1024, 2], fixtureManifest: [32768, 5], fixtureRegistry: [1024, 3],
 } as const);
@@ -35,7 +35,7 @@ export function parseBoundedJson(raw: unknown, kind: ContractKind): unknown {
   const [bytes, maxDepth] = limits[kind];
   requireCondition(input.length <= bytes, "size");
   // V1 wire fields are ASCII. Escapes still pass through JSON decoding and schema validation.
-  for (let i = 0; i < input.length; i++) requireCondition(input.charCodeAt(i) <= 127, "syntax");
+  if (kind !== "localCoach") for (let i = 0; i < input.length; i++) requireCondition(input.charCodeAt(i) <= 127, "syntax");
   let position = 0;
   function whitespace(): void { while (/[\x20\t\r\n]/.test(input[position] ?? "!")) position++; }
   function string(): string {

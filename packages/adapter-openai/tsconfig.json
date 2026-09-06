@@ -3,13 +3,26 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/adapter-openai.tsbuildinfo"
+    "tsBuildInfoFile": "dist/adapter-openai.tsbuildinfo",
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../contracts" },
-    { "path": "../domain" },
-    { "path": "../coach-core" },
-    { "path": "../boundary-codecs" }
+    {
+      "path": "../contracts"
+    },
+    {
+      "path": "../domain"
+    },
+    {
+      "path": "../coach-core"
+    },
+    {
+      "path": "../boundary-codecs"
+    }
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "schemaId": "vsc.local-proof-policy",
+  "version": "1.0.0",
+  "profile": "local-singles/v1",
+  "techniques": [
+    "naked-single",
+    "hidden-single"
+  ],
+  "authority": "independent verifier; player notes excluded",
+  "scope": "one generated local puzzle; no private conformance"
+}
