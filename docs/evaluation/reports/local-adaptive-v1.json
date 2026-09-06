@@ -1,0 +1,13 @@
+{
+  "schemaId": "vsc.local-adaptive-report",
+  "version": 1,
+  "scope": "Credential-free frozen choice validation; no live behavior measured",
+  "cases": 12,
+  "expectedAccepted": 4,
+  "expectedRejected": 8,
+  "baseline": "No prior adaptive evaluator; deterministic nudge is the only experience baseline",
+  "liveCalls": 0,
+  "liveQualityMeasured": false,
+  "latencyMeasured": false,
+  "costMeasured": false
+}

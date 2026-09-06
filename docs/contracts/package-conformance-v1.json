@@ -66,8 +66,8 @@
     {
       "name": "@verified-sudoku/contracts",
       "version": "0.0.0",
-      "sha256": "4bdcca65a4515a85b9473b79d8287faa97d642cb74d7ec8521712344041135ca",
-      "integrity": "sha512-oSuDcjXMqFQXAwfRoQlFhOUIsUfrVZRnLPi086ShvEkAsUuFyx+vzFAWQ57oqMfqS9xrJnSDlHZeyqEqn6dpwA==",
+      "sha256": "3979f0f8f6a5951af5b2d7dd772a50b1df1378c5a1f2f07c9b88c7e4999ba88b",
+      "integrity": "sha512-Y0G8H/q4Gmr4ErfBrQjiOiklFNAmC0qjnDqPp9dkbotJW4BX9a++3TFSLi3G0Bfg5BTKNyiZuDWlCtYYKALESg==",
       "files": [
         {
           "name": "package/dist/board.d.ts",
@@ -87,11 +87,19 @@
         },
         {
           "name": "package/dist/index.d.ts",
-          "sha256": "ba7b4e86019d328b3ce5ffdf0fd950f8ee9b70f6ef4083a0a9a41bfaa8436518"
+          "sha256": "78aa4fbb9e181fbc029ee079d64f466c29b5d015ceb84e824de7f43cefa62325"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "5d76a9cd9bca152c1913ea78f9cf4303c9bbec3443c131399d11f7b2039ac940"
+          "sha256": "19c4f81c8291584d5357a5a2bca6d7d99036370d75bc38fd0286fd3999be6176"
+        },
+        {
+          "name": "package/dist/local-coach.d.ts",
+          "sha256": "69f07ab1a94a87a21519c322f4032958484bd32f4de876b2afd74e173a969521"
+        },
+        {
+          "name": "package/dist/local-coach.js",
+          "sha256": "9f805d6df17a047a7395867d3fe9d5e7f2615d4b4f3cabeac284a741fe5fe5fb"
         },
         {
           "name": "package/dist/proof.d.ts",
@@ -162,16 +170,24 @@
     {
       "name": "@verified-sudoku/coach-core",
       "version": "0.0.0",
-      "sha256": "31fc9f197d10e22a61f476ecbabc0cff269b45cc9b77b66e1c0622764af30636",
-      "integrity": "sha512-+kCu9Ln/Mm50ROJk3HH2Im7IhM80Opvlcqm3PUd+o8P61SFrjxAgaE91KW89NON1HQhvAGaDBxCK/snP9MlM8w==",
+      "sha256": "ea2ac472ba0a7360ad4ad426d2bfef3dc77887f2a9279d20fdd035ea2b6c139e",
+      "integrity": "sha512-/bJgM3Tj09830P+OxxvBIFUZLGBrAHJNHtfUSxxLYxwOPr8GFhPI/tTqiVP5yMkpSQONsL6kXFraEwxqr6Zfeg==",
       "files": [
         {
+          "name": "package/dist/adaptive.d.ts",
+          "sha256": "919809e742ea17930b42051b04b84546fcb72068e0577208a35321b330719340"
+        },
+        {
+          "name": "package/dist/adaptive.js",
+          "sha256": "8c58be36bcf32b0c814e073e49ddf564a6d2b47a6e78f04133d940218dd771b0"
+        },
+        {
           "name": "package/dist/index.d.ts",
-          "sha256": "3336f70916afd1992d4e86f76631a87f82f462d2ef29923486ec44225f8aa7c7"
+          "sha256": "8a5ab4d99f829cf9a7ee8823ee1c55a8a708fff87bd7f592eeb422371235e588"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "64932fd367e3eed75e15df5a002c9c4162b1e3dddd11a9ff8b8719bb3634d88c"
+          "sha256": "ebf3a79325dd5a1ca758a6bea87a2b09498a64060cc3d969bda60d58a8e7a624"
         },
         {
           "name": "package/dist/local-lesson.d.ts",
@@ -190,8 +206,8 @@
     {
       "name": "@verified-sudoku/boundary-codecs",
       "version": "0.0.0",
-      "sha256": "7be584af50b857a7afcb1f56425b21c591a21dd2c1cba2b4da4e65dba1b99542",
-      "integrity": "sha512-BA9efDwHbhRy7CIKf8ykbJzMVZA39rPbolMHsxsaBGOULtLTbctHUmsyJykFvZNUl0X2zBPK5LY47f9sWoxHjw==",
+      "sha256": "4834a81e72da96455b6fd49a6faf4d62378ca748b4231a2928f70a7b3e7dc77b",
+      "integrity": "sha512-YKYPmEv+eRvlIQ3EkyfdAG4Sqm0xUmEl59ufHiF799JLUV8aQnr+qUVZUIb9G+pzxfvqmu277dYJpEGsSuTBTg==",
       "files": [
         {
           "name": "package/dist/board.d.ts",
@@ -211,19 +227,27 @@
         },
         {
           "name": "package/dist/index.d.ts",
-          "sha256": "7859bd9ca3f17c87faf0821e323467f90d0bca6a5ea53804d368814afc4f41f4"
+          "sha256": "b77d99b28c87a209721d8867eff87ae57297f39c3f33460795e88579f9133155"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "f2fd9d7c0acabac9f53c5b4cffb2f39cb44b0e397c7623a9c2c1ae784971c9e4"
+          "sha256": "d5ace254b6410a98384bf0104fdafe04c4738ef2215dd7d4a3d0ea46de25c73f"
         },
         {
           "name": "package/dist/json.d.ts",
-          "sha256": "1a118da02a352fce6da6a6f36704beb017f62058682dce5ae2c1cf90577b1547"
+          "sha256": "3adb4b5a523063af65b2cf7d5e99d7f8b04aeda14449d323e85f57145b3bd37a"
         },
         {
           "name": "package/dist/json.js",
-          "sha256": "bfdf9dc8b09781bb3ca23af91ff3c57941082c230690d9741147d403bcc93cf6"
+          "sha256": "4a450ebcd1286b29b3eff12c8d848b5956332ac5e766ef98035ff0b6501de4a5"
+        },
+        {
+          "name": "package/dist/local-coach.d.ts",
+          "sha256": "2f9e7673c85b445be1c47b32369a47fed6f7e3e1b95cd99c848e4ad5b7cc1338"
+        },
+        {
+          "name": "package/dist/local-coach.js",
+          "sha256": "1ef0ff2850ceba6384e4698159db8d564fd0caf90639b98d7d21602a586c1f54"
         },
         {
           "name": "package/dist/proof.d.ts",
@@ -294,6 +318,12 @@
     ],
     "vectors": [
       {
+        "optionIds": [
+          "nudge",
+          "compare",
+          "explain",
+          "pause"
+        ],
         "lesson": {
           "target": "r1c1",
           "title": "Why it works",
@@ -379,6 +409,12 @@
         }
       },
       {
+        "optionIds": [
+          "nudge",
+          "compare",
+          "explain",
+          "pause"
+        ],
         "lesson": {
           "target": "r1c1",
           "title": "Why it works",
@@ -523,6 +559,10 @@
         "boardStateV1Schema",
         "fixtureManifestV1Schema",
         "fixtureRegistryV1Schema",
+        "localCoachControlV1Schema",
+        "localCoachDecisionV1Schema",
+        "localCoachRequestV1Schema",
+        "localCoachResponseV1Schema",
         "proofPathV1Schema",
         "proofStepV1Schema",
         "puzzleDefinitionV1Schema",
@@ -536,6 +576,11 @@
         "decodeBehaviorIdentity",
         "decodeBoard",
         "decodeBoardAction",
+        "decodeLocalCoachChoice",
+        "decodeLocalCoachControl",
+        "decodeLocalCoachDecision",
+        "decodeLocalCoachRequest",
+        "decodeLocalCoachResponse",
         "decodePuzzle",
         "decodeUnverifiedFixtureManifest",
         "decodeUnverifiedFixtureRegistry",
@@ -553,6 +598,9 @@
         "verifySingle"
       ],
       [
+        "localAcknowledgements",
+        "localCoachOptions",
+        "localFollowUps",
         "localLesson"
       ]
     ]

@@ -1,3 +1,4 @@
+import { mountAdaptive } from "./adaptive.js";
 import { createBoard, applyPlayerAction, cells, type Board, type CellId } from "@verified-sudoku/domain";
 import { decodePuzzle } from "@verified-sudoku/boundary-codecs";
 import { proposeSingle, verifySingle, readVerifiedSingle, type VerifiedSingle } from "@verified-sudoku/proof-engine";
@@ -33,6 +34,7 @@ const solution = completion(board);
 const notice = (text: string) => { el("status").textContent = text; };
 function stopStory() { clearTimeout(timer); timer = undefined; }
 function dismiss() {
+  document.dispatchEvent(new Event("coach-cancel"));
   stopStory(); capability = null; lesson = null; highlighted = []; active = []; shown = 0;
   el("coach").hidden = true; renderBoard();
 }
@@ -60,7 +62,7 @@ function mutate(action: Parameters<typeof applyPlayerAction>[3]) {
   const result = applyPlayerAction(board, board.revision, board.stateFingerprint, action);
   if (result.type !== "accepted") { notice("That square cannot be changed that way."); return; }
   history.push(board); board = result.board; dismiss();
-  notice(wrong.length ? "An entry needs another look. Get help or undo when you're ready." : "Board updated."); renderBoard();
+  notice(wrong.length ? "An entry needs another look. Get help or undo when you're ready." : "Board updated."); renderBoard(); document.dispatchEvent(new Event("coach-board-change"));
 }
 function enter(digit: number) {
   if (notes) {
@@ -71,7 +73,7 @@ function enter(digit: number) {
 function undo() {
   const previous = history.pop(); if (!previous) return;
   board = createBoard(board.puzzle, board.revision + 1, previous.entries, previous.notes);
-  dismiss(); notice("Last change undone."); renderBoard();
+  dismiss(); notice("Last change undone."); renderBoard(); document.dispatchEvent(new Event("coach-board-change"));
 }
 function renderStory() {
   if (!lesson || !capability || !readVerifiedSingle(board, capability)) { dismiss(); return; }
@@ -143,7 +145,7 @@ el("smaller").addEventListener("click", () => { if (depth > 0) { depth = (depth 
 el("show-all").addEventListener("click", () => { stopStory(); if (lesson) { shown = lesson.beats.length; renderStory(); el("close").focus(); } });
 el("pause").addEventListener("click", () => { paused = !paused; stopStory(); renderStory(); if (!paused) tick(); });
 document.addEventListener("keydown", event => {
-  if (event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.ctrlKey || event.metaKey || event.altKey || event.target instanceof HTMLTextAreaElement || event.target instanceof HTMLInputElement || event.target instanceof HTMLSelectElement) return;
   if (/^[1-9]$/.test(event.key)) { event.preventDefault(); enter(Number(event.key)); }
   else if (event.key === "Escape") { dismiss(); el("help").focus(); }
   else if (event.target instanceof HTMLElement && event.target.getAttribute("role") === "gridcell") {
@@ -153,3 +155,11 @@ document.addEventListener("keydown", event => {
   }
 });
 renderBoard();
+
+mountAdaptive(() => board, decoded.value.dto.puzzleId, option => {
+  if (["nudge", "compare", "explain"].includes(option)) {
+    const found = proposeSingle(board); if (found.type !== "proposal") return;
+    capability = verifySingle(board, found.proposal); depth = option === "nudge" ? 0 : option === "compare" ? 1 : 2;
+    showLesson(); el("coach").scrollIntoView({ block: "nearest" });
+  } else help();
+});

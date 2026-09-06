@@ -22,6 +22,21 @@
       <div class="hint-tools"><button id="smaller">A smaller hint</button><button id="deeper" class="primary">Stronger hint</button></div></div>
     <p class="player-control">You make the move. The coach only explains.</p>
   </section>
+  <section id="adaptive" hidden aria-labelledby="ai-heading">
+    <h2 id="ai-heading">Talk with your coach</h2>
+    <p class="ai-disclosure">Connect to ask questions and adapt how much help you receive. The model gets verified lesson choices, coarse progress, and your current question plus up to four earlier questions. This session is temporary. Please keep personal information out of chat.</p>
+    <button id="connect-ai">Connect AI coach</button>
+    <p id="ai-status" role="status">Live AI is off unless enabled on the local server.</p>
+    <div id="chat-log" role="log" aria-label="Coach conversation"></div>
+    <div id="chat-controls" hidden>
+      <label for="help-preference">How much help?</label>
+      <select id="help-preference"><option value="nudge">Small hints</option><option value="balanced" selected>Let the coach choose</option><option value="explain">Explain it</option></select>
+      <div class="quick-questions"><button data-question="Why does that work?">Why?</button><button data-question="I don't understand. Can we take a smaller step?">Smaller step</button><button data-question="Please give me space; I'll ask when I need help.">Give me space</button></div>
+      <form id="chat-form"><label for="chat-input">Ask about your next step</label><textarea id="chat-input" maxlength="280" rows="2" placeholder="I'm stuck—what should I look at?"></textarea><button id="send-ai" class="primary" disabled>Send</button><button id="cancel-ai" type="button">Cancel reply</button></form>
+      <button id="end-ai">End chat &amp; clear</button>
+    </div>
+    <div id="invitation" hidden role="status"><p>Want a hand with your next step?</p><button id="accept-invitation">Ask coach</button><button id="mute-invitation">I'll ask when ready</button></div>
+  </section>
   <footer>Deterministic tutor · no live AI<br>Arrow keys move · 1–9 enter · Delete clears<br>This local session resets when you reload.</footer>
 </main>
 <script type="module" src="/src/bundle.js"></script>

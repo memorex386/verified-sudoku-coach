@@ -3,14 +3,29 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "dist",
-    "tsBuildInfoFile": "dist/local-gateway.tsbuildinfo"
+    "tsBuildInfoFile": "dist/local-gateway.tsbuildinfo",
+    "types": [
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts"
+  ],
   "references": [
-    { "path": "../../packages/contracts" },
-    { "path": "../../packages/domain" },
-    { "path": "../../packages/coach-core" },
-    { "path": "../../packages/boundary-codecs" },
-    { "path": "../../packages/adapter-openai" }
+    {
+      "path": "../../packages/contracts"
+    },
+    {
+      "path": "../../packages/domain"
+    },
+    {
+      "path": "../../packages/coach-core"
+    },
+    {
+      "path": "../../packages/boundary-codecs"
+    },
+    {
+      "path": "../../packages/adapter-openai"
+    }
   ]
 }

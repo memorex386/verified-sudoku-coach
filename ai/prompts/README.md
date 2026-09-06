@@ -1,7 +1,7 @@
 # Runtime prompt sources
 
-No runtime prompt is registered during the foundation work package. WP-2026-005 will add reviewed,
-versioned product prompts here and register their hashes and model settings in
+The adaptive local milestone registers one candidate teacher prompt for isolated evaluation.
+It is not approved for a reviewer cohort. Exact hashes and model settings are in
 [`../runtime-manifest.json`](../runtime-manifest.json).
 
 Product prompts are source code and may be public. Prompts or hidden instructions belonging to

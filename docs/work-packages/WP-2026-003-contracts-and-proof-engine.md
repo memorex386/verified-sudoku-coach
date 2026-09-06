@@ -27,9 +27,8 @@ and integrators receive small versioned interfaces instead of private game objec
 
 ## Non-goals
 
-The local amendment permits minimal deterministic lessons and local presentation. It adds no
-background cadence, model/provider behavior, private puzzle export, Angular/Firebase
-integration, publication, or live evaluation.
+The adaptive local amendment permits a candidate teacher and bounded transient conversation.
+Private puzzle export, Angular/Firebase integration, publication and live spend remain excluded.
 
 ## Governing ADRs
 
@@ -49,7 +48,9 @@ proof/fixture portions of `packages/testing`, generated public fixtures/schemas,
 tests, scripts, manifests, and aggregate conformance evidence. The package-consumer slice may
 seal the empty `packages/coach-core` manifest/compiler output as a transitive codec dependency;
 the local amendment additionally permits minimal deterministic lesson code in `packages/coach-core`
-and the local tutor UI in `apps/replay-web`. Broader coaching policy remains deferred.
+and the local tutor UI in `apps/replay-web`. The [adaptive amendment](../product/local-adaptive-milestone.md)
+also permits the minimal `apps/local-gateway`, `packages/adapter-openai`, adaptive contracts/codecs,
+registration artifacts and frozen local evaluation tests. Broader coaching policy remains deferred.
 The transition PR contains documentation only; schemas, compatibility fixtures, API artifacts,
 and codecs required by the change matrix land with their implementing slices before package Done.
 
@@ -269,7 +270,7 @@ before Done. The proof engine implements local single hints; coach-core renders 
 
 ## Next action
 
-- Maintainer: try the local tutor and review the interaction before adding one model.
+- Maintainer: authorize a bounded owner-only live AI trial after reviewing the adaptive implementation.
 
 ## Checkpoints
 
@@ -442,3 +443,22 @@ before Done. The proof engine implements local single hints; coach-core renders 
 - 2026-09-05 — Browser provisioning correction passed full local verification: 190 tests,
   strict compilation and matching packed consumers using the local-singles base. Fresh CI must
   additionally exercise browser installation on clean runners before the authorized stack merge.
+- 2026-09-05 — PRs #18/#19/#21 merged after all CI passed at
+  `9c168464095c1cb8b735d4419a2e8d69fd447a66`, preserving tutor head
+  `fe23b84138ec1bb60138b2f3e16ad82a7f954c0f`. The maintainer accepted the local interaction and
+  approved adaptive AI before private production integration. The dated local-plan amendment and ADR-0009 record one
+  candidate teacher, bounded transient chat context and local invitation triggers. Continued in
+  a fresh dedicated worktree from updated main; no live spend or merge is authorized for this slice.
+- 2026-09-05 — Implemented the [adaptive local candidate](../runbooks/local-ai-tutor.md): exact
+  request/decision/response schemas and codecs, independently reconstructed teaching options,
+  one registered OpenAI teacher adapter, loopback capability/origin boundary, bounded transient
+  session questions, call/cadence limits and cancellable browser chat. Dismissible invitations
+  are local-only and never call a model automatically. Live mode defaults off. Added seven
+  adaptive tests with twelve frozen authored decisions; no live response or private data is used.
+- 2026-09-05 — Adaptive validation passed: `npm run test:adaptive` (seven tests, including
+  twelve frozen decisions and real Chromium with mocked inference), architecture, lint, docs,
+  license checks and npm audit (zero vulnerabilities). Final `npm run verify` with
+  `WORK_PACKAGE_BASE_REF=origin/main` passed all 197 tests and packed Node 22/Angular AOT/
+  Chromium 151.0.7922.34 checks. Regenerated schema/API/package snapshots; checked the phone
+  layout and credential-free localhost preview. Live calls remain off, no key is configured in
+  this run, and no live quality/latency/cost or production acceptance is claimed. Stop at the PR.

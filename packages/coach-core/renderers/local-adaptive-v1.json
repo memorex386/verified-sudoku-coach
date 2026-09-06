@@ -1,0 +1,8 @@
+{
+  "schemaId": "vsc.local-renderer",
+  "version": "1.0.0",
+  "facts": "localCoachOptions from authentic board",
+  "conversation": "localAcknowledgements and localFollowUps enums only",
+  "stale": "discard",
+  "boardMutation": false
+}

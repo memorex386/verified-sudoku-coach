@@ -5,3 +5,5 @@ export { unitRefV1Schema, proofStepV1Schema, proofPathV1Schema,
 export { traceEnvelopeV1Schema, replayArtifactV1Schema, type TraceEnvelopeV1, type ReplayArtifactV1 } from "./trace.js";
 export { uniquenessReceiptV1Schema, fixtureManifestV1Schema, fixtureRegistryV1Schema,
   type UniquenessReceiptV1, type FixtureManifestV1, type FixtureRegistryV1 } from "./fixtures.js";
+
+export { localCoachControlV1Schema, localCoachResponseV1Schema, localCoachDecisionV1Schema, localCoachRequestV1Schema, type LocalCoachDecisionV1, type LocalCoachRequestV1 } from "./local-coach.js";

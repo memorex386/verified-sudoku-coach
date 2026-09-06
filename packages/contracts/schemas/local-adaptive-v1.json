@@ -1,0 +1,51 @@
+{
+  "type": "object",
+  "properties": {
+    "schemaId": {
+      "type": "string",
+      "const": "vsc.local-coach-decision"
+    },
+    "version": {
+      "type": "number",
+      "const": 1
+    },
+    "option": {
+      "type": "string",
+      "enum": [
+        "nudge",
+        "compare",
+        "explain",
+        "pause",
+        "recover",
+        "complete",
+        "unsupported"
+      ]
+    },
+    "acknowledgement": {
+      "type": "string",
+      "enum": [
+        "listen",
+        "simplify",
+        "encourage",
+        "respect-space"
+      ]
+    },
+    "followUp": {
+      "type": "string",
+      "enum": [
+        "try",
+        "understood",
+        "preference",
+        "none"
+      ]
+    }
+  },
+  "required": [
+    "schemaId",
+    "version",
+    "option",
+    "acknowledgement",
+    "followUp"
+  ],
+  "additionalProperties": false
+}

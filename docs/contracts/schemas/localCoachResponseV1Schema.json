@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "type": "object",
+      "properties": {
+        "schemaId": {
+          "type": "string",
+          "const": "vsc.local-coach-response"
+        },
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "accepted"
+        },
+        "stateFingerprint": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "decision": {
+          "type": "object",
+          "properties": {
+            "schemaId": {
+              "type": "string",
+              "const": "vsc.local-coach-decision"
+            },
+            "version": {
+              "type": "number",
+              "const": 1
+            },
+            "option": {
+              "type": "string",
+              "enum": [
+                "nudge",
+                "compare",
+                "explain",
+                "pause",
+                "recover",
+                "complete",
+                "unsupported"
+              ]
+            },
+            "acknowledgement": {
+              "type": "string",
+              "enum": [
+                "listen",
+                "simplify",
+                "encourage",
+                "respect-space"
+              ]
+            },
+            "followUp": {
+              "type": "string",
+              "enum": [
+                "try",
+                "understood",
+                "preference",
+                "none"
+              ]
+            }
+          },
+          "required": [
+            "schemaId",
+            "version",
+            "option",
+            "acknowledgement",
+            "followUp"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schemaId",
+        "version",
+        "type",
+        "stateFingerprint",
+        "decision"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaId": {
+          "type": "string",
+          "const": "vsc.local-coach-response"
+        },
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "stale"
+        }
+      },
+      "required": [
+        "schemaId",
+        "version",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaId": {
+          "type": "string",
+          "const": "vsc.local-coach-response"
+        },
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "ack"
+        }
+      },
+      "required": [
+        "schemaId",
+        "version",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaId": {
+          "type": "string",
+          "const": "vsc.local-coach-response"
+        },
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "paused"
+        },
+        "code": {
+          "type": "string",
+          "enum": [
+            "access",
+            "request",
+            "sessions",
+            "size",
+            "session",
+            "not-enabled",
+            "cadence",
+            "budget",
+            "timeout",
+            "refusal",
+            "quota",
+            "provider",
+            "invalid",
+            "cancelled"
+          ]
+        }
+      },
+      "required": [
+        "schemaId",
+        "version",
+        "type",
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "properties": {
+        "schemaId": {
+          "type": "string",
+          "const": "vsc.local-coach-response"
+        },
+        "version": {
+          "type": "number",
+          "const": 1
+        },
+        "type": {
+          "type": "string",
+          "const": "session"
+        },
+        "sessionId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "remainingCalls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        }
+      },
+      "required": [
+        "schemaId",
+        "version",
+        "type",
+        "sessionId",
+        "enabled",
+        "remainingCalls"
+      ],
+      "additionalProperties": false
+    }
+  ]
+}

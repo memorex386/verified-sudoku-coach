@@ -4,3 +4,5 @@ export { decodeUnverifiedProofStep, decodeUnverifiedProofPath, type Unverified }
 export { decodeUnverifiedTrace, decodeUnverifiedReplay } from "./trace.js";
 export type { DecodeCode, DecodeResult, DeepReadonly } from "./json.js";
 export { decodeUnverifiedUniquenessReceipt, decodeUnverifiedFixtureManifest, decodeUnverifiedFixtureRegistry } from "./fixtures.js";
+
+export { decodeLocalCoachControl, decodeLocalCoachChoice, decodeLocalCoachResponse, decodeLocalCoachDecision, decodeLocalCoachRequest } from "./local-coach.js";

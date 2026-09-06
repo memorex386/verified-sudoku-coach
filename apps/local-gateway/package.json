@@ -10,5 +10,11 @@
     "@verified-sudoku/coach-core": "*",
     "@verified-sudoku/boundary-codecs": "*",
     "@verified-sudoku/adapter-openai": "*"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   }
 }

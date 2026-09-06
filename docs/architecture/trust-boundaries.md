@@ -83,3 +83,11 @@ Public examples are synthetic. Production systems may retain bounded private tra
 explicit consent, expiry, deletion, and access contract. Public outputs reduce those traces to
 reviewed aggregates. Logs use allowlisted reason codes and metrics; they never serialize boards,
 notes, prompts, responses, identifiers, or arbitrary exceptions.
+
+## Local adaptive evaluation exception
+
+[ADR-0009](../decisions/0009-local-adaptive-coach.md) permits a transient current question and
+four prior question/choice pairs in the owner-only local evaluation shell. This is not retained
+conversation or cohort admission. The [launch guide](../runbooks/local-ai-tutor.md) records the
+exact projection, 30-minute expiry, call grant and origin/capability checks. The static preview
+still makes no model calls, and private product boundaries are unchanged.

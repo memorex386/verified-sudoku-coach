@@ -1,7 +1,7 @@
 # Candidate model profiles
 
 These are design inputs for WP-2026-005, not approved runtime registrations. The authoritative
-runtime registry remains `ai/runtime-manifest.json`, which is empty during foundation work, and
+runtime registry remains `ai/runtime-manifest.json`, which now includes one local-only candidate, and
 `config/provider-policy.json` owns provider capability and security boundaries.
 
 ## Provider-neutral requirements
