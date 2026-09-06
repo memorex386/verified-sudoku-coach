@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sudoku · Local tutor</title><link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<main>
+  <header><div><span class="eyebrow">A LITTLE ROOM TO THINK</span><h1>Sudoku <span>tutor</span></h1></div><span class="local">LOCAL</span></header>
+  <div class="board-heading"><span>One puzzle. Your pace.</span><span id="progress"></span></div>
+  <div id="board" role="grid" aria-label="Sudoku board" aria-rowcount="9" aria-colcount="9"></div>
+  <div id="keypad" aria-label="Number pad"></div>
+  <div class="tools"><button id="notes" aria-pressed="false">Notes off</button><button id="clear">Clear</button><button id="undo">Undo</button><button id="help" class="primary">Get help <span aria-hidden="true">↗</span></button></div>
+  <p id="status" role="status">Select a square, then enter a number.</p>
+  <section id="coach" aria-label="Sudoku coach" hidden>
+    <div class="handle" aria-hidden="true"></div>
+    <div class="coach-heading"><span class="eyebrow">LET'S REASON IT THROUGH</span><button id="close" aria-label="Close coach">×</button></div>
+    <h2 id="lesson-title"></h2><p id="lesson-text" aria-live="off"></p>
+    <div id="strip" aria-label="Digits ruled out by the explanation" hidden></div>
+    <div id="lesson-announcement" class="sr-only" aria-live="polite"></div>
+    <div id="lesson-controls"><div class="story-tools"><button id="pause">Pause</button><button id="show-all">Show all</button></div>
+      <div class="hint-tools"><button id="smaller">A smaller hint</button><button id="deeper" class="primary">Stronger hint</button></div></div>
+    <p class="player-control">You make the move. The coach only explains.</p>
+  </section>
+  <footer>Deterministic tutor · no live AI<br>Arrow keys move · 1–9 enter · Delete clears<br>This local session resets when you reload.</footer>
+</main>
+<script type="module" src="/src/bundle.js"></script>
+</body>
+</html>

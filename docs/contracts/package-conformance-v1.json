@@ -162,16 +162,24 @@
     {
       "name": "@verified-sudoku/coach-core",
       "version": "0.0.0",
-      "sha256": "dfe3c59f5d4025e109fdda0c302533f7bc7c3b606f4056272120b14e955456a8",
-      "integrity": "sha512-ijRFSuMNATmJaVR0guRUhHhFU0B9gcbOY4T7ZMuYTfoECaql9bHS3I38+Bc2L1yhnChcIu/KD0YJLouszOuf6A==",
+      "sha256": "31fc9f197d10e22a61f476ecbabc0cff269b45cc9b77b66e1c0622764af30636",
+      "integrity": "sha512-+kCu9Ln/Mm50ROJk3HH2Im7IhM80Opvlcqm3PUd+o8P61SFrjxAgaE91KW89NON1HQhvAGaDBxCK/snP9MlM8w==",
       "files": [
         {
           "name": "package/dist/index.d.ts",
-          "sha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881"
+          "sha256": "3336f70916afd1992d4e86f76631a87f82f462d2ef29923486ec44225f8aa7c7"
         },
         {
           "name": "package/dist/index.js",
-          "sha256": "8dc4249d7c435d534d1479cf4529b3191a169d0e035079d96b6db7512dde5a2a"
+          "sha256": "64932fd367e3eed75e15df5a002c9c4162b1e3dddd11a9ff8b8719bb3634d88c"
+        },
+        {
+          "name": "package/dist/local-lesson.d.ts",
+          "sha256": "7fafcbffecde54560ef839d61d3cc0b352c5bd7db1135bbf937a89cbcba7e680"
+        },
+        {
+          "name": "package/dist/local-lesson.js",
+          "sha256": "6d75fae2f8cb4a31ada08c11e0b28a2c626c4c0e4a0aa9b7a4dfb671cc33e92f"
         },
         {
           "name": "package/package.json",
@@ -286,6 +294,72 @@
     ],
     "vectors": [
       {
+        "lesson": {
+          "target": "r1c1",
+          "title": "Why it works",
+          "beats": [
+            {
+              "text": "2 is already in this row.",
+              "cells": [
+                "r1c2"
+              ],
+              "ruledOut": 2
+            },
+            {
+              "text": "3 is already in this row.",
+              "cells": [
+                "r1c3"
+              ],
+              "ruledOut": 3
+            },
+            {
+              "text": "4 is already in this row.",
+              "cells": [
+                "r1c4"
+              ],
+              "ruledOut": 4
+            },
+            {
+              "text": "5 is already in this row.",
+              "cells": [
+                "r1c5"
+              ],
+              "ruledOut": 5
+            },
+            {
+              "text": "6 is already in this row.",
+              "cells": [
+                "r1c6"
+              ],
+              "ruledOut": 6
+            },
+            {
+              "text": "That leaves 1 for row 1, column 1. Select the square and place it when you're ready.",
+              "cells": [
+                "r1c1"
+              ],
+              "ruledOut": null
+            }
+          ]
+        },
+        "hiddenLesson": {
+          "target": "r1c1",
+          "title": "Why it works",
+          "beats": [
+            {
+              "text": "In row 1, only row 1, column 1 can contain 1. This is a hidden single. You place the number.",
+              "cells": [
+                "r1c1",
+                "r1c2",
+                "r1c3",
+                "r1c4",
+                "r1c5",
+                "r1c6"
+              ],
+              "ruledOut": null
+            }
+          ]
+        },
         "size": 6,
         "puzzle": "sha256:212aa81cf4edf5339c9537f2c101de1e806990e1451d15eaa6d57c1b943216ae",
         "logical": "sha256:56e54ca427519c34d123f37d87f0eab39db998952d4e6c5db46529b269d6715e",
@@ -305,6 +379,96 @@
         }
       },
       {
+        "lesson": {
+          "target": "r1c1",
+          "title": "Why it works",
+          "beats": [
+            {
+              "text": "2 is already in this row.",
+              "cells": [
+                "r1c2"
+              ],
+              "ruledOut": 2
+            },
+            {
+              "text": "3 is already in this row.",
+              "cells": [
+                "r1c3"
+              ],
+              "ruledOut": 3
+            },
+            {
+              "text": "4 is already in this row.",
+              "cells": [
+                "r1c4"
+              ],
+              "ruledOut": 4
+            },
+            {
+              "text": "5 is already in this row.",
+              "cells": [
+                "r1c5"
+              ],
+              "ruledOut": 5
+            },
+            {
+              "text": "6 is already in this row.",
+              "cells": [
+                "r1c6"
+              ],
+              "ruledOut": 6
+            },
+            {
+              "text": "7 is already in this row.",
+              "cells": [
+                "r1c7"
+              ],
+              "ruledOut": 7
+            },
+            {
+              "text": "8 is already in this row.",
+              "cells": [
+                "r1c8"
+              ],
+              "ruledOut": 8
+            },
+            {
+              "text": "9 is already in this row.",
+              "cells": [
+                "r1c9"
+              ],
+              "ruledOut": 9
+            },
+            {
+              "text": "That leaves 1 for row 1, column 1. Select the square and place it when you're ready.",
+              "cells": [
+                "r1c1"
+              ],
+              "ruledOut": null
+            }
+          ]
+        },
+        "hiddenLesson": {
+          "target": "r1c1",
+          "title": "Why it works",
+          "beats": [
+            {
+              "text": "In row 1, only row 1, column 1 can contain 1. This is a hidden single. You place the number.",
+              "cells": [
+                "r1c1",
+                "r1c2",
+                "r1c3",
+                "r1c4",
+                "r1c5",
+                "r1c6",
+                "r1c7",
+                "r1c8",
+                "r1c9"
+              ],
+              "ruledOut": null
+            }
+          ]
+        },
         "size": 9,
         "puzzle": "sha256:ecedebf4d14f5d1e8172276529082878fddab23c2f7031365f786460b652435b",
         "logical": "sha256:68559a4ee5e9e58261545e872298c1fa98b1955f27fa17b1dc7f49ed91ea00b4",
@@ -388,7 +552,9 @@
         "readVerifiedSingle",
         "verifySingle"
       ],
-      []
+      [
+        "localLesson"
+      ]
     ]
   }
 }

@@ -45,7 +45,15 @@ export function probe() {
     check(proof.readVerifiedSingle(singleBoard, {}) === null);
     check(proof.verifySingle(singleBoard, { ...proposed.proposal, digit: 2 }) === null);
     check(proof.proposeSingle(board).type === "unsupported");
-    vectors.push({ size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint, single,
+    const lesson = coach.localLesson(singleBoard, capability, 2);
+    check(lesson.target === "r1c1" && lesson.beats.length === size);
+    check(lesson.beats.filter(beat => beat.ruledOut !== null).length === size - 1);
+    check(coach.localLesson(singleBoard, {}, 2) === null);
+    const hiddenCapability = proof.verifySingle(singleBoard, { ...single, technique: "hidden-single", unit: { kind: "row", index: 1 } });
+    const hiddenLesson = coach.localLesson(singleBoard, hiddenCapability, 2);
+    check(hiddenLesson.beats[0].text.includes("only row 1, column 1 can contain 1"));
+    check(hiddenLesson.beats[0].cells.length === size);
+    vectors.push({ lesson, hiddenLesson, size, puzzle: puzzle.puzzleFingerprint, logical: logical.fingerprint, single,
       playerActions: { noted: noteAction.board.stateFingerprint, placed: placed.board.stateFingerprint,
         logical: domain.initialLogicalState(placed.board).fingerprint, stale: stale.code } });
   }

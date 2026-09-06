@@ -264,11 +264,12 @@ Proof/trace codecs check framing and integrity; replay also executes player acti
 recorded boards and rejection reasons. All proof/trace/replay results remain explicitly `unverified`.
 `test:domain`, `test:contracts`, `test:fixture-tools`, local-only `test:proof` and `pack:smoke` are
 executable. Full six-technique proof coverage, `fixtures:check` and `proof:hashes` remain required
-before Done. The proof engine implements local single hints; coach-core remains unimplemented.
+before Done. The proof engine implements local single hints; coach-core renders minimal verified lessons and
+`apps/replay-web` provides the [local playable tutor](../runbooks/local-tutor.md). No live AI is connected.
 
 ## Next action
 
-- Select the generated singles-solvable local puzzle and connect verified hints to the playable bottom-sheet tutor.
+- Maintainer: try the local tutor and review the interaction before adding one model.
 
 ## Checkpoints
 
@@ -410,3 +411,19 @@ before Done. The proof engine implements local single hints; coach-core remains 
   Node/Angular/Chromium checks; the proof-engine package snapshot was regenerated. This slice
   exposes verified local hint facts only. The playable puzzle/UI and full proof/private gates
   remain unfinished; no merge or live behavior was authorized by these checks.
+- 2026-09-05 — Continued above local-singles PR #19 without merging it. Added the local playable
+  tutor, immutable verified lesson templates and three focused fixture/lesson/browser tests.
+  Attempt 2 is the first unique singles-solvable generated puzzle: 28 givens and 53 placements,
+  independently checked by exact cover. Values, notes, clear, undo, progressive hints, synchronized
+  clue highlights, pause/show-all, keyboard controls and reduced motion are implemented. Incorrect
+  entries are checked against the completion derived from verified singles for this fixed unique
+  puzzle; help asks the player to recover before teaching. Board changes cancel stale lessons.
+  This is local-only experience evidence, not showcase clearance, learning evidence, full replay,
+  private compatibility or a release. The next checkpoint is maintainer feedback before a model.
+- 2026-09-05 — Local-tutor validation passed: `npm run test:tutor` (three tests including all
+  53 browser placements), strict compilation, architecture/lint/docs, registry and whitespace
+  checks. Final `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/work/WP-2026-003-local-singles`
+  passed all 190 tests and matching packed Node 22/Angular AOT/Chromium 151.0.7922.34 results.
+  Regenerated coach-core package evidence includes naked/hidden lesson consumers. Visually checked
+  the explanation at 320px and 390px. No dependencies were added; this stops at a review PR and
+  a local preview. Maintainer experience feedback and full proof/private gates remain outstanding.

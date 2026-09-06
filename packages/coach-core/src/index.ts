@@ -1,2 +1,1 @@
-// Provider-neutral coaching logic is introduced in WP-2026-004.
-export {};
+export { localLesson, type LocalLesson, type LessonBeat } from "./local-lesson.js";
