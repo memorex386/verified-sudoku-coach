@@ -6,7 +6,7 @@
       "board.d.ts": "5f9b580752e668360525e5ceded08d65a8624d451cddbee51e093232be0298a6",
       "fixtures.d.ts": "52c0c0fa4e07c70a563a2b4e8baf6d69184f16da0540ccf8c1b891bb6df34ba8",
       "index.d.ts": "78aa4fbb9e181fbc029ee079d64f466c29b5d015ceb84e824de7f43cefa62325",
-      "local-coach.d.ts": "69f07ab1a94a87a21519c322f4032958484bd32f4de876b2afd74e173a969521",
+      "local-coach.d.ts": "b6a5bae8ffd5606f3bc2793929ab14e895f2cd265ec16c66c05ba9799de948c8",
       "proof.d.ts": "9970d4c047d13a436882b8cf6f22f125d129b560dc33bdf014fb4231b1ec9ef8",
       "trace.d.ts": "0addd2210da7981f1cbea7facbeb2eb08c02609b2a14beccee4284735b14b19d"
     },
@@ -15,7 +15,7 @@
       "fixtures.d.ts": "7dcd28999f44e8b81c7f035f548612fab659abdbdedee0b2382acefed20163b2",
       "index.d.ts": "b77d99b28c87a209721d8867eff87ae57297f39c3f33460795e88579f9133155",
       "json.d.ts": "3adb4b5a523063af65b2cf7d5e99d7f8b04aeda14449d323e85f57145b3bd37a",
-      "local-coach.d.ts": "2f9e7673c85b445be1c47b32369a47fed6f7e3e1b95cd99c848e4ad5b7cc1338",
+      "local-coach.d.ts": "57eef44cd90e691ea7d0109a89b4e983ea3cb126672b4f178c8c90e81050db08",
       "proof.d.ts": "8e2228eb7caf76791b671207efc1dc95bb1716752c5ee8eeabac7aae88e8d14f",
       "trace.d.ts": "bff6f5d549c6b0e23396b0f0214d757a61e3ea6835328b00be5bdaaabdc2c521"
     }

@@ -104,7 +104,10 @@ test("gateway rejects hostile access, routes and bodies before inference and nev
   assert.equal(packets.length, 1); assert.equal(packets[0].message, "A small hint, please.");
   for (const forbidden of ["entries", "notes", "boardFingerprint", "puzzleFingerprint", "puzzleId", "solution"]) assert.ok(!JSON.stringify(packets).includes(forbidden));
   const html = await (await fetch(server.url)).text(); assert.ok(!html.includes("OPENAI_API_KEY"));
-  const bundle = await (await fetch(server.url + "/src/bundle.js")).text(); assert.ok(!bundle.includes("api.openai.com") && !bundle.includes("OPENAI_API_KEY"));
+  const bundle = await (await fetch(server.url + "/src/bundle.js")).text();
+  // Scan JavaScript source text for forbidden server-only strings; this is not URL admission.
+  assert.doesNotMatch(bundle, /api\.openai\.com/);
+  assert.doesNotMatch(bundle, /OPENAI_API_KEY/);
 });
 
 test("session context adapts across turns, rejects over-reveals, and ends without resetting the launch budget", async t => {

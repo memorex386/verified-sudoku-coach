@@ -8,7 +8,7 @@ base_branch: main
 accepted_plan: VSC-PLAN-2026-09-05.3
 data_classification: Public
 acceptance: VSC-ARCH-002, VSC-ARCH-003, VSC-PROOF-001, VSC-PROOF-002
-updated: 2026-09-05
+updated: 2026-09-06
 ---
 
 # Contracts and deterministic proof engine
@@ -28,7 +28,8 @@ and integrators receive small versioned interfaces instead of private game objec
 ## Non-goals
 
 The adaptive local amendment permits a candidate teacher and bounded transient conversation.
-Private puzzle export, Angular/Firebase integration, publication and live spend remain excluded.
+Private puzzle export, Angular/Firebase integration and publication remain excluded. Live spend
+requires separate explicit authorization; the bounded owner trial below received it.
 
 ## Governing ADRs
 
@@ -266,11 +267,13 @@ recorded boards and rejection reasons. All proof/trace/replay results remain exp
 `test:domain`, `test:contracts`, `test:fixture-tools`, local-only `test:proof` and `pack:smoke` are
 executable. Full six-technique proof coverage, `fixtures:check` and `proof:hashes` remain required
 before Done. The proof engine implements local single hints; coach-core renders minimal verified lessons and
-`apps/replay-web` provides the [local playable tutor](../runbooks/local-tutor.md). No live AI is connected.
+`apps/replay-web` provides the [local playable tutor](../runbooks/local-tutor.md). The adaptive
+candidate has passed three authorized [live interaction smoke checks](../evaluation/reports/local-adaptive-live-smoke-2026-09-06.md);
+it remains local-only and is not approved for production.
 
 ## Next action
 
-- Maintainer: authorize a bounded owner-only live AI trial after reviewing the adaptive implementation.
+- Maintainer: review PR #22 after its corrected CI checks pass and decide whether to merge the local adaptive candidate.
 
 ## Checkpoints
 
@@ -462,3 +465,21 @@ before Done. The proof engine implements local single hints; coach-core renders 
   Chromium 151.0.7922.34 checks. Regenerated schema/API/package snapshots; checked the phone
   layout and credential-free localhost preview. Live calls remain off, no key is configured in
   this run, and no live quality/latency/cost or production acceptance is claimed. Stop at the PR.
+- 2026-09-06 — The maintainer separately authorized up to 20 local OpenAI attempts with a $1
+  planning budget, configured provider credit, and authorized local testing. Three browser
+  interactions passed with the unchanged Terra candidate: nudge, explanation and pause. The
+  [aggregate live smoke report](../evaluation/reports/local-adaptive-live-smoke-2026-09-06.md)
+  records scope, exact implementation commit, remaining allowance at observation and measurement
+  limits. No credentials, raw conversation, private data, billing changes or deployment are included.
+- 2026-09-06 — PR #22's Windows and Ubuntu checks exposed declaration snapshot drift caused
+  by TypeScript's incremental inferred-union ordering. Reproduced with a forced build: only the
+  position of the existing size member changed in the two local-coach declarations. Contract
+  checks now force their dependency build before comparing snapshots; reviewed and regenerated
+  API/package evidence. Reworded a source-content assertion with assert.doesNotMatch to distinguish
+  the content scan from URL admission. Runtime sources, contracts and model settings are unchanged.
+- 2026-09-06 — CI correction validation passed: forced contract builds reproduced the clean
+  declaration ordering, `npm run pack:smoke -- --write` regenerated matching consumer evidence,
+  and full `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main` passed all 197 tests and
+  every gate, including packed Node 22/Angular AOT/Chromium 151.0.7922.34. Registry, docs and
+  whitespace checks passed. No further live calls were made. Await fresh CI and maintainer
+  review on PR #22; this correction does not authorize merge or production work.

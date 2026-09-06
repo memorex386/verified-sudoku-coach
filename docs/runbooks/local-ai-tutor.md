@@ -77,6 +77,8 @@ local Node workspaces, not published library artifacts.
 
 The frozen report has no preceding adaptive model baseline, no sampled model output, and no
 live latency, cost, learning or private conformance claim. Mocked browser calls test wiring only.
-Run the bounded owner trial next, after explicit spend authorization; do not represent this
-local implementation as a tested production AI coach. Rollback is a revert and server restart;
+The [2026-09-06 live smoke check](../evaluation/reports/local-adaptive-live-smoke-2026-09-06.md)
+separately records three accepted local interactions under explicit authorization. It does not
+promote the candidate or establish production quality. Further calls must honor the trial's
+remaining total; the dated report does not reset it. Rollback is a revert and server restart;
 there is no persistent data migration.

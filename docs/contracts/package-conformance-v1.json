@@ -66,8 +66,8 @@
     {
       "name": "@verified-sudoku/contracts",
       "version": "0.0.0",
-      "sha256": "3979f0f8f6a5951af5b2d7dd772a50b1df1378c5a1f2f07c9b88c7e4999ba88b",
-      "integrity": "sha512-Y0G8H/q4Gmr4ErfBrQjiOiklFNAmC0qjnDqPp9dkbotJW4BX9a++3TFSLi3G0Bfg5BTKNyiZuDWlCtYYKALESg==",
+      "sha256": "157bc4d7f0cf2ef541e906f68719700ccd2110d98e6ad8b4585c208983e323a5",
+      "integrity": "sha512-Y6qvhMsU/O4ca5dMwoLKn9gtYuTJ+Am+xPMrmzbgBiiJKhavEkBAR4CWXXHIv6xXJ5tuznjMzz4nAApIFy3lcQ==",
       "files": [
         {
           "name": "package/dist/board.d.ts",
@@ -95,7 +95,7 @@
         },
         {
           "name": "package/dist/local-coach.d.ts",
-          "sha256": "69f07ab1a94a87a21519c322f4032958484bd32f4de876b2afd74e173a969521"
+          "sha256": "b6a5bae8ffd5606f3bc2793929ab14e895f2cd265ec16c66c05ba9799de948c8"
         },
         {
           "name": "package/dist/local-coach.js",
@@ -206,8 +206,8 @@
     {
       "name": "@verified-sudoku/boundary-codecs",
       "version": "0.0.0",
-      "sha256": "4834a81e72da96455b6fd49a6faf4d62378ca748b4231a2928f70a7b3e7dc77b",
-      "integrity": "sha512-YKYPmEv+eRvlIQ3EkyfdAG4Sqm0xUmEl59ufHiF799JLUV8aQnr+qUVZUIb9G+pzxfvqmu277dYJpEGsSuTBTg==",
+      "sha256": "e8216c9980b8bed66f06b68889ce03f1c5e6357e89b60f9dbeec1d01d15b2e8c",
+      "integrity": "sha512-r6FL90fO2WhgmwTRsepUdJjJi2YiHcf36u5fgz/a3Te3LA426xTPvxEz6mOXThaMK6PdIjovMALicPlny7LRqQ==",
       "files": [
         {
           "name": "package/dist/board.d.ts",
@@ -243,7 +243,7 @@
         },
         {
           "name": "package/dist/local-coach.d.ts",
-          "sha256": "2f9e7673c85b445be1c47b32369a47fed6f7e3e1b95cd99c848e4ad5b7cc1338"
+          "sha256": "57eef44cd90e691ea7d0109a89b4e983ea3cb126672b4f178c8c90e81050db08"
         },
         {
           "name": "package/dist/local-coach.js",

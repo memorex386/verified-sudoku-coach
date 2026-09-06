@@ -51,7 +51,7 @@ const expectedFoundationScripts = {
   "security:check": "node scripts/verify-public-boundary.mjs",
   "skills:check": "node scripts/verify-skills.mjs",
   test: "node --test scripts/validation.test.mjs && npm run test:domain && npm run test:contracts && npm run test:fixture-tools && npm run test:proof && npm run test:tutor && npm run test:adaptive",
-  "test:contracts": "tsc -b packages/boundary-codecs --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs packages/boundary-codecs/test/fixture-contracts.test.mjs",
+  "test:contracts": "tsc -b packages/boundary-codecs --force --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs packages/boundary-codecs/test/fixture-contracts.test.mjs",
   "test:tutor": "tsc -b --pretty false && node --test scripts/local-tutor.test.mjs",
   "test:adaptive": "tsc -b --pretty false && node --test scripts/adaptive-tutor.test.mjs",
   "dev:ai-tutor": "tsc -b --pretty false && node scripts/local-ai-tutor-server.mjs",

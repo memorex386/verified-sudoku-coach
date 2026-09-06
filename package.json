@@ -40,7 +40,7 @@
     "dev:tutor": "tsc -b --pretty false && node scripts/local-tutor-server.mjs",
     "test:proof": "tsc -b packages/proof-engine --pretty false && node --test packages/proof-engine/test/singles.test.mjs",
     "test:domain": "tsc -b packages/domain --pretty false && node scripts/verify-domain-api.mjs && node --test packages/domain/test/domain.test.mjs",
-    "test:contracts": "tsc -b packages/boundary-codecs --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs packages/boundary-codecs/test/fixture-contracts.test.mjs",
+    "test:contracts": "tsc -b packages/boundary-codecs --force --pretty false && node scripts/verify-contract-artifacts.mjs && node --test packages/boundary-codecs/test/contracts.test.mjs packages/boundary-codecs/test/fixture-contracts.test.mjs",
     "pack:smoke": "tsc -b --pretty false && node --test scripts/package-conformance.test.mjs && node scripts/verify-package-conformance.mjs",
     "test:fixture-tools": "tsc -b packages/testing --pretty false && node --test packages/testing/test/fixtures.test.mjs packages/testing/test/transforms.test.mjs",
     "test:adaptive": "tsc -b --pretty false && node --test scripts/adaptive-tutor.test.mjs",
