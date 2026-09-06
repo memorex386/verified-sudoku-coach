@@ -1,10 +1,10 @@
-# Proposed owner-only hosted coach
+# Owner-only hosted coach
 
-Status: proposed implementation contract for maintainer review. This follows the merged
+Status: accepted for implementation on 2026-09-06 under [ADR-0010](../decisions/0010-owner-only-hosted-evaluation.md), following maintainer approval of PR #24 and instruction to continue. This follows the merged
 [local adaptive milestone](local-adaptive-milestone.md) and its
 [three live smoke checks](../evaluation/reports/local-adaptive-live-smoke-2026-09-06.md).
-It does not change the accepted local-only scope, promote a candidate registration, satisfy
-private conformance, or authorize deployment or hosted spend.
+The narrowly accepted exceptions below do not promote a candidate registration, satisfy private
+conformance, or authorize deployment or hosted spend.
 
 ## Smallest useful experience
 
@@ -18,10 +18,9 @@ This tests authenticated hosted AI interaction with the current puzzle. Coaching
 boards is a later integration step and still requires the private aggregate compatibility gate.
 The generated-puzzle restriction does not itself waive the current private-integration gate.
 
-## Admission decisions required before implementation
+## Accepted admission decisions
 
-Accept this narrow hosted milestone in the governing plan and an ADR before starting its code.
-That acceptance must explicitly permit all three departures from today's local-only authority:
+The governing plan amendment and ADR-0010 accept these three departures from local-only authority:
 
 1. A single-owner hosted evaluation screen using only the unchanged public generated fixture,
    without importing or replacing private puzzle or solver behavior. Defer private conformance
@@ -33,15 +32,17 @@ That acceptance must explicitly permit all three departures from today's local-o
    commit in the private host. This is not a general package release or a completed release gate.
 
 The private host must record the corresponding owner-evaluation scope in its own authority.
-This proposal does not reorder its broader commercial coaching or Academy roadmap. Deploying,
+This evaluation does not reorder its broader commercial coaching or Academy roadmap. Deploying,
 enabling an account and authorizing hosted provider spend remain separate final actions after
 implementation and review; the existing local trial grant does not transfer to hosting.
 
 ## First implementation PR: authenticated gateway, default off
 
 Implement in the private host with mocked inference and local auth/database emulators first.
-Consume browser-safe and Node artifacts from the same exact public commit and record archive
-integrity; do not copy a fork of public source. Keep the provider adapter on the server.
+Consume a compiled Node artifact with recorded SHA-256 integrity; the subsequent screen must use
+a browser-safe artifact from the same exact public commit. Do not copy a fork of public source.
+Keep the provider adapter on the server. A compiled bundle with provenance and license notices is
+sufficient for this development exception; general release archives remain a separate gate.
 
 The host owns these controls:
 
