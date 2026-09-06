@@ -5,7 +5,7 @@ status: In progress
 depends_on: WP-2026-002
 owner: Maintainer
 base_branch: main
-accepted_plan: VSC-PLAN-2026-09-04.2
+accepted_plan: VSC-PLAN-2026-09-05.3
 data_classification: Public
 acceptance: VSC-ARCH-002, VSC-ARCH-003, VSC-PROOF-001, VSC-PROOF-002
 updated: 2026-09-05
@@ -15,8 +15,10 @@ updated: 2026-09-05
 
 ## Goal
 
-Implement immutable domain values, strict boundary schemas/codecs, unique generated fixtures, and
-the six canonical proof techniques with independent verification and application.
+Deliver the accepted [local tutor milestone](../product/plans/VSC-PLAN-2026-09-05.3.md) first:
+one playable generated puzzle, independently verified naked/hidden singles and explicit progressive
+hints. The original full-package goal remains deferred: immutable domain values, strict codecs,
+showcase fixtures and all six canonical techniques with verified application.
 
 ## User value
 
@@ -25,8 +27,9 @@ and integrators receive small versioned interfaces instead of private game objec
 
 ## Non-goals
 
-No coaching cadence, model/provider behavior, lesson prose, private puzzle export, Angular/Firebase
-integration, publication, or live evaluation belongs here.
+The local amendment permits minimal deterministic lessons and local presentation. It adds no
+background cadence, model/provider behavior, private puzzle export, Angular/Firebase
+integration, publication, or live evaluation.
 
 ## Governing ADRs
 
@@ -45,7 +48,8 @@ integration, publication, or live evaluation belongs here.
 proof/fixture portions of `packages/testing`, generated public fixtures/schemas, and their docs,
 tests, scripts, manifests, and aggregate conformance evidence. The package-consumer slice may
 seal the empty `packages/coach-core` manifest/compiler output as a transitive codec dependency;
-coaching implementation remains outside this package.
+the local amendment additionally permits minimal deterministic lesson code in `packages/coach-core`
+and the local tutor UI in `apps/replay-web`. Broader coaching policy remains deferred.
 The transition PR contains documentation only; schemas, compatibility fixtures, API artifacts,
 and codecs required by the change matrix land with their implementing slices before package Done.
 
@@ -59,12 +63,16 @@ topology/candidate/logical-state values, schema exports, boundary codecs, and fi
 
 Domain has no dependencies; proof engine depends only on domain; contracts import no domain;
 codecs reject unknown keys before constructing trusted values. Detectors propose and independent
-verifiers authorize. Public fixtures are seed-generated and collision-checked only against private
-aggregate hashes; no private puzzle or source crosses the boundary.
+verifiers authorize. Public fixtures are seed-generated; accepted showcase fixtures additionally
+require private aggregate collision clearance. The local puzzle makes no collision-clearance claim.
+No private puzzle or source crosses the boundary.
 
 ## Acceptance criteria
 
-Support naked single, hidden single, locked pointing, locked claiming, naked pair, and hidden pair
+The local milestone uses the acceptance and commands in the linked amendment; completing it does
+not complete the full gates below or authorize private integration.
+
+For full-package acceptance, support naked single, hidden single, locked pointing, locked claiming, naked pair, and hidden pair
 with the documented tie-break order. The exact fields, bounds, candidate-bearing logical state,
 hash projections, trace/replay variants, and package surface are fixed in
 [Sudoku and proof contracts V1](../contracts/sudoku-proof-v1.md). Require unique Classic fixtures,
@@ -245,22 +253,23 @@ Fixture-artifact boundary validation on Windows, 2026-09-05:
 
 WP-2026-001 and WP-2026-002 are accepted and `Done`. Human timing of the generated showcase remains
 an experience measurement; generation labels it curated rather than claiming difficulty or
-duration. The private aggregate conformance command does not yet exist in Sudoku World; domain,
-schema, and codec work may proceed, but the proof-technique runbook blocks detector/verifier changes
-until the private counterpart and its linked evidence package are executable.
+duration. The private aggregate command remains unavailable. The accepted local amendment permits
+only isolated naked/hidden-single implementation with generated tests before that gate; private
+integration and full six-technique/showcase acceptance remain blocked on its command and evidence.
 The domain now includes initial state and immutable player-action application. Technique application and replay retention of
 verified eliminations remain unimplemented, as do generated showcase fixtures, executable replay
 acceptance and private conformance. Chromium/Angular and packed-consumer checks cover only
 the implemented domain and wire-boundary surfaces.
 Proof/trace codecs check framing and integrity; replay also executes player actions and checks
 recorded boards and rejection reasons. All proof/trace/replay results remain explicitly `unverified`.
-`test:domain`, `test:contracts`, `test:fixture-tools` and `pack:smoke` are executable; `test:proof`, `fixtures:check`
-and `proof:hashes` remain required before Done. Packed empty proof-engine/coach-core exports do
-not count as implementation of those services.
+`test:domain`, `test:contracts`, `test:fixture-tools`, local-only `test:proof` and `pack:smoke` are
+executable. Full six-technique proof coverage, `fixtures:check` and `proof:hashes` remain required
+before Done. The proof engine implements local single hints; coach-core renders minimal verified lessons and
+`apps/replay-web` provides the [local playable tutor](../runbooks/local-tutor.md). No live AI is connected.
 
 ## Next action
 
-- Review the replay-action implementation PR; keep technique work gated on the private conformance command and linked evidence.
+- Maintainer: try the local tutor and review the interaction before adding one model.
 
 ## Checkpoints
 
@@ -378,3 +387,58 @@ not count as implementation of those services.
   foundation, 20 domain, 32 contracts, 16 fixture-tooling and two package-inspection tests), plus
   matching packed Node/Angular/Chromium results. `git diff --check` passed. This slice stops at
   its implementation PR; complete proof replay and private compatibility remain unfinished.
+- 2026-09-05 — Maintainer approved a minimal local tutor before the larger release roadmap.
+  Accepted plan .3 records one generated unique puzzle, two verified techniques, on-demand hints
+  and deterministic presentation first; one model follows after trying the tutor. The narrow
+  local-only private-gate exception is explicit; no private compatibility or full proof acceptance
+  is claimed. Further standalone infrastructure slices are deferred. This planning branch starts
+  from main after PR #15; independent PRs #16/#17 remain open and require their histories to be
+  preserved when integrating. The next code change implements singles rather than more tooling.
+- 2026-09-05 — Local-plan revision validation passed: `npm ci --ignore-scripts`, registry
+  generation, `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main` (182 tests and unchanged
+  packed Node/Angular/Chromium evidence), and `git diff --check`. This is a documentation-only
+  scope change; the local tutor and its two technique implementations remain to be built.
+- 2026-09-05 — Continued above the approved local-plan branch (PR #18), without merging it.
+  Implemented [local singles](../contracts/local-singles.md): ordered proposals, an independently
+  callable verifier and opaque state-bound capabilities for naked/hidden singles. Added five
+  focused proof tests, including independent coordinate reasoning and valid non-first proposals,
+  tampering, stale/forged capabilities, notes, contradictions and player-placement sequences.
+  Node/Chromium consumer probes now exercise single verification. No proof application, elimination,
+  model, private data or UI is added in this slice; the next step is the playable hint flow.
+- 2026-09-05 — Local-singles validation passed: five `test:proof` tests, architecture/lint,
+  strict compilation, registry and whitespace checks. Full `npm run verify` with
+  `WORK_PACKAGE_BASE_REF=origin/work/WP-2026-003-local-tutor-plan` passed all 187 tests and packed
+  Node/Angular/Chromium checks; the proof-engine package snapshot was regenerated. This slice
+  exposes verified local hint facts only. The playable puzzle/UI and full proof/private gates
+  remain unfinished; no merge or live behavior was authorized by these checks.
+- 2026-09-05 — Continued above local-singles PR #19 without merging it. Added the local playable
+  tutor, immutable verified lesson templates and three focused fixture/lesson/browser tests.
+  Attempt 2 is the first unique singles-solvable generated puzzle: 28 givens and 53 placements,
+  independently checked by exact cover. Values, notes, clear, undo, progressive hints, synchronized
+  clue highlights, pause/show-all, keyboard controls and reduced motion are implemented. Incorrect
+  entries are checked against the completion derived from verified singles for this fixed unique
+  puzzle; help asks the player to recover before teaching. Board changes cancel stale lessons.
+  This is local-only experience evidence, not showcase clearance, learning evidence, full replay,
+  private compatibility or a release. The next checkpoint is maintainer feedback before a model.
+- 2026-09-05 — Local-tutor validation passed: `npm run test:tutor` (three tests including all
+  53 browser placements), strict compilation, architecture/lint/docs, registry and whitespace
+  checks. Final `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/work/WP-2026-003-local-singles`
+  passed all 190 tests and matching packed Node 22/Angular AOT/Chromium 151.0.7922.34 results.
+  Regenerated coach-core package evidence includes naked/hidden lesson consumers. Visually checked
+  the explanation at 320px and 390px. No dependencies were added; this stops at a review PR and
+  a local preview. Maintainer experience feedback and full proof/private gates remain outstanding.
+- 2026-09-05 — Maintainer tried and accepted the local tutor and authorized its stack merge.
+  Pre-merge CI exposed a test-only browser launch mismatch: CI installs full pinned Chromium,
+  while the new test requested the separate headless-shell binary. Use the existing consumer's
+  executable path and register cleanup before launch so startup failures cannot strand the server.
+  Runtime UI behavior is unchanged; merge remains pending successful checks on the corrected head.
+- 2026-09-05 — Corrected tutor launch passed full `npm run verify` with the local-singles base:
+  all 190 tests and matching packed Node/Chromium checks. Registry and whitespace checks passed.
+  Awaiting CI on the corrected head before executing the authorized merge.
+- 2026-09-05 — Fresh CI additionally exposed ordering: packed consumers installed Chromium
+  later in verification, after the new tutor suite. Tutor tests now provision the same pinned
+  full browser when absent, including Linux dependencies, before opening any server. The failed
+  launch exited promptly with the cleanup fix; no runtime or browser version change is needed.
+- 2026-09-05 — Browser provisioning correction passed full local verification: 190 tests,
+  strict compilation and matching packed consumers using the local-singles base. Fresh CI must
+  additionally exercise browser installation on clean runners before the authorized stack merge.

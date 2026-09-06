@@ -1,5 +1,13 @@
 # Proof policy
 
+## Local milestone
+
+The accepted [local tutor amendment](../product/plans/VSC-PLAN-2026-09-05.3.md) permits isolated
+`local-singles/v1` implementation before private conformance. It supports naked/hidden singles
+with independent verification and generated tests. No supported hint means unsupported locally,
+not a `classic-six/v1` stalled proof. Private integration and full-engine acceptance retain their
+aggregate gate. Existing six-technique contracts below remain the release target.
+
 ## Supported scope
 
 The reusable engine supports Classic 6x6 boards with 2x3 boxes and Classic 9x9 boards with 3x3

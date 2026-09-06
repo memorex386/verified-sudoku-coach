@@ -60,8 +60,9 @@ for this scene. Neither a timer nor a model should force a player to accept a mo
 Read the [charter](../charter.md), [proof policy](../../architecture/proof-policy.md),
 [WP-2026-004](../../work-packages/WP-2026-004-coach-application.md), and
 [WP-2026-008](../../work-packages/WP-2026-008-private-angular-integration.md) before implementation.
-Those authorities take precedence. Both later work packages remain Draft; this reference does
-not bypass dependencies, proof conformance, evaluation, or private integration gates.
+Those authorities take precedence. The accepted [local tutor amendment](../plans/VSC-PLAN-2026-09-05.3.md)
+now permits the minimal local interaction within WP-2026-003. Both later packages remain Draft;
+the concept itself does not authorize broader implementation or private integration.
 
 - Production narration and highlights must derive from validated, independently verified fact
   references for the current immutable state. Never parse untrusted streamed model prose to

@@ -212,8 +212,9 @@ array of `{cellId,mask}` for every empty cell, including zero masks; bit `digit-
 candidate, with no bits above `size-1`. Neither revision nor notes enter this projection.
 Initial construction derives all masks; there is no public constructor accepting arbitrary masks.
 Changing player entries reconstructs initial logical state; changing only notes retains its
-fingerprint. Proof application is implemented only after the private conformance gate, never via
-an unrestricted candidate-mask setter.
+fingerprint. Full proof application retains the private conformance gate. The isolated
+[local tutor milestone](../product/plans/VSC-PLAN-2026-09-05.3.md) permits verified single hints
+before that gate; it introduces no elimination application or unrestricted candidate-mask setter.
 
 Only constructors and
 verified proof application can produce a trusted logical state. A standalone serialized step is
