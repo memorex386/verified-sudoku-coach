@@ -42,6 +42,7 @@ Gemini, and open-weight names identify adapters or provenance; none is a core au
 | --- | --- |
 | Understand the proposal | [Product charter](product/charter.md) |
 | Try the adaptive AI candidate | [Local AI launch and limits](runbooks/local-ai-tutor.md) — live calls off by default |
+| Review the smallest hosted follow-up | [Owner-only pilot proposal](product/owner-only-coach-pilot.md) — proposed scope, no hosted admission or deployment authorization |
 | Play the local deterministic tutor | [Launch and interaction guide](runbooks/local-tutor.md) — one generated puzzle, no live AI |
 | Preview the coaching interaction | [Visual-storytelling design reference and offline walkthrough](product/concepts/coach-interaction.md) — scripted concept, not implementation evidence |
 | Resolve the accepted plan version | [Local tutor amendment](product/local-adaptive-milestone.md) and its linked predecessor |

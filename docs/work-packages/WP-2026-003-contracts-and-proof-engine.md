@@ -273,7 +273,7 @@ it remains local-only and is not approved for production.
 
 ## Next action
 
-- Maintainer: review PR #22 after its corrected CI checks pass and decide whether to merge the local adaptive candidate.
+- Maintainer: review the owner-only hosted pilot proposal and its explicit scope exceptions before private implementation.
 
 ## Checkpoints
 
@@ -483,3 +483,18 @@ it remains local-only and is not approved for production.
   every gate, including packed Node 22/Angular AOT/Chromium 151.0.7922.34. Registry, docs and
   whitespace checks passed. No further live calls were made. Await fresh CI and maintainer
   review on PR #22; this correction does not authorize merge or production work.
+- 2026-09-06 — The maintainer authorized PR #22 integration and the next step. Confirmed all
+  Windows, Ubuntu, dependency and CodeQL checks passed on reviewed head
+  `2d92a1ceec86a2c43210b0988631081ebf0f4f6a`; merged at
+  `eb78357e04839d16e6679699677d07c2000a063f`. Continued in a fresh dedicated worktree from
+  updated main. The [owner-only pilot proposal](../product/owner-only-coach-pilot.md) specifies
+  the smallest hosted follow-up: one generated puzzle, one authenticated owner, a durable bounded
+  trial and existing verified guidance. Its three required scope exceptions remain proposed;
+  neither local smoke checks nor this merge grants hosted admission or private conformance.
+  Implementation is split into a default-off private gateway and a separate experimental screen.
+  No runtime code, private content, extra model call, deployment or billing change is included.
+- 2026-09-06 — Hosted-proposal validation passed in the fresh worktree: clean
+  `npm ci --ignore-scripts` (zero vulnerabilities), registry generation and full `npm run verify`
+  with `WORK_PACKAGE_BASE_REF=origin/main` passed all 197 tests and unchanged packed Node 22/
+  Angular AOT/Chromium 151.0.7922.34 evidence. Documentation and whitespace checks passed.
+  This is a reviewed-scope proposal, not hosted implementation or permission to deploy.
