@@ -435,3 +435,10 @@ before Done. The proof engine implements local single hints; coach-core renders 
 - 2026-09-05 — Corrected tutor launch passed full `npm run verify` with the local-singles base:
   all 190 tests and matching packed Node/Chromium checks. Registry and whitespace checks passed.
   Awaiting CI on the corrected head before executing the authorized merge.
+- 2026-09-05 — Fresh CI additionally exposed ordering: packed consumers installed Chromium
+  later in verification, after the new tutor suite. Tutor tests now provision the same pinned
+  full browser when absent, including Linux dependencies, before opening any server. The failed
+  launch exited promptly with the cleanup fix; no runtime or browser version change is needed.
+- 2026-09-05 — Browser provisioning correction passed full local verification: 190 tests,
+  strict compilation and matching packed consumers using the local-singles base. Fresh CI must
+  additionally exercise browser installation on clean runners before the authorized stack merge.

@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import fs from "node:fs";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 import { checkLocalFixture } from "./local-tutor-fixture.mjs";
 import { startTutor } from "./local-tutor-server.mjs";
@@ -8,6 +11,14 @@ import { proposeSingle, verifySingle, readVerifiedSingle } from "@verified-sudok
 import { localLesson } from "@verified-sudoku/coach-core";
 import { exactCoverCount } from "../packages/testing/test/exact-cover.mjs";
 
+// This suite runs before packed consumers, so provision their same pinned browser first.
+if (!fs.existsSync(chromium.executablePath())) {
+  const cli = fileURLToPath(new URL("../node_modules/playwright/cli.js", import.meta.url));
+  const installed = spawnSync(process.execPath, [cli, "install",
+    ...(process.platform === "linux" ? ["--with-deps"] : []), "--no-shell", "chromium"],
+    { stdio: "inherit", timeout: 240000 });
+  assert.equal(installed.status, 0, "pinned Chromium installation failed");
+}
 const fixture = checkLocalFixture();
 const initial = () => createBoard(createPuzzle(createTopology(9), fixture.givens), 0, [], []);
 function route() {
