@@ -28,8 +28,9 @@ and integrators receive small versioned interfaces instead of private game objec
 ## Non-goals
 
 The adaptive local amendment permits a candidate teacher and bounded transient conversation.
-Private puzzle export, Angular/Firebase integration and publication remain excluded. Live spend
-requires separate explicit authorization; the bounded owner trial below received it.
+Private puzzle export and publication remain excluded. The accepted owner-only amendment permits
+a private gateway and isolated screen in the host's own work package; no private code enters this
+repository. Hosted spend requires separate authorization; only the bounded local trial below received it.
 
 ## Governing ADRs
 
@@ -37,6 +38,7 @@ requires separate explicit authorization; the bounded owner trial below received
 [ADR-0002](../decisions/0002-enforce-inward-package-dependencies.md),
 [ADR-0004](../decisions/0004-minimize-data-and-fail-closed.md), and
 [ADR-0005](../decisions/0005-separate-public-core-private-adapters.md);
+[ADR-0010](../decisions/0010-owner-only-hosted-evaluation.md) admits the isolated owner evaluation;
 [contract versioning](../contracts/versioning.md),
 [proof policy](../architecture/proof-policy.md),
 [proof-technique](../runbooks/change-proof-technique.md) and
@@ -52,6 +54,8 @@ the local amendment additionally permits minimal deterministic lesson code in `p
 and the local tutor UI in `apps/replay-web`. The [adaptive amendment](../product/local-adaptive-milestone.md)
 also permits the minimal `apps/local-gateway`, `packages/adapter-openai`, adaptive contracts/codecs,
 registration artifacts and frozen local evaluation tests. Broader coaching policy remains deferred.
+The owner-only amendment permits public artifact provenance and admission handoff documentation;
+private implementation is owned and validated separately by the host.
 The transition PR contains documentation only; schemas, compatibility fixtures, API artifacts,
 and codecs required by the change matrix land with their implementing slices before package Done.
 
@@ -273,7 +277,7 @@ it remains local-only and is not approved for production.
 
 ## Next action
 
-- Maintainer: review the owner-only hosted pilot proposal and its explicit scope exceptions before private implementation.
+- Review the owner gateway and its pinned public artifact handoff before the separate private screen.
 
 ## Checkpoints
 
@@ -498,3 +502,15 @@ it remains local-only and is not approved for production.
   with `WORK_PACKAGE_BASE_REF=origin/main` passed all 197 tests and unchanged packed Node 22/
   Angular AOT/Chromium 151.0.7922.34 evidence. Documentation and whitespace checks passed.
   This is a reviewed-scope proposal, not hosted implementation or permission to deploy.
+- 2026-09-06 — Confirmed all required checks on PR #24 reviewed head
+  `31123e5505fede2dfdf2abb81c93e5fd66cfc494`, then executed the maintainer-authorized merge at
+  `02d3019d808a6ff0cb51d87fb20446f931088f58`. ADR-0010 and the accepted plan record the three
+  narrow owner-evaluation exceptions. Started the default-off private gateway in the host's
+  dedicated work package with the unchanged public runtime pinned to this merged commit.
+  This public change records authority only; no model call, deployment, new technique or full
+  private conformance acceptance is claimed. The separate private screen follows gateway review.
+- 2026-09-06 — Owner-admission handoff validation passed: registry generation, full
+  `npm run verify` with `WORK_PACKAGE_BASE_REF=origin/main` (197 tests and unchanged packed
+  Node 22/Angular AOT/Chromium evidence), documentation and whitespace checks. The host rebuilt
+  the pinned public Node artifact reproducibly. This records implementation scope, not hosted
+  activation, model approval or the full six-technique/private compatibility gate.
